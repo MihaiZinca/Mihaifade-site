@@ -20,12 +20,21 @@ public class BarbershopService {
 
     public ro.mihaifade.backend.entity.Service getServiceById(Long id) {
         return serviceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Service not found"));
+                .orElseThrow(() ->
+                        new RuntimeException("Service not found with id: " + id)
+                );
     }
 
     public ro.mihaifade.backend.entity.Service createService(
             ro.mihaifade.backend.entity.Service service
     ) {
+
+        if (serviceRepository.existsByNameIgnoreCase(service.getName())) {
+            throw new RuntimeException(
+                    "A service with this name already exists"
+            );
+        }
+
         return serviceRepository.save(service);
     }
 
@@ -35,13 +44,14 @@ public class BarbershopService {
     ) {
 
         ro.mihaifade.backend.entity.Service existingService =
-                serviceRepository.findById(id)
-                        .orElseThrow(() -> new RuntimeException("Service not found"));
+                getServiceById(id);
 
         existingService.setName(updatedService.getName());
         existingService.setDescription(updatedService.getDescription());
         existingService.setPrice(updatedService.getPrice());
-        existingService.setDurationMinutes(updatedService.getDurationMinutes());
+        existingService.setDurationMinutes(
+                updatedService.getDurationMinutes()
+        );
         existingService.setActive(updatedService.getActive());
 
         return serviceRepository.save(existingService);
@@ -49,10 +59,11 @@ public class BarbershopService {
 
     public void deleteService(Long id) {
 
-        if (!serviceRepository.existsById(id)) {
-            throw new RuntimeException("Service not found");
-        }
+        ro.mihaifade.backend.entity.Service service =
+                getServiceById(id);
 
-        serviceRepository.deleteById(id);
+        service.setActive(false);
+
+        serviceRepository.save(service);
     }
 }

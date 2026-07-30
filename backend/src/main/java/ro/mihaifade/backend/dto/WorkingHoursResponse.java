@@ -1,22 +1,14 @@
 package ro.mihaifade.backend.dto;
 
-import jakarta.validation.constraints.NotNull;
-
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
-public record WorkingHoursRequest(
+public record WorkingHoursResponse(
 
-        @NotNull
+        Long id,
         DayOfWeek dayOfWeek,
-
-        @NotNull
         LocalTime startTime,
-
-        @NotNull
         LocalTime endTime,
-
-        @NotNull
         Boolean active
 
 ) {

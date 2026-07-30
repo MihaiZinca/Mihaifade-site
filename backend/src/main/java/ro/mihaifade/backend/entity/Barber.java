@@ -1,6 +1,7 @@
 package ro.mihaifade.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,10 +20,11 @@ public class Barber {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
     @Column(nullable = false)
     private String displayName;
 
-    @Column(length = 1000)
+    @Column(length = 1500)
     private String bio;
 
     private String imageUrl;
@@ -30,11 +32,23 @@ public class Barber {
     @Column(nullable = false)
     private Boolean active = true;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "barber_services",
             joinColumns = @JoinColumn(name = "barber_id"),
             inverseJoinColumns = @JoinColumn(name = "service_id")
     )
     private Set<Service> services = new HashSet<>();
+
+    public Barber(
+            String displayName,
+            String bio,
+            String imageUrl,
+            Boolean active
+    ) {
+        this.displayName = displayName;
+        this.bio = bio;
+        this.imageUrl = imageUrl;
+        this.active = active;
+    }
 }

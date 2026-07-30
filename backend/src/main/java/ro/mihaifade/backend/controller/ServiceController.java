@@ -1,5 +1,6 @@
 package ro.mihaifade.backend.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ro.mihaifade.backend.entity.Service;
@@ -13,7 +14,9 @@ public class ServiceController {
 
     private final BarbershopService barbershopService;
 
-    public ServiceController(BarbershopService barbershopService) {
+    public ServiceController(
+            BarbershopService barbershopService
+    ) {
         this.barbershopService = barbershopService;
     }
 
@@ -23,27 +26,33 @@ public class ServiceController {
     }
 
     @GetMapping("/{id}")
-    public Service getServiceById(@PathVariable Long id) {
+    public Service getServiceById(
+            @PathVariable Long id
+    ) {
         return barbershopService.getServiceById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Service createService(@RequestBody Service service) {
+    public Service createService(
+            @Valid @RequestBody Service service
+    ) {
         return barbershopService.createService(service);
     }
 
     @PutMapping("/{id}")
     public Service updateService(
             @PathVariable Long id,
-            @RequestBody Service service
+            @Valid @RequestBody Service service
     ) {
         return barbershopService.updateService(id, service);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteService(@PathVariable Long id) {
+    public void deleteService(
+            @PathVariable Long id
+    ) {
         barbershopService.deleteService(id);
     }
 }

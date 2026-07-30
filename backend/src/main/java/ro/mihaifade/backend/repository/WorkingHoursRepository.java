@@ -7,11 +7,15 @@ import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Optional;
 
-public interface WorkingHoursRepository extends JpaRepository<WorkingHours, Long> {
+public interface WorkingHoursRepository
+        extends JpaRepository<WorkingHours, Long> {
 
-    List<WorkingHours> findByBarberIdOrderByDayOfWeek(Long barberId);
+    List<WorkingHours> findByBarberId(
+            Long barberId
+    );
 
-    Optional<WorkingHours> findByBarberIdAndDayOfWeek(
+    Optional<WorkingHours>
+    findByBarberIdAndDayOfWeek(
             Long barberId,
             DayOfWeek dayOfWeek
     );

@@ -29,35 +29,63 @@ public class BarberService {
 
     public Barber getBarberById(Long id) {
         return barberRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Barber not found"));
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Barber not found with id: " + id
+                        )
+                );
     }
 
     public Barber createBarber(Barber barber) {
         return barberRepository.save(barber);
     }
 
-    public Barber updateBarber(Long id, Barber updatedBarber) {
-        Barber existingBarber = barberRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Barber not found"));
+    public Barber updateBarber(
+            Long id,
+            Barber updatedBarber
+    ) {
 
-        existingBarber.setDisplayName(updatedBarber.getDisplayName());
-        existingBarber.setBio(updatedBarber.getBio());
-        existingBarber.setImageUrl(updatedBarber.getImageUrl());
-        existingBarber.setActive(updatedBarber.getActive());
+        Barber existingBarber =
+                getBarberById(id);
+
+        existingBarber.setDisplayName(
+                updatedBarber.getDisplayName()
+        );
+
+        existingBarber.setBio(
+                updatedBarber.getBio()
+        );
+
+        existingBarber.setImageUrl(
+                updatedBarber.getImageUrl()
+        );
+
+        existingBarber.setActive(
+                updatedBarber.getActive()
+        );
 
         return barberRepository.save(existingBarber);
     }
 
-    public Barber assignServices(Long barberId, Set<Long> serviceIds) {
-        Barber barber = barberRepository.findById(barberId)
-                .orElseThrow(() -> new RuntimeException("Barber not found"));
+    public Barber assignServices(
+            Long barberId,
+            Set<Long> serviceIds
+    ) {
+
+        Barber barber = getBarberById(barberId);
 
         Set<ro.mihaifade.backend.entity.Service> services =
                 serviceIds.stream()
-                        .map(serviceId -> serviceRepository.findById(serviceId)
-                                .orElseThrow(() -> new RuntimeException(
-                                        "Service not found: " + serviceId
-                                )))
+                        .map(serviceId ->
+                                serviceRepository
+                                        .findById(serviceId)
+                                        .orElseThrow(() ->
+                                                new RuntimeException(
+                                                        "Service not found: "
+                                                                + serviceId
+                                                )
+                                        )
+                        )
                         .collect(Collectors.toSet());
 
         barber.setServices(services);
@@ -65,11 +93,12 @@ public class BarberService {
         return barberRepository.save(barber);
     }
 
-    public void deleteBarber(Long id) {
-        if (!barberRepository.existsById(id)) {
-            throw new RuntimeException("Barber not found");
-        }
+    public void deactivateBarber(Long id) {
 
-        barberRepository.deleteById(id);
+        Barber barber = getBarberById(id);
+
+        barber.setActive(false);
+
+        barberRepository.save(barber);
     }
 }

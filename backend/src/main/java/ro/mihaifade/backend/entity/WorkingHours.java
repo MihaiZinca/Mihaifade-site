@@ -9,22 +9,41 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 
 @Entity
-@Table(name = "working_hours")
+@Table(
+        name = "working_hours",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_barber_day",
+                        columnNames = {
+                                "barber_id",
+                                "day_of_week"
+                        }
+                )
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
 public class WorkingHours {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(
+            strategy = GenerationType.IDENTITY
+    )
     private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "barber_id", nullable = false)
+    @JoinColumn(
+            name = "barber_id",
+            nullable = false
+    )
     private Barber barber;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(
+            name = "day_of_week",
+            nullable = false
+    )
     private DayOfWeek dayOfWeek;
 
     @Column(nullable = false)
