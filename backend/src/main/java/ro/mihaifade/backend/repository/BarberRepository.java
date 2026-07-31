@@ -5,10 +5,7 @@ import ro.mihaifade.backend.entity.Barber;
 
 import java.util.Optional;
 
-public interface BarberRepository
-        extends JpaRepository<Barber, Long> {
+public interface BarberRepository extends JpaRepository<Barber, Long> {
 
-    Optional<Barber> findByDisplayNameIgnoreCase(
-            String displayName
-    );
+    Optional<Barber> findByDisplayNameIgnoreCase(String displayName);
 }

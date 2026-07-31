@@ -8,7 +8,6 @@ import ro.mihaifade.backend.entity.WorkingHours;
 import ro.mihaifade.backend.repository.BarberRepository;
 import ro.mihaifade.backend.repository.WorkingHoursRepository;
 
-import java.time.DayOfWeek;
 import java.util.Comparator;
 import java.util.List;
 
@@ -22,32 +21,23 @@ public class WorkingHoursService {
             WorkingHoursRepository workingHoursRepository,
             BarberRepository barberRepository
     ) {
-        this.workingHoursRepository =
-                workingHoursRepository;
-
-        this.barberRepository =
-                barberRepository;
+        this.workingHoursRepository = workingHoursRepository;
+        this.barberRepository = barberRepository;
     }
 
-    public List<WorkingHoursResponse>
-    getWorkingHoursForBarber(Long barberId) {
-
+    public List<WorkingHoursResponse> getWorkingHoursForBarber(Long barberId) {
         if (!barberRepository.existsById(barberId)) {
             throw new RuntimeException(
-                    "Barber not found with id: "
-                            + barberId
+                    "Barber not found with id: " + barberId
             );
         }
 
-        return workingHoursRepository
-                .findByBarberId(barberId)
+        return workingHoursRepository.findByBarberId(barberId)
                 .stream()
                 .sorted(
                         Comparator.comparingInt(
                                 workingHours ->
-                                        workingHours
-                                                .getDayOfWeek()
-                                                .getValue()
+                                        workingHours.getDayOfWeek().getValue()
                         )
                 )
                 .map(this::toResponse)
@@ -58,55 +48,35 @@ public class WorkingHoursService {
             Long barberId,
             WorkingHoursRequest request
     ) {
-
-        Barber barber =
-                barberRepository
-                        .findById(barberId)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Barber not found with id: "
-                                                + barberId
-                                )
-                        );
+        Barber barber = barberRepository.findById(barberId)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Barber not found with id: " + barberId
+                        )
+                );
 
         if (request.active()
-                && !request.startTime()
-                .isBefore(request.endTime())) {
-
+                && !request.startTime().isBefore(request.endTime())) {
             throw new RuntimeException(
                     "Start time must be before end time"
             );
         }
 
         WorkingHours workingHours =
-                workingHoursRepository
-                        .findByBarberIdAndDayOfWeek(
+                workingHoursRepository.findByBarberIdAndDayOfWeek(
                                 barberId,
                                 request.dayOfWeek()
                         )
                         .orElseGet(WorkingHours::new);
 
         workingHours.setBarber(barber);
-
-        workingHours.setDayOfWeek(
-                request.dayOfWeek()
-        );
-
-        workingHours.setStartTime(
-                request.startTime()
-        );
-
-        workingHours.setEndTime(
-                request.endTime()
-        );
-
-        workingHours.setActive(
-                request.active()
-        );
+        workingHours.setDayOfWeek(request.dayOfWeek());
+        workingHours.setStartTime(request.startTime());
+        workingHours.setEndTime(request.endTime());
+        workingHours.setActive(request.active());
 
         WorkingHours saved =
-                workingHoursRepository
-                        .save(workingHours);
+                workingHoursRepository.save(workingHours);
 
         return toResponse(saved);
     }
@@ -114,7 +84,6 @@ public class WorkingHoursService {
     private WorkingHoursResponse toResponse(
             WorkingHours workingHours
     ) {
-
         return new WorkingHoursResponse(
                 workingHours.getId(),
                 workingHours.getDayOfWeek(),

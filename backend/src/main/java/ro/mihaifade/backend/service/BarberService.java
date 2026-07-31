@@ -44,25 +44,12 @@ public class BarberService {
             Long id,
             Barber updatedBarber
     ) {
+        Barber existingBarber = getBarberById(id);
 
-        Barber existingBarber =
-                getBarberById(id);
-
-        existingBarber.setDisplayName(
-                updatedBarber.getDisplayName()
-        );
-
-        existingBarber.setBio(
-                updatedBarber.getBio()
-        );
-
-        existingBarber.setImageUrl(
-                updatedBarber.getImageUrl()
-        );
-
-        existingBarber.setActive(
-                updatedBarber.getActive()
-        );
+        existingBarber.setDisplayName(updatedBarber.getDisplayName());
+        existingBarber.setBio(updatedBarber.getBio());
+        existingBarber.setImageUrl(updatedBarber.getImageUrl());
+        existingBarber.setActive(updatedBarber.getActive());
 
         return barberRepository.save(existingBarber);
     }
@@ -71,18 +58,15 @@ public class BarberService {
             Long barberId,
             Set<Long> serviceIds
     ) {
-
         Barber barber = getBarberById(barberId);
 
         Set<ro.mihaifade.backend.entity.Service> services =
                 serviceIds.stream()
                         .map(serviceId ->
-                                serviceRepository
-                                        .findById(serviceId)
+                                serviceRepository.findById(serviceId)
                                         .orElseThrow(() ->
                                                 new RuntimeException(
-                                                        "Service not found: "
-                                                                + serviceId
+                                                        "Service not found: " + serviceId
                                                 )
                                         )
                         )
@@ -94,7 +78,6 @@ public class BarberService {
     }
 
     public void deactivateBarber(Long id) {
-
         Barber barber = getBarberById(id);
 
         barber.setActive(false);

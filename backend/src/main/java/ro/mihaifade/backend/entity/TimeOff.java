@@ -5,18 +5,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
 @Table(
-        name = "working_hours",
+        name = "time_off",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_barber_day",
+                        name = "uk_barber_time_off_date",
                         columnNames = {
                                 "barber_id",
-                                "day_of_week"
+                                "date"
                         }
                 )
         }
@@ -24,7 +24,7 @@ import java.time.LocalTime;
 @Getter
 @Setter
 @NoArgsConstructor
-public class WorkingHours {
+public class TimeOff {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,19 +37,15 @@ public class WorkingHours {
     )
     private Barber barber;
 
-    @Enumerated(EnumType.STRING)
-    @Column(
-            name = "day_of_week",
-            nullable = false
-    )
-    private DayOfWeek dayOfWeek;
-
     @Column(nullable = false)
+    private LocalDate date;
+
     private LocalTime startTime;
 
-    @Column(nullable = false)
     private LocalTime endTime;
 
     @Column(nullable = false)
-    private Boolean active = true;
+    private Boolean fullDay = true;
+
+    private String reason;
 }

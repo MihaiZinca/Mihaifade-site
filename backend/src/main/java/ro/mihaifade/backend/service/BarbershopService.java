@@ -21,14 +21,15 @@ public class BarbershopService {
     public ro.mihaifade.backend.entity.Service getServiceById(Long id) {
         return serviceRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Service not found with id: " + id)
+                        new RuntimeException(
+                                "Service not found with id: " + id
+                        )
                 );
     }
 
     public ro.mihaifade.backend.entity.Service createService(
             ro.mihaifade.backend.entity.Service service
     ) {
-
         if (serviceRepository.existsByNameIgnoreCase(service.getName())) {
             throw new RuntimeException(
                     "A service with this name already exists"
@@ -42,23 +43,19 @@ public class BarbershopService {
             Long id,
             ro.mihaifade.backend.entity.Service updatedService
     ) {
-
         ro.mihaifade.backend.entity.Service existingService =
                 getServiceById(id);
 
         existingService.setName(updatedService.getName());
         existingService.setDescription(updatedService.getDescription());
         existingService.setPrice(updatedService.getPrice());
-        existingService.setDurationMinutes(
-                updatedService.getDurationMinutes()
-        );
+        existingService.setDurationMinutes(updatedService.getDurationMinutes());
         existingService.setActive(updatedService.getActive());
 
         return serviceRepository.save(existingService);
     }
 
     public void deleteService(Long id) {
-
         ro.mihaifade.backend.entity.Service service =
                 getServiceById(id);
 

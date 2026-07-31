@@ -15,7 +15,10 @@ import java.math.BigDecimal;
 @Table(
         name = "services",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_service_name", columnNames = "name")
+                @UniqueConstraint(
+                        name = "uk_service_name",
+                        columnNames = "name"
+                )
         }
 )
 @Getter

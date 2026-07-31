@@ -16,8 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 
 @Component
-public class DataSeeder
-        implements CommandLineRunner {
+public class DataSeeder implements CommandLineRunner {
 
     private final ServiceRepository serviceRepository;
     private final BarberRepository barberRepository;
@@ -28,30 +27,22 @@ public class DataSeeder
             BarberRepository barberRepository,
             WorkingHoursRepository workingHoursRepository
     ) {
-        this.serviceRepository =
-                serviceRepository;
-
-        this.barberRepository =
-                barberRepository;
-
-        this.workingHoursRepository =
-                workingHoursRepository;
+        this.serviceRepository = serviceRepository;
+        this.barberRepository = barberRepository;
+        this.workingHoursRepository = workingHoursRepository;
     }
 
     @Override
     public void run(String... args) {
-
         seedServices();
 
         Barber mihai = seedBarber();
 
         assignServicesToMihai(mihai);
-
         seedWorkingHours(mihai);
     }
 
     private void seedServices() {
-
         createServiceIfMissing(
                 "Tuns Copii",
                 "Tunsoare pentru copii",
@@ -136,10 +127,7 @@ public class DataSeeder
             String price,
             Integer durationMinutes
     ) {
-
-        if (!serviceRepository
-                .existsByNameIgnoreCase(name)) {
-
+        if (!serviceRepository.existsByNameIgnoreCase(name)) {
             Service service = new Service(
                     name,
                     description,
@@ -153,77 +141,44 @@ public class DataSeeder
     }
 
     private Barber seedBarber() {
-
-        return barberRepository
-                .findByDisplayNameIgnoreCase(
-                        "Mihai Fade"
-                )
+        return barberRepository.findByDisplayNameIgnoreCase("Mihai Fade")
                 .orElseGet(() -> {
+                    Barber barber = new Barber(
+                            "Mihai Fade",
+                            "Owner si barber Mihaifade",
+                            null,
+                            true
+                    );
 
-                    Barber barber =
-                            new Barber(
-                                    "Mihai Fade",
-                                    "Owner si barber Mihaifade",
-                                    null,
-                                    true
-                            );
-
-                    return barberRepository
-                            .save(barber);
+                    return barberRepository.save(barber);
                 });
     }
 
-    private void assignServicesToMihai(
-            Barber mihai
-    ) {
+    private void assignServicesToMihai(Barber mihai) {
+        List<Service> allServices = serviceRepository.findAll();
 
-        List<Service> allServices =
-                serviceRepository.findAll();
-
-        mihai.setServices(
-                new HashSet<>(allServices)
-        );
+        mihai.setServices(new HashSet<>(allServices));
 
         barberRepository.save(mihai);
     }
 
-    private void seedWorkingHours(
-            Barber mihai
-    ) {
-
-        for (DayOfWeek day :
-                DayOfWeek.values()) {
-
+    private void seedWorkingHours(Barber mihai) {
+        for (DayOfWeek day : DayOfWeek.values()) {
             if (workingHoursRepository
-                    .findByBarberIdAndDayOfWeek(
-                            mihai.getId(),
-                            day
-                    )
+                    .findByBarberIdAndDayOfWeek(mihai.getId(), day)
                     .isPresent()) {
                 continue;
             }
 
-            WorkingHours workingHours =
-                    new WorkingHours();
+            WorkingHours workingHours = new WorkingHours();
 
             workingHours.setBarber(mihai);
-
             workingHours.setDayOfWeek(day);
+            workingHours.setStartTime(LocalTime.of(8, 0));
+            workingHours.setEndTime(LocalTime.of(22, 0));
+            workingHours.setActive(day != DayOfWeek.SUNDAY);
 
-            workingHours.setStartTime(
-                    LocalTime.of(8, 0)
-            );
-
-            workingHours.setEndTime(
-                    LocalTime.of(22, 0)
-            );
-
-            workingHours.setActive(
-                    day != DayOfWeek.SUNDAY
-            );
-
-            workingHoursRepository
-                    .save(workingHours);
+            workingHoursRepository.save(workingHours);
         }
     }
 }

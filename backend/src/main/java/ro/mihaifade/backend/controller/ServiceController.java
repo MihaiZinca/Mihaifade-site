@@ -35,7 +35,8 @@ public class ServiceController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Service createService(
-            @Valid @RequestBody Service service
+            @Valid
+            @RequestBody Service service
     ) {
         return barbershopService.createService(service);
     }
@@ -43,7 +44,8 @@ public class ServiceController {
     @PutMapping("/{id}")
     public Service updateService(
             @PathVariable Long id,
-            @Valid @RequestBody Service service
+            @Valid
+            @RequestBody Service service
     ) {
         return barbershopService.updateService(id, service);
     }

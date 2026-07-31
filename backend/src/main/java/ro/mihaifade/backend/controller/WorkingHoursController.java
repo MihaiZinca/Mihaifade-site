@@ -9,44 +9,33 @@ import ro.mihaifade.backend.service.WorkingHoursService;
 import java.util.List;
 
 @RestController
-@RequestMapping(
-        "/api/barbers/{barberId}/working-hours"
-)
+@RequestMapping("/api/barbers/{barberId}/working-hours")
 public class WorkingHoursController {
 
-    private final WorkingHoursService
-            workingHoursService;
+    private final WorkingHoursService workingHoursService;
 
     public WorkingHoursController(
             WorkingHoursService workingHoursService
     ) {
-        this.workingHoursService =
-                workingHoursService;
+        this.workingHoursService = workingHoursService;
     }
 
     @GetMapping
-    public List<WorkingHoursResponse>
-    getWorkingHours(
+    public List<WorkingHoursResponse> getWorkingHours(
             @PathVariable Long barberId
     ) {
-        return workingHoursService
-                .getWorkingHoursForBarber(
-                        barberId
-                );
+        return workingHoursService.getWorkingHoursForBarber(barberId);
     }
 
     @PutMapping
-    public WorkingHoursResponse
-    setWorkingHours(
+    public WorkingHoursResponse setWorkingHours(
             @PathVariable Long barberId,
             @Valid
-            @RequestBody
-            WorkingHoursRequest request
+            @RequestBody WorkingHoursRequest request
     ) {
-        return workingHoursService
-                .setWorkingHours(
-                        barberId,
-                        request
-                );
+        return workingHoursService.setWorkingHours(
+                barberId,
+                request
+        );
     }
 }

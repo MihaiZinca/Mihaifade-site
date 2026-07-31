@@ -36,7 +36,8 @@ public class BarberController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Barber createBarber(
-            @Valid @RequestBody Barber barber
+            @Valid
+            @RequestBody Barber barber
     ) {
         return barberService.createBarber(barber);
     }
@@ -44,7 +45,8 @@ public class BarberController {
     @PutMapping("/{id}")
     public Barber updateBarber(
             @PathVariable Long id,
-            @Valid @RequestBody Barber barber
+            @Valid
+            @RequestBody Barber barber
     ) {
         return barberService.updateBarber(id, barber);
     }
