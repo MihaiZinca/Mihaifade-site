@@ -24,18 +24,14 @@ public class TimeOffService {
         this.barberRepository = barberRepository;
     }
 
-    public List<TimeOffResponse> getTimeOffForBarber(
-            Long barberId
-    ) {
-
+    public List<TimeOffResponse> getTimeOffForBarber(Long barberId) {
         if (!barberRepository.existsById(barberId)) {
             throw new RuntimeException(
                     "Barber not found with id: " + barberId
             );
         }
 
-        return timeOffRepository
-                .findByBarberIdOrderByDateAsc(barberId)
+        return timeOffRepository.findByBarberIdOrderByDateAsc(barberId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -45,37 +41,28 @@ public class TimeOffService {
             Long barberId,
             TimeOffRequest request
     ) {
-
-        Barber barber = barberRepository
-                .findById(barberId)
+        Barber barber = barberRepository.findById(barberId)
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "Barber not found with id: "
-                                        + barberId
+                                "Barber not found with id: " + barberId
                         )
                 );
 
         if (!request.fullDay()) {
-
-            if (request.startTime() == null
-                    || request.endTime() == null) {
-
+            if (request.startTime() == null || request.endTime() == null) {
                 throw new RuntimeException(
                         "Start time and end time are required"
                 );
             }
 
-            if (!request.startTime()
-                    .isBefore(request.endTime())) {
-
+            if (!request.startTime().isBefore(request.endTime())) {
                 throw new RuntimeException(
                         "Start time must be before end time"
                 );
             }
         }
 
-        TimeOff timeOff = timeOffRepository
-                .findByBarberIdAndDate(
+        TimeOff timeOff = timeOffRepository.findByBarberIdAndDate(
                         barberId,
                         request.date()
                 )
@@ -94,8 +81,7 @@ public class TimeOffService {
             timeOff.setEndTime(request.endTime());
         }
 
-        TimeOff saved =
-                timeOffRepository.save(timeOff);
+        TimeOff saved = timeOffRepository.save(timeOff);
 
         return toResponse(saved);
     }
@@ -104,25 +90,20 @@ public class TimeOffService {
             Long barberId,
             Long id
     ) {
-
         if (!barberRepository.existsById(barberId)) {
             throw new RuntimeException(
                     "Barber not found with id: " + barberId
             );
         }
 
-        TimeOff timeOff = timeOffRepository
-                .findById(id)
+        TimeOff timeOff = timeOffRepository.findById(id)
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "Time off not found"
+                                "Time off not found with id: " + id
                         )
                 );
 
-        if (!timeOff.getBarber()
-                .getId()
-                .equals(barberId)) {
-
+        if (!timeOff.getBarber().getId().equals(barberId)) {
             throw new RuntimeException(
                     "Time off does not belong to this barber"
             );
@@ -131,10 +112,7 @@ public class TimeOffService {
         timeOffRepository.delete(timeOff);
     }
 
-    private TimeOffResponse toResponse(
-            TimeOff timeOff
-    ) {
-
+    private TimeOffResponse toResponse(TimeOff timeOff) {
         return new TimeOffResponse(
                 timeOff.getId(),
                 timeOff.getDate(),

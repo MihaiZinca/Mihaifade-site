@@ -47,5 +47,6 @@ public class TimeOff {
     @Column(nullable = false)
     private Boolean fullDay = true;
 
+    @Column(length = 500)
     private String reason;
 }

@@ -7,12 +7,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface TimeOffRepository
-        extends JpaRepository<TimeOff, Long> {
+public interface TimeOffRepository extends JpaRepository<TimeOff, Long> {
 
-    List<TimeOff> findByBarberIdOrderByDateAsc(
-            Long barberId
-    );
+    List<TimeOff> findByBarberIdOrderByDateAsc(Long barberId);
 
     Optional<TimeOff> findByBarberIdAndDate(
             Long barberId,

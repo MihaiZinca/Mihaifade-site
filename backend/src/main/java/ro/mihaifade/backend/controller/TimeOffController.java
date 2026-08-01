@@ -10,16 +10,12 @@ import ro.mihaifade.backend.service.TimeOffService;
 import java.util.List;
 
 @RestController
-@RequestMapping(
-        "/api/barbers/{barberId}/time-off"
-)
+@RequestMapping("/api/barbers/{barberId}/time-off")
 public class TimeOffController {
 
     private final TimeOffService timeOffService;
 
-    public TimeOffController(
-            TimeOffService timeOffService
-    ) {
+    public TimeOffController(TimeOffService timeOffService) {
         this.timeOffService = timeOffService;
     }
 
@@ -27,22 +23,19 @@ public class TimeOffController {
     public List<TimeOffResponse> getTimeOff(
             @PathVariable Long barberId
     ) {
-        return timeOffService
-                .getTimeOffForBarber(barberId);
+        return timeOffService.getTimeOffForBarber(barberId);
     }
 
     @PutMapping
     public TimeOffResponse setTimeOff(
             @PathVariable Long barberId,
             @Valid
-            @RequestBody
-            TimeOffRequest request
+            @RequestBody TimeOffRequest request
     ) {
-        return timeOffService
-                .setTimeOff(
-                        barberId,
-                        request
-                );
+        return timeOffService.setTimeOff(
+                barberId,
+                request
+        );
     }
 
     @DeleteMapping("/{id}")
@@ -51,10 +44,9 @@ public class TimeOffController {
             @PathVariable Long barberId,
             @PathVariable Long id
     ) {
-        timeOffService
-                .deleteTimeOff(
-                        barberId,
-                        id
-                );
+        timeOffService.deleteTimeOff(
+                barberId,
+                id
+        );
     }
 }
