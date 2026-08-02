@@ -6,9 +6,11 @@ import ro.mihaifade.backend.dto.AppointmentResponse;
 import ro.mihaifade.backend.entity.Appointment;
 import ro.mihaifade.backend.entity.AppointmentStatus;
 import ro.mihaifade.backend.entity.Barber;
+import ro.mihaifade.backend.entity.User;
 import ro.mihaifade.backend.repository.AppointmentRepository;
 import ro.mihaifade.backend.repository.BarberRepository;
 import ro.mihaifade.backend.repository.ServiceRepository;
+import ro.mihaifade.backend.repository.UserRepository;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -19,15 +21,18 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final BarberRepository barberRepository;
     private final ServiceRepository serviceRepository;
+    private final UserRepository userRepository;
 
     public AppointmentService(
             AppointmentRepository appointmentRepository,
             BarberRepository barberRepository,
-            ServiceRepository serviceRepository
+            ServiceRepository serviceRepository,
+            UserRepository userRepository
     ) {
         this.appointmentRepository = appointmentRepository;
         this.barberRepository = barberRepository;
         this.serviceRepository = serviceRepository;
+        this.userRepository = userRepository;
     }
 
     public List<AppointmentResponse> getAllAppointments() {
@@ -37,23 +42,21 @@ public class AppointmentService {
                 .toList();
     }
 
-    public AppointmentResponse createAppointment(
-            AppointmentRequest request
-    ) {
-        Barber barber = barberRepository.findById(request.barberId())
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Barber not found with id: " + request.barberId()
-                        )
-                );
+    public AppointmentResponse createAppointment(AppointmentRequest request) {
+        User user = userRepository.findById(request.userId())
+                .orElseThrow(() -> new RuntimeException(
+                        "User not found with id: " + request.userId()
+                ));
 
-        ro.mihaifade.backend.entity.Service service =
-                serviceRepository.findById(request.serviceId())
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Service not found with id: " + request.serviceId()
-                                )
-                        );
+        Barber barber = barberRepository.findById(request.barberId())
+                .orElseThrow(() -> new RuntimeException(
+                        "Barber not found with id: " + request.barberId()
+                ));
+
+        ro.mihaifade.backend.entity.Service service = serviceRepository.findById(request.serviceId())
+                .orElseThrow(() -> new RuntimeException(
+                        "Service not found with id: " + request.serviceId()
+                ));
 
         LocalTime endTime = request.startTime()
                 .plusMinutes(service.getDurationMinutes());
@@ -72,51 +75,44 @@ public class AppointmentService {
                 );
 
         if (overlaps) {
-            throw new RuntimeException(
-                    "Selected time interval is already booked"
-            );
+            throw new RuntimeException("Selected time interval is already booked");
         }
 
         Appointment appointment = new Appointment();
 
+        appointment.setUser(user);
         appointment.setBarber(barber);
         appointment.setService(service);
         appointment.setDate(request.date());
         appointment.setStartTime(request.startTime());
         appointment.setEndTime(endTime);
         appointment.setStatus(AppointmentStatus.PENDING);
-        appointment.setClientName(request.clientName());
-        appointment.setClientPhone(request.clientPhone());
         appointment.setNotes(request.notes());
 
-        Appointment saved = appointmentRepository.save(appointment);
-
-        return toResponse(saved);
+        return toResponse(appointmentRepository.save(appointment));
     }
 
-    public AppointmentResponse updateStatus(
-            Long id,
-            AppointmentStatus status
-    ) {
+    public AppointmentResponse updateStatus(Long id, AppointmentStatus status) {
         Appointment appointment = appointmentRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Appointment not found with id: " + id
-                        )
-                );
+                .orElseThrow(() -> new RuntimeException(
+                        "Appointment not found with id: " + id
+                ));
 
         appointment.setStatus(status);
 
-        return toResponse(
-                appointmentRepository.save(appointment)
-        );
+        return toResponse(appointmentRepository.save(appointment));
     }
 
-    private AppointmentResponse toResponse(
-            Appointment appointment
-    ) {
+    private AppointmentResponse toResponse(Appointment appointment) {
+        String clientName = appointment.getUser().getFirstName()
+                + " "
+                + appointment.getUser().getLastName();
+
         return new AppointmentResponse(
                 appointment.getId(),
+                appointment.getUser().getId(),
+                clientName,
+                appointment.getUser().getPhone(),
                 appointment.getBarber().getId(),
                 appointment.getBarber().getDisplayName(),
                 appointment.getService().getId(),
@@ -125,8 +121,6 @@ public class AppointmentService {
                 appointment.getStartTime(),
                 appointment.getEndTime(),
                 appointment.getStatus(),
-                appointment.getClientName(),
-                appointment.getClientPhone(),
                 appointment.getNotes()
         );
     }

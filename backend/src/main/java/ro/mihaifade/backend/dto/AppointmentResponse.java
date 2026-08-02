@@ -6,8 +6,10 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public record AppointmentResponse(
-
         Long id,
+        Long userId,
+        String clientName,
+        String clientPhone,
         Long barberId,
         String barberName,
         Long serviceId,
@@ -16,9 +18,6 @@ public record AppointmentResponse(
         LocalTime startTime,
         LocalTime endTime,
         AppointmentStatus status,
-        String clientName,
-        String clientPhone,
         String notes
-
 ) {
 }

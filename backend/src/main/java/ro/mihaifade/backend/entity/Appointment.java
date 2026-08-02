@@ -20,17 +20,15 @@ public class Appointment {
     private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(
-            name = "barber_id",
-            nullable = false
-    )
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "barber_id", nullable = false)
     private Barber barber;
 
     @ManyToOne(optional = false)
-    @JoinColumn(
-            name = "service_id",
-            nullable = false
-    )
+    @JoinColumn(name = "service_id", nullable = false)
     private Service service;
 
     @Column(nullable = false)
@@ -45,12 +43,6 @@ public class Appointment {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AppointmentStatus status = AppointmentStatus.PENDING;
-
-    @Column(nullable = false)
-    private String clientName;
-
-    @Column(nullable = false)
-    private String clientPhone;
 
     private String notes;
 }
