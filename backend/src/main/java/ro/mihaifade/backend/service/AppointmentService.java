@@ -1,5 +1,6 @@
 package ro.mihaifade.backend.service;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import ro.mihaifade.backend.dto.AppointmentRequest;
 import ro.mihaifade.backend.dto.AppointmentResponse;
@@ -42,11 +43,20 @@ public class AppointmentService {
                 .toList();
     }
 
-    public AppointmentResponse createAppointment(AppointmentRequest request) {
-        User user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new RuntimeException(
-                        "User not found with id: " + request.userId()
-                ));
+    public List<AppointmentResponse> getMyAppointments(String email) {
+        User user = getUserByEmail(email);
+
+        return appointmentRepository.findByUserIdOrderByDateDescStartTimeDesc(user.getId())
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public AppointmentResponse createAppointment(
+            AppointmentRequest request,
+            String email
+    ) {
+        User user = getUserByEmail(email);
 
         Barber barber = barberRepository.findById(request.barberId())
                 .orElseThrow(() -> new RuntimeException(
@@ -61,12 +71,11 @@ public class AppointmentService {
         LocalTime endTime = request.startTime()
                 .plusMinutes(service.getDurationMinutes());
 
-        List<Appointment> existingAppointments =
-                appointmentRepository.findByBarberIdAndDateAndStatusNot(
-                        barber.getId(),
-                        request.date(),
-                        AppointmentStatus.CANCELLED
-                );
+        List<Appointment> existingAppointments = appointmentRepository.findByBarberIdAndDateAndStatusNot(
+                barber.getId(),
+                request.date(),
+                AppointmentStatus.CANCELLED
+        );
 
         boolean overlaps = existingAppointments.stream()
                 .anyMatch(existing ->
@@ -92,7 +101,44 @@ public class AppointmentService {
         return toResponse(appointmentRepository.save(appointment));
     }
 
-    public AppointmentResponse updateStatus(Long id, AppointmentStatus status) {
+    public AppointmentResponse cancelMyAppointment(
+            Long id,
+            String email
+    ) {
+        User user = getUserByEmail(email);
+
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException(
+                        "Appointment not found with id: " + id
+                ));
+
+        if (!appointment.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException(
+                    "You cannot cancel another user's appointment"
+            );
+        }
+
+        if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
+            throw new RuntimeException(
+                    "Completed appointment cannot be cancelled"
+            );
+        }
+
+        if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
+            throw new RuntimeException(
+                    "Appointment is already cancelled"
+            );
+        }
+
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+
+        return toResponse(appointmentRepository.save(appointment));
+    }
+
+    public AppointmentResponse updateStatus(
+            Long id,
+            AppointmentStatus status
+    ) {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException(
                         "Appointment not found with id: " + id
@@ -101,6 +147,13 @@ public class AppointmentService {
         appointment.setStatus(status);
 
         return toResponse(appointmentRepository.save(appointment));
+    }
+
+    private User getUserByEmail(String email) {
+        return userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new RuntimeException(
+                        "User not found with email: " + email
+                ));
     }
 
     private AppointmentResponse toResponse(Appointment appointment) {

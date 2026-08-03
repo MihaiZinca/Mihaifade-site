@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public record AppointmentRequest(
-        @NotNull Long userId,
         @NotNull Long barberId,
         @NotNull Long serviceId,
         @NotNull LocalDate date,

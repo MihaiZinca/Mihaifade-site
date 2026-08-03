@@ -2,6 +2,7 @@ package ro.mihaifade.backend.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ro.mihaifade.backend.dto.AppointmentRequest;
 import ro.mihaifade.backend.dto.AppointmentResponse;
@@ -16,9 +17,7 @@ public class AppointmentController {
 
     private final AppointmentService appointmentService;
 
-    public AppointmentController(
-            AppointmentService appointmentService
-    ) {
+    public AppointmentController(AppointmentService appointmentService) {
         this.appointmentService = appointmentService;
     }
 
@@ -27,13 +26,32 @@ public class AppointmentController {
         return appointmentService.getAllAppointments();
     }
 
+    @GetMapping("/me")
+    public List<AppointmentResponse> getMyAppointments(Authentication authentication) {
+        return appointmentService.getMyAppointments(authentication.getName());
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public AppointmentResponse createAppointment(
-            @Valid
-            @RequestBody AppointmentRequest request
+            @Valid @RequestBody AppointmentRequest request,
+            Authentication authentication
     ) {
-        return appointmentService.createAppointment(request);
+        return appointmentService.createAppointment(
+                request,
+                authentication.getName()
+        );
+    }
+
+    @PutMapping("/{id}/cancel")
+    public AppointmentResponse cancelMyAppointment(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        return appointmentService.cancelMyAppointment(
+                id,
+                authentication.getName()
+        );
     }
 
     @PutMapping("/{id}/status")
@@ -41,9 +59,6 @@ public class AppointmentController {
             @PathVariable Long id,
             @RequestParam AppointmentStatus status
     ) {
-        return appointmentService.updateStatus(
-                id,
-                status
-        );
+        return appointmentService.updateStatus(id, status);
     }
 }

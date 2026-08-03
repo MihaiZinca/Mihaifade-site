@@ -41,6 +41,15 @@ public class SecurityConfig {
                         .requestMatchers("/api/services/**").permitAll()
                         .requestMatchers("/api/barbers/**").permitAll()
                         .requestMatchers("/api/availability/**").permitAll()
+
+                        .requestMatchers("/api/appointments/me").hasRole("CLIENT")
+                        .requestMatchers("/api/appointments/*/cancel").hasRole("CLIENT")
+
+                        .requestMatchers("/api/appointments/*/status").hasRole("OWNER")
+                        .requestMatchers("/api/appointments").authenticated()
+
+                        .requestMatchers("/api/users/**").hasRole("OWNER")
+
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

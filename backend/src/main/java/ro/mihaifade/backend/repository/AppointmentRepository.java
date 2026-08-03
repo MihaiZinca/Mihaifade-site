@@ -9,14 +9,13 @@ import java.util.List;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
 
-    List<Appointment> findByBarberIdAndDate(
-            Long barberId,
-            LocalDate date
-    );
+    List<Appointment> findByBarberIdAndDate(Long barberId, LocalDate date);
 
     List<Appointment> findByBarberIdAndDateAndStatusNot(
             Long barberId,
             LocalDate date,
             AppointmentStatus status
     );
+
+    List<Appointment> findByUserIdOrderByDateDescStartTimeDesc(Long userId);
 }
