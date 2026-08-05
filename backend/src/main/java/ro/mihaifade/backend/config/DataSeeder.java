@@ -1,12 +1,13 @@
 package ro.mihaifade.backend.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import ro.mihaifade.backend.entity.Barber;
-import ro.mihaifade.backend.entity.Service;
-import ro.mihaifade.backend.entity.WorkingHours;
+import ro.mihaifade.backend.entity.*;
 import ro.mihaifade.backend.repository.BarberRepository;
 import ro.mihaifade.backend.repository.ServiceRepository;
+import ro.mihaifade.backend.repository.UserRepository;
 import ro.mihaifade.backend.repository.WorkingHoursRepository;
 
 import java.math.BigDecimal;
@@ -21,15 +22,33 @@ public class DataSeeder implements CommandLineRunner {
     private final ServiceRepository serviceRepository;
     private final BarberRepository barberRepository;
     private final WorkingHoursRepository workingHoursRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Value("${app.owner.email}")
+    private String ownerEmail;
+
+    @Value("${app.owner.password}")
+    private String ownerPassword;
+
+    @Value("${app.owner.first-name}")
+    private String ownerFirstName;
+
+    @Value("${app.owner.last-name}")
+    private String ownerLastName;
 
     public DataSeeder(
             ServiceRepository serviceRepository,
             BarberRepository barberRepository,
-            WorkingHoursRepository workingHoursRepository
+            WorkingHoursRepository workingHoursRepository,
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder
     ) {
         this.serviceRepository = serviceRepository;
         this.barberRepository = barberRepository;
         this.workingHoursRepository = workingHoursRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -40,6 +59,7 @@ public class DataSeeder implements CommandLineRunner {
 
         assignServicesToMihai(mihai);
         seedWorkingHours(mihai);
+        seedOwner();
     }
 
     private void seedServices() {
@@ -180,5 +200,24 @@ public class DataSeeder implements CommandLineRunner {
 
             workingHoursRepository.save(workingHours);
         }
+    }
+
+    private void seedOwner() {
+        if (userRepository.existsByEmailIgnoreCase(ownerEmail)) {
+            return;
+        }
+
+        User owner = new User();
+
+        owner.setFirstName(ownerFirstName);
+        owner.setLastName(ownerLastName);
+        owner.setEmail(ownerEmail);
+        owner.setPhone(null);
+        owner.setPasswordHash(passwordEncoder.encode(ownerPassword));
+        owner.setAuthProvider(AuthProvider.LOCAL);
+        owner.setRole(Role.OWNER);
+        owner.setActive(true);
+
+        userRepository.save(owner);
     }
 }
