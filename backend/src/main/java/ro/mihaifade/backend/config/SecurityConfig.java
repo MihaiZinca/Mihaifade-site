@@ -6,6 +6,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -13,8 +14,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import ro.mihaifade.backend.security.CustomUserDetailsService;
 import ro.mihaifade.backend.security.JwtAuthenticationFilter;
+
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
@@ -33,11 +39,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                         .requestMatchers("/api/auth/**").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/services/**").permitAll()
@@ -52,18 +61,44 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/barbers/**").hasRole("OWNER")
                         .requestMatchers(HttpMethod.DELETE, "/api/barbers/**").hasRole("OWNER")
 
-                        .requestMatchers(HttpMethod.PUT, "/api/barbers/*/working-hours/**").hasRole("OWNER")
-                        .requestMatchers(HttpMethod.PUT, "/api/barbers/*/time-off/**").hasRole("OWNER")
-                        .requestMatchers(HttpMethod.DELETE, "/api/barbers/*/time-off/**").hasRole("OWNER")
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/barbers/*/working-hours/**"
+                        ).hasRole("OWNER")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/barbers/*/time-off/**"
+                        ).hasRole("OWNER")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/barbers/*/time-off/**"
+                        ).hasRole("OWNER")
 
                         .requestMatchers("/api/users/**").hasRole("OWNER")
 
-                        .requestMatchers(HttpMethod.GET, "/api/appointments").hasRole("OWNER")
-                        .requestMatchers("/api/appointments/*/status").hasRole("OWNER")
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/appointments"
+                        ).hasRole("OWNER")
 
-                        .requestMatchers("/api/appointments/me").hasRole("CLIENT")
-                        .requestMatchers("/api/appointments/*/cancel").hasRole("CLIENT")
-                        .requestMatchers(HttpMethod.POST, "/api/appointments").hasRole("CLIENT")
+                        .requestMatchers(
+                                "/api/appointments/*/status"
+                        ).hasRole("OWNER")
+
+                        .requestMatchers(
+                                "/api/appointments/me"
+                        ).hasRole("CLIENT")
+
+                        .requestMatchers(
+                                "/api/appointments/*/cancel"
+                        ).hasRole("CLIENT")
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/appointments"
+                        ).hasRole("CLIENT")
 
                         .anyRequest().authenticated()
                 )
@@ -74,6 +109,52 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(
+                List.of(
+                        "http://localhost:5173"
+                )
+        );
+
+        configuration.setAllowedMethods(
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "OPTIONS"
+                )
+        );
+
+        configuration.setAllowedHeaders(
+                List.of(
+                        "Authorization",
+                        "Content-Type"
+                )
+        );
+
+        configuration.setExposedHeaders(
+                List.of(
+                        "Authorization"
+                )
+        );
+
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration(
+                "/api/**",
+                configuration
+        );
+
+        return source;
     }
 
     @Bean

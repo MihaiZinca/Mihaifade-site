@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ro.mihaifade.backend.dto.AuthResponse;
+import ro.mihaifade.backend.dto.GoogleLoginRequest;
 import ro.mihaifade.backend.dto.LoginRequest;
 import ro.mihaifade.backend.dto.RegisterRequest;
 import ro.mihaifade.backend.service.AuthService;
@@ -27,5 +28,10 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
+    }
+
+    @PostMapping("/google")
+    public AuthResponse googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
+        return authService.googleLogin(request);
     }
 }
