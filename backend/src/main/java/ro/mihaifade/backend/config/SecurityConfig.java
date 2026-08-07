@@ -45,21 +45,59 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(
+                                HttpMethod.OPTIONS,
+                                "/**"
+                        ).permitAll()
 
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/**"
+                        ).permitAll()
 
-                        .requestMatchers(HttpMethod.GET, "/api/services/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/barbers/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/availability/**").permitAll()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/services/**"
+                        ).permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/services/**").hasRole("OWNER")
-                        .requestMatchers(HttpMethod.PUT, "/api/services/**").hasRole("OWNER")
-                        .requestMatchers(HttpMethod.DELETE, "/api/services/**").hasRole("OWNER")
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/barbers/**"
+                        ).permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/barbers/**").hasRole("OWNER")
-                        .requestMatchers(HttpMethod.PUT, "/api/barbers/**").hasRole("OWNER")
-                        .requestMatchers(HttpMethod.DELETE, "/api/barbers/**").hasRole("OWNER")
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/availability/**"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/services/**"
+                        ).hasRole("OWNER")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/services/**"
+                        ).hasRole("OWNER")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/services/**"
+                        ).hasRole("OWNER")
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/barbers/**"
+                        ).hasRole("OWNER")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/barbers/**"
+                        ).hasRole("OWNER")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/barbers/**"
+                        ).hasRole("OWNER")
 
                         .requestMatchers(
                                 HttpMethod.PUT,
@@ -76,7 +114,14 @@ public class SecurityConfig {
                                 "/api/barbers/*/time-off/**"
                         ).hasRole("OWNER")
 
-                        .requestMatchers("/api/users/**").hasRole("OWNER")
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/users/me/profile"
+                        ).hasRole("CLIENT")
+
+                        .requestMatchers(
+                                "/api/users/**"
+                        ).hasRole("OWNER")
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -100,7 +145,8 @@ public class SecurityConfig {
                                 "/api/appointments"
                         ).hasRole("CLIENT")
 
-                        .anyRequest().authenticated()
+                        .anyRequest()
+                        .authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(

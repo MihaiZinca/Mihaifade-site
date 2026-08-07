@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
 import type {
     AppointmentResponse,
@@ -10,6 +10,8 @@ import type {
 const BARBER_ID = 1;
 
 function BookingPage() {
+
+    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
     const [services, setServices] = useState<BarbershopService[]>([]);
@@ -193,9 +195,19 @@ function BookingPage() {
     return (
         <main className="booking-page">
             <header className="booking-header">
+                <div className="booking-header__left">
+                    <button
+                        type="button"
+                        className="booking-header__back"
+                        onClick={() => navigate(-1)}
+                     >           
+                        Înapoi
+                    </button>
+
                 <Link to="/" className="booking-header__brand">
-                    MIHAIFADE
+                MIHAIFADE
                 </Link>
+                </div>
 
                 <div className="booking-header__steps">
                     <span className={selectedServiceId ? "active" : ""}>

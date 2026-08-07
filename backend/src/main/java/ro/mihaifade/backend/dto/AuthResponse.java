@@ -8,6 +8,7 @@ public record AuthResponse(
         String firstName,
         String lastName,
         String email,
-        Role role
+        Role role,
+        boolean requiresProfileCompletion
 ) {
 }

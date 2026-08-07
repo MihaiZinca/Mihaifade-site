@@ -1,6 +1,7 @@
 package ro.mihaifade.backend.service;
 
 import org.springframework.stereotype.Service;
+import ro.mihaifade.backend.dto.CompleteProfileRequest;
 import ro.mihaifade.backend.dto.UserRequest;
 import ro.mihaifade.backend.dto.UserResponse;
 import ro.mihaifade.backend.entity.Role;
@@ -55,6 +56,34 @@ public class UserService {
         user.setActive(true);
 
         return toResponse(userRepository.save(user));
+    }
+
+    public UserResponse completeMyProfile(
+            String email,
+            CompleteProfileRequest request
+    ) {
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new RuntimeException(
+                        "User not found"
+                ));
+
+        String phone = request.phone().trim();
+
+        userRepository.findByPhone(phone)
+                .filter(existingUser ->
+                        !existingUser.getId().equals(user.getId())
+                )
+                .ifPresent(existingUser -> {
+                    throw new RuntimeException(
+                            "Phone already exists"
+                    );
+                });
+
+        user.setPhone(phone);
+
+        User savedUser = userRepository.save(user);
+
+        return toResponse(savedUser);
     }
 
     private UserResponse toResponse(User user) {

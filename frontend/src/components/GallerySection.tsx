@@ -45,9 +45,9 @@ function GallerySection() {
                     </p>
 
                     <h2>
-                        Rezultatele
+                        Rezultatele{" "}
                         <span>
-                            vorbesc singure.
+                             vorbesc singure.
                         </span>
                     </h2>
                 </div>

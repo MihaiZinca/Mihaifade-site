@@ -2,7 +2,9 @@ package ro.mihaifade.backend.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import ro.mihaifade.backend.dto.CompleteProfileRequest;
 import ro.mihaifade.backend.dto.UserRequest;
 import ro.mihaifade.backend.dto.UserResponse;
 import ro.mihaifade.backend.service.UserService;
@@ -31,7 +33,20 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse createUser(@Valid @RequestBody UserRequest request) {
+    public UserResponse createUser(
+            @Valid @RequestBody UserRequest request
+    ) {
         return userService.createUser(request);
+    }
+
+    @PutMapping("/me/profile")
+    public UserResponse completeMyProfile(
+            @Valid @RequestBody CompleteProfileRequest request,
+            Authentication authentication
+    ) {
+        return userService.completeMyProfile(
+                authentication.getName(),
+                request
+        );
     }
 }

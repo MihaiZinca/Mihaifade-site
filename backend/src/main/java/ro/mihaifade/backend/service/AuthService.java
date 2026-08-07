@@ -44,9 +44,7 @@ public class AuthService {
             throw new RuntimeException("Email already exists");
         }
 
-        if (request.phone() != null
-                && !request.phone().isBlank()
-                && userRepository.existsByPhone(request.phone())) {
+        if (userRepository.existsByPhone(request.phone())) {
             throw new RuntimeException("Phone already exists");
         }
 
@@ -77,7 +75,13 @@ public class AuthService {
         );
 
         User user = userRepository.findByEmailIgnoreCase(request.email())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() ->
+                        new RuntimeException("User not found")
+                );
+
+        if (!user.getActive()) {
+            throw new RuntimeException("User account is disabled");
+        }
 
         String token = jwtService.generateToken(user.getEmail());
 
@@ -85,20 +89,25 @@ public class AuthService {
     }
 
     public AuthResponse googleLogin(GoogleLoginRequest request) {
-        GoogleIdToken.Payload payload = googleTokenVerifier.verify(request.credential());
+        GoogleIdToken.Payload payload =
+                googleTokenVerifier.verify(request.credential());
 
         String email = payload.getEmail();
         String firstName = (String) payload.get("given_name");
         String lastName = (String) payload.get("family_name");
 
         if (email == null || email.isBlank()) {
-            throw new RuntimeException("Google account has no email");
+            throw new RuntimeException(
+                    "Google account has no email"
+            );
         }
 
         User user = userRepository.findByEmailIgnoreCase(email)
                 .map(existingUser -> {
                     if (!existingUser.getActive()) {
-                        throw new RuntimeException("User account is disabled");
+                        throw new RuntimeException(
+                                "User account is disabled"
+                        );
                     }
 
                     return existingUser;
@@ -134,13 +143,21 @@ public class AuthService {
     }
 
     private AuthResponse toResponse(User user, String token) {
+        boolean requiresProfileCompletion =
+                user.getRole() == Role.CLIENT
+                        && (
+                        user.getPhone() == null
+                                || user.getPhone().isBlank()
+                );
+
         return new AuthResponse(
                 token,
                 user.getId(),
                 user.getFirstName(),
                 user.getLastName(),
                 user.getEmail(),
-                user.getRole()
+                user.getRole(),
+                requiresProfileCompletion
         );
     }
 }

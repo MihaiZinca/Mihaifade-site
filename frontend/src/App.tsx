@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AccountPage from "./pages/AccountPage";
 import BookingPage from "./pages/BookingPage";
+import CompleteProfilePage from "./pages/CompleteProfilePage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -15,8 +17,18 @@ function App() {
 
                 <Route element={<ProtectedRoute />}>
                     <Route
+                        path="/complete-profile"
+                        element={<CompleteProfilePage />}
+                    />
+
+                    <Route
                         path="/programare"
                         element={<BookingPage />}
+                    />
+
+                    <Route
+                        path="/cont"
+                        element={<AccountPage />}
                     />
                 </Route>
             </Routes>

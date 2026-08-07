@@ -10,6 +10,7 @@ interface GoogleAuthResponse {
     lastName: string;
     email: string;
     role: "CLIENT" | "OWNER";
+    requiresProfileCompletion: boolean;
 }
 
 function GoogleLoginButton() {
@@ -34,6 +35,14 @@ function GoogleLoginButton() {
 
             if (response.data.role === "OWNER") {
                 navigate("/admin");
+                return;
+            }
+
+            if (response.data.requiresProfileCompletion) {
+                navigate("/complete-profile", {
+                    replace: true,
+                });
+
                 return;
             }
 
