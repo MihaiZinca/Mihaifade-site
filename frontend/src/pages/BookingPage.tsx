@@ -199,7 +199,7 @@ function BookingPage() {
                     <button
                         type="button"
                         className="booking-header__back"
-                        onClick={() => navigate(-1)}
+                        onClick={() => navigate("/")}
                      >           
                         Înapoi
                     </button>

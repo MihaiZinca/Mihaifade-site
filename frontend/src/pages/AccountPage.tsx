@@ -11,6 +11,7 @@ function AccountPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [cancellingId, setCancellingId] = useState<number | null>(null);
+    const [deletingAccount, setDeletingAccount] = useState(false);
 
     const loadAppointments = async () => {
         setLoading(true);
@@ -89,14 +90,44 @@ function AccountPage() {
     };
 
     const handleBack = () => {
-        navigate(-1);
+        navigate("/");
     };
 
     const handleLogout = () => {
         logout();
+
         navigate("/", {
             replace: true,
         });
+    };
+
+    const handleDeleteAccount = async () => {
+        const confirmed = window.confirm(
+            "Sigur vrei să îți ștergi contul? Nu vei mai putea folosi acest cont pentru autentificare."
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        setDeletingAccount(true);
+        setError("");
+
+        try {
+            await api.delete("/users/me");
+
+            logout();
+
+            navigate("/", {
+                replace: true,
+            });
+        } catch {
+            setError(
+                "Contul nu a putut fi șters. Încearcă din nou."
+            );
+        } finally {
+            setDeletingAccount(false);
+        }
     };
 
     return (
@@ -313,6 +344,33 @@ function AccountPage() {
                                     ))}
                                 </div>
                             )}
+                        </section>
+
+                        <section className="account-danger">
+                            <div>
+                                <p className="section-eyebrow">
+                                    CONT
+                                </p>
+
+                                <h2>
+                                    Șterge contul
+                                </h2>
+
+                                <p>
+                                    Contul va fi dezactivat și nu te vei
+                                    mai putea autentifica folosind acest cont.
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={handleDeleteAccount}
+                                disabled={deletingAccount}
+                            >
+                                {deletingAccount
+                                    ? "Se șterge..."
+                                    : "Șterge contul"}
+                            </button>
                         </section>
                     </>
                 )}

@@ -2076,3 +2076,67 @@ img {
         padding: 9px 13px;
     }
 }
+.account-danger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    margin-top: 70px;
+    padding: 32px;
+    border: 1px solid rgba(220, 80, 80, 0.2);
+    background: rgba(120, 20, 20, 0.04);
+}
+
+.account-danger h2 {
+    margin: 6px 0 10px;
+    color: #ffffff;
+    font-size: 24px;
+}
+
+.account-danger > div > p:last-child {
+    max-width: 560px;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.account-danger button {
+    flex-shrink: 0;
+    padding: 13px 20px;
+    border: 1px solid rgba(220, 80, 80, 0.5);
+    background: transparent;
+    color: #e58b8b;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.account-danger button:hover:not(:disabled) {
+    border-color: rgba(220, 80, 80, 0.9);
+    background: rgba(220, 80, 80, 0.1);
+    color: #ffaaaa;
+}
+
+.account-danger button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+@media (max-width: 700px) {
+    .account-danger {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 24px;
+        padding: 24px;
+    }
+
+    .account-danger button {
+        width: 100%;
+    }
+}

@@ -86,6 +86,17 @@ public class UserService {
         return toResponse(savedUser);
     }
 
+    public void deactivateMyAccount(String email) {
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new RuntimeException(
+                        "User not found"
+                ));
+
+        user.setActive(false);
+
+        userRepository.save(user);
+    }
+
     private UserResponse toResponse(User user) {
         return new UserResponse(
                 user.getId(),

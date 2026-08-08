@@ -120,6 +120,11 @@ public class SecurityConfig {
                         ).hasRole("CLIENT")
 
                         .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/users/me"
+                        ).hasRole("CLIENT")
+
+                        .requestMatchers(
                                 "/api/users/**"
                         ).hasRole("OWNER")
 
