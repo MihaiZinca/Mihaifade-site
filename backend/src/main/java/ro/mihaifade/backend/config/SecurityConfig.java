@@ -150,6 +150,21 @@ public class SecurityConfig {
                                 "/api/appointments"
                         ).hasRole("CLIENT")
 
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/rewards/me"
+                        ).hasRole("CLIENT")
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/rewards/spin"
+                        ).hasRole("CLIENT")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/rewards/users/*/use"
+                        ).hasRole("OWNER")
+
                         .anyRequest()
                         .authenticated()
                 )

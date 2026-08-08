@@ -46,7 +46,7 @@ function CompleteProfilePage() {
                 }
             );
 
-            navigate("/programare", {
+            navigate("/welcome-reward", {
                 replace: true,
             });
         } catch {

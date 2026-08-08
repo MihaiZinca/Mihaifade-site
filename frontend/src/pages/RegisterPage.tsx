@@ -11,6 +11,7 @@ interface RegisterResponse {
     lastName: string;
     email: string;
     role: "CLIENT" | "OWNER";
+    requiresProfileCompletion: boolean;
 }
 
 function RegisterPage() {
@@ -30,6 +31,16 @@ function RegisterPage() {
         event.preventDefault();
 
         setError("");
+
+        const normalizedPhone = phone.replace(/\s/g, "");
+
+        if (!/^07\d{8}$/.test(normalizedPhone)) {
+            setError(
+                "Introdu un număr valid de telefon, de forma 07xxxxxxxx."
+            );
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -39,7 +50,7 @@ function RegisterPage() {
                     firstName,
                     lastName,
                     email,
-                    phone: phone.trim() === "" ? null : phone,
+                    phone: normalizedPhone,
                     password,
                 }
             );
@@ -51,7 +62,9 @@ function RegisterPage() {
                 return;
             }
 
-            navigate("/programare");
+            navigate("/welcome-reward", {
+                replace: true,
+            });
         } catch {
             setError(
                 "Contul nu a putut fi creat. Verifică datele introduse."
@@ -149,8 +162,11 @@ function RegisterPage() {
                             onChange={(event) =>
                                 setPhone(event.target.value)
                             }
-                            placeholder="07..."
+                            placeholder="07xxxxxxxx"
                             autoComplete="tel"
+                            inputMode="tel"
+                            maxLength={10}
+                            required
                         />
                     </label>
 

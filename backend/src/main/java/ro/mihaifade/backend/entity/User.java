@@ -52,5 +52,14 @@ public class User {
     private Boolean active = true;
 
     @Column(nullable = false)
+    private Boolean welcomeSpinUsed = false;
+
+    @Column(nullable = false)
+    private Boolean welcomeRewardUsed = false;
+
+    @Enumerated(EnumType.STRING)
+    private WelcomeRewardType welcomeReward;
+
+    @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }

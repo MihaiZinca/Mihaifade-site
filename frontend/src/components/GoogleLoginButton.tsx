@@ -13,6 +13,12 @@ interface GoogleAuthResponse {
     requiresProfileCompletion: boolean;
 }
 
+interface WelcomeRewardStatusResponse {
+    spinAvailable: boolean;
+    reward: string | null;
+    label: string | null;
+}
+
 function GoogleLoginButton() {
     const navigate = useNavigate();
 
@@ -34,7 +40,10 @@ function GoogleLoginButton() {
             saveToken(response.data.token);
 
             if (response.data.role === "OWNER") {
-                navigate("/admin");
+                navigate("/admin", {
+                    replace: true,
+                });
+
                 return;
             }
 
@@ -46,7 +55,22 @@ function GoogleLoginButton() {
                 return;
             }
 
-            navigate("/programare");
+            const rewardResponse =
+                await api.get<WelcomeRewardStatusResponse>(
+                    "/rewards/me"
+                );
+
+            if (rewardResponse.data.spinAvailable) {
+                navigate("/welcome-reward", {
+                    replace: true,
+                });
+
+                return;
+            }
+
+            navigate("/programare", {
+                replace: true,
+            });
         } catch {
             alert("Autentificarea cu Google a eșuat.");
         }

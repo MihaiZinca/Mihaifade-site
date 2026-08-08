@@ -6,6 +6,7 @@ import CompleteProfilePage from "./pages/CompleteProfilePage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import WelcomeRewardPage from "./pages/WelcomeRewardPage";
 
 function App() {
     return (
@@ -19,6 +20,10 @@ function App() {
                     <Route
                         path="/complete-profile"
                         element={<CompleteProfilePage />}
+                    />
+
+                    <Route path="/welcome-reward"
+                    element={<WelcomeRewardPage />}
                     />
 
                     <Route
