@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import GoogleLoginButton from "../components/GoogleLoginButton";
 import api from "../services/api";
-import { saveToken } from "../services/auth";
+import { saveAuth } from "../services/auth";
 
 interface RegisterResponse {
     token: string;
@@ -55,7 +55,7 @@ function RegisterPage() {
                 }
             );
 
-            saveToken(response.data.token);
+            saveAuth(response.data.token,response.data.role);
 
             if (response.data.role === "OWNER") {
                 navigate("/admin");

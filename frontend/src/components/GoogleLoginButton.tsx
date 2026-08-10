@@ -1,7 +1,7 @@
 import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
-import { saveToken } from "../services/auth";
+import { saveAuth } from "../services/auth";
 
 interface GoogleAuthResponse {
     token: string;
@@ -37,7 +37,7 @@ function GoogleLoginButton() {
                 }
             );
 
-            saveToken(response.data.token);
+            saveAuth(response.data.token,response.data.role);
 
             if (response.data.role === "OWNER") {
                 navigate("/admin", {

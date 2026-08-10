@@ -1,21 +1,51 @@
 export const TOKEN_KEY = "mihaifade_token";
+export const ROLE_KEY = "mihaifade_role";
 
-export function getToken(): string | null {
+export type UserRole = "CLIENT" | "OWNER";
+
+export function getToken() {
     return localStorage.getItem(TOKEN_KEY);
 }
 
-export function saveToken(token: string): void {
+export function getRole(): UserRole | null {
+    const role = localStorage.getItem(ROLE_KEY);
+
+    if (role === "CLIENT" || role === "OWNER") {
+        return role;
+    }
+
+    return null;
+}
+
+export function isAuthenticated() {
+    return Boolean(getToken());
+}
+
+export function saveToken(token: string) {
     localStorage.setItem(TOKEN_KEY, token);
 }
 
-export function removeToken(): void {
+export function removeToken() {
     localStorage.removeItem(TOKEN_KEY);
 }
 
-export function isAuthenticated(): boolean {
-    return getToken() !== null;
+export function saveRole(role: UserRole) {
+    localStorage.setItem(ROLE_KEY, role);
 }
 
-export function logout(): void {
+export function removeRole() {
+    localStorage.removeItem(ROLE_KEY);
+}
+
+export function saveAuth(
+    token: string,
+    role: UserRole
+) {
+    saveToken(token);
+    saveRole(role);
+}
+
+export function logout() {
     removeToken();
+    removeRole();
 }

@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import OwnerRoute from "./components/OwnerRoute";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountPage from "./pages/AccountPage";
+import AdminPage from "./pages/AdminPage";
 import BookingPage from "./pages/BookingPage";
 import CompleteProfilePage from "./pages/CompleteProfilePage";
 import HomePage from "./pages/HomePage";
@@ -12,9 +14,20 @@ function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
+                <Route
+                    path="/"
+                    element={<HomePage />}
+                />
+
+                <Route
+                    path="/login"
+                    element={<LoginPage />}
+                />
+
+                <Route
+                    path="/register"
+                    element={<RegisterPage />}
+                />
 
                 <Route element={<ProtectedRoute />}>
                     <Route
@@ -22,8 +35,9 @@ function App() {
                         element={<CompleteProfilePage />}
                     />
 
-                    <Route path="/welcome-reward"
-                    element={<WelcomeRewardPage />}
+                    <Route
+                        path="/welcome-reward"
+                        element={<WelcomeRewardPage />}
                     />
 
                     <Route
@@ -34,6 +48,13 @@ function App() {
                     <Route
                         path="/cont"
                         element={<AccountPage />}
+                    />
+                </Route>
+
+                <Route element={<OwnerRoute />}>
+                    <Route
+                        path="/admin"
+                        element={<AdminPage />}
                     />
                 </Route>
             </Routes>

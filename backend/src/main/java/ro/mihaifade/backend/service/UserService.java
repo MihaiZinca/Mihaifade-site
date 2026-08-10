@@ -106,6 +106,9 @@ public class UserService {
                 user.getPhone(),
                 user.getRole(),
                 user.getActive(),
+                user.getWelcomeSpinUsed(),
+                user.getWelcomeReward(),
+                user.getWelcomeRewardUsed(),
                 user.getCreatedAt()
         );
     }

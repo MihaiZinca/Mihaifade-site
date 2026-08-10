@@ -95,7 +95,7 @@ public class AppointmentService {
         appointment.setDate(request.date());
         appointment.setStartTime(request.startTime());
         appointment.setEndTime(endTime);
-        appointment.setStatus(AppointmentStatus.PENDING);
+        appointment.setStatus(AppointmentStatus.CONFIRMED);
         appointment.setNotes(request.notes());
 
         return toResponse(appointmentRepository.save(appointment));

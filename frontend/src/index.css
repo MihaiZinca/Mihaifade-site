@@ -2431,3 +2431,896 @@ img {
         font-size: 28px;
     }
 }
+
+/* ADMIN */
+
+.admin-page {
+    min-height: 100vh;
+    background:
+        radial-gradient(
+            circle at 80% 0%,
+            rgba(255, 255, 255, 0.035),
+            transparent 30%
+        ),
+        #090909;
+    color: #f5f5f5;
+}
+
+.admin-header {
+    min-height: 76px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 48px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(9, 9, 9, 0.95);
+}
+
+.admin-header__identity {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.admin-header__identity > span {
+    color: #d9bc7d;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 3px;
+}
+
+.admin-header__brand {
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    text-decoration: none;
+}
+
+.admin-header__right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.admin-header__right span {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 3px;
+}
+
+.admin-header__right a {
+    padding: 10px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.admin-header__right a:hover {
+    background: #ffffff;
+    color: #090909;
+}
+
+.admin-content {
+    width: min(1400px, calc(100% - 64px));
+    margin: 0 auto;
+    padding: 70px 0 100px;
+}
+
+.admin-intro {
+    max-width: 720px;
+    margin-bottom: 46px;
+}
+
+.admin-intro h1 {
+    margin: 8px 0 18px;
+    font-size: clamp(48px, 6vw, 82px);
+    line-height: 0.95;
+    letter-spacing: -4px;
+}
+
+.admin-intro > p:last-child {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.admin-error {
+    margin: 0 0 24px;
+    padding: 14px 18px;
+    border: 1px solid rgba(220, 90, 90, 0.3);
+    background: rgba(220, 90, 90, 0.08);
+    color: #e89a9a;
+    font-size: 13px;
+}
+
+.admin-message {
+    padding: 50px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 14px;
+}
+
+.admin-calendar-toolbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+.admin-calendar-toolbar__navigation {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-calendar-toolbar__navigation > strong {
+    min-width: 190px;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 18px;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.admin-calendar-toolbar__navigation button {
+    min-width: 42px;
+    min-height: 42px;
+    padding: 0 14px;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    background: transparent;
+    color: #ffffff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.admin-calendar-toolbar__navigation button:hover {
+    border-color: rgba(217, 188, 125, 0.55);
+    background: rgba(217, 188, 125, 0.06);
+}
+
+.admin-calendar-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+}
+
+.admin-calendar-layout--details {
+    grid-template-columns: minmax(0, 1fr) 320px;
+}
+
+.admin-calendar-scroll {
+    overflow-x: auto;
+}
+
+.admin-calendar {
+    display: grid;
+    grid-template-columns: 72px repeat(7, minmax(150px, 1fr));
+    min-width: 1050px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.admin-calendar__corner,
+.admin-calendar__day-header {
+    min-height: 76px;
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.admin-calendar__day-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 16px;
+}
+
+.admin-calendar__day-header span {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+}
+
+.admin-calendar__day-header strong {
+    margin-top: 4px;
+    font-size: 24px;
+}
+
+.admin-calendar__hours {
+    position: relative;
+}
+
+.admin-calendar__hour {
+    height: 64px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 8px;
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.32);
+    font-size: 10px;
+}
+
+.admin-calendar__day {
+    position: relative;
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.admin-calendar__grid-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.admin-calendar-event {
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: auto;
+    padding: 8px 9px;
+    overflow: hidden;
+    appearance: none;
+    border: 1px solid rgba(240, 224, 187, 0.35);
+    background: rgba(240, 224, 187, 0.12);
+    color: #ffffff;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.admin-calendar-event:hover {
+    z-index: 5;
+    border-color: rgba(224, 195, 132, 0.8);
+    background: rgba(224, 195, 132, 0.18);
+    transform: translateY(-1px);
+}
+
+.admin-calendar-event > span {
+    color: #e2c88d;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.admin-calendar-event > strong {
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.admin-calendar-event > small {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 9px;
+    line-height: 1.2;
+}
+
+.admin-calendar-event--confirmed {
+    border-left: 3px solid #dfc17f;
+}
+
+.admin-calendar-event--completed {
+    border-left: 3px solid rgba(130, 190, 145, 0.8);
+    background: rgba(100, 160, 120, 0.08);
+    opacity: 0.65;
+}
+
+.admin-calendar-event--cancelled {
+    display: none;
+}
+
+.admin-appointment-panel {
+    position: sticky;
+    top: 18px;
+    min-height: 620px;
+    padding: 26px;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(20, 20, 19, 0.98),
+            rgba(11, 11, 11, 0.98)
+        );
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+}
+
+.admin-appointment-panel__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-appointment-panel__top h2 {
+    margin: 5px 0 0;
+    font-size: 25px;
+    letter-spacing: -1px;
+}
+
+.admin-appointment-panel__close {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.55);
+    cursor: pointer;
+    font-size: 27px;
+    font-weight: 300;
+    line-height: 1;
+}
+
+.admin-appointment-panel__close:hover {
+    color: #ffffff;
+}
+
+.admin-appointment-panel__status {
+    display: inline-flex;
+    margin-top: 24px;
+    padding: 7px 10px;
+    background: rgba(217, 188, 125, 0.1);
+    color: #dfc17f;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1.4px;
+}
+
+.admin-appointment-panel__time {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-top: 18px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-appointment-panel__time strong {
+    font-size: 27px;
+    letter-spacing: -1px;
+}
+
+.admin-appointment-panel__time span {
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 12px;
+    text-transform: capitalize;
+}
+
+.admin-appointment-panel__info {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-appointment-panel__info > div {
+    display: grid;
+    grid-template-columns: 78px 1fr;
+    gap: 12px;
+    padding: 13px 0;
+}
+
+.admin-appointment-panel__info span {
+    color: rgba(255, 255, 255, 0.36);
+    font-size: 10px;
+}
+
+.admin-appointment-panel__info strong {
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.admin-reward {
+    padding: 24px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-reward__loading,
+.admin-reward__empty {
+    margin: 12px 0 0;
+    color: rgba(255, 255, 255, 0.42);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.admin-reward__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.admin-reward__header > strong {
+    color: #f0d69e;
+    font-size: 21px;
+    letter-spacing: -0.5px;
+}
+
+.admin-reward__status {
+    padding: 6px 8px;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+}
+
+.admin-reward__status--available {
+    border: 1px solid rgba(115, 190, 135, 0.3);
+    background: rgba(115, 190, 135, 0.08);
+    color: #94d2a4;
+}
+
+.admin-reward__status--used {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.38);
+}
+
+.admin-reward__message {
+    margin: 10px 0 0;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.admin-reward__use {
+    width: 100%;
+    min-height: 42px;
+    margin-top: 16px;
+    padding: 0 14px;
+    border: 1px solid rgba(217, 188, 125, 0.45);
+    background: rgba(217, 188, 125, 0.06);
+    color: #dfc17f;
+    cursor: pointer;
+    font: inherit;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.admin-reward__use:hover:not(:disabled) {
+    border-color: #dfc17f;
+    background: #dfc17f;
+    color: #111111;
+}
+
+.admin-reward__use:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.admin-appointment-panel__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-top: 24px;
+}
+
+.admin-appointment-panel__actions button {
+    min-height: 46px;
+    padding: 0 18px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.admin-appointment-panel__complete {
+    border: 1px solid #dfc17f;
+    background: #dfc17f;
+    color: #111111;
+}
+
+.admin-appointment-panel__complete:hover:not(:disabled) {
+    background: #efd89f;
+}
+
+.admin-appointment-panel__cancel {
+    border: 1px solid rgba(220, 90, 90, 0.4);
+    background: transparent;
+    color: #dc9999;
+}
+
+.admin-appointment-panel__cancel:hover:not(:disabled) {
+    border-color: rgba(220, 90, 90, 0.8);
+    background: rgba(220, 90, 90, 0.08);
+}
+
+.admin-appointment-panel__actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+}
+
+.admin-appointment-panel__id {
+    margin: 22px 0 0;
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 9px;
+}
+
+@media (max-width: 1180px) {
+    .admin-calendar-layout--details {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-appointment-panel {
+        position: static;
+        min-height: auto;
+    }
+}
+
+@media (max-width: 800px) {
+    .admin-header {
+        padding: 0 20px;
+    }
+
+    .admin-content {
+        width: calc(100% - 32px);
+        padding-top: 46px;
+    }
+
+    .admin-intro h1 {
+        letter-spacing: -2px;
+    }
+
+    .admin-calendar-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 700px) {
+    .admin-header__identity > span {
+        display: none;
+    }
+
+    .admin-calendar-toolbar__navigation {
+        flex-wrap: wrap;
+    }
+
+    .admin-calendar-toolbar__navigation > strong {
+        order: -1;
+        width: 100%;
+    }
+
+    .admin-appointment-panel {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 520px) {
+    .admin-header__right span {
+        display: none;
+    }
+}
+.admin-tabs {
+    display: inline-flex;
+    margin-bottom: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.admin-tab {
+    min-width: 130px;
+    padding: 13px 20px;
+    border: 0;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.45);
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.admin-tab--active {
+    background: #e4cc98;
+    color: #111111;
+}
+
+.admin-tab:hover:not(.admin-tab--active) {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+}
+
+.admin-clients-toolbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 30px;
+    margin-bottom: 26px;
+}
+
+.admin-clients-toolbar > div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.admin-clients-toolbar > div > strong {
+    font-size: 22px;
+    letter-spacing: -0.5px;
+}
+
+.admin-clients-toolbar input {
+    width: min(420px, 100%);
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    outline: none;
+    background: rgba(255, 255, 255, 0.025);
+    color: #ffffff;
+    font: inherit;
+    font-size: 12px;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.admin-clients-toolbar input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.admin-clients-toolbar input:focus {
+    border-color: rgba(228, 204, 152, 0.65);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.admin-clients-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+}
+
+.admin-clients-layout--details {
+    grid-template-columns: minmax(0, 1fr) 340px;
+}
+
+.admin-clients-list {
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.admin-client-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns:
+        minmax(220px, 1.4fr)
+        120px
+        minmax(150px, 0.9fr)
+        minmax(120px, 0.7fr);
+    gap: 24px;
+    align-items: center;
+    padding: 22px 18px;
+    border: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: transparent;
+    color: #ffffff;
+    cursor: pointer;
+    text-align: left;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.admin-client-row:hover {
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.admin-client-row--active {
+    background: rgba(228, 204, 152, 0.07);
+    border-bottom-color: rgba(228, 204, 152, 0.32);
+}
+
+.admin-client-row__identity {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.admin-client-row__identity strong {
+    font-size: 16px;
+}
+
+.admin-client-row__identity span {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.admin-client-row__status {
+    display: flex;
+    align-items: center;
+}
+
+.admin-client-status {
+    display: inline-flex;
+    width: fit-content;
+    padding: 6px 8px;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+}
+
+.admin-client-status--active {
+    border: 1px solid rgba(115, 190, 135, 0.3);
+    background: rgba(115, 190, 135, 0.08);
+    color: #94d2a4;
+}
+
+.admin-client-status--inactive {
+    border: 1px solid rgba(220, 90, 90, 0.3);
+    background: rgba(220, 90, 90, 0.08);
+    color: #e69b9b;
+}
+
+.admin-client-row__reward,
+.admin-client-row__created {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.admin-client-row__reward > span,
+.admin-client-row__created > span {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+
+.admin-client-row__reward > strong,
+.admin-client-row__created > strong {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.admin-client-row__reward > small {
+    color: #d8bb7f;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+.admin-client-panel {
+    position: sticky;
+    top: 18px;
+    min-height: 520px;
+    padding: 26px;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(20, 20, 19, 0.98),
+            rgba(11, 11, 11, 0.98)
+        );
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+}
+
+.admin-client-panel__name {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-client-panel__name > strong {
+    font-size: 24px;
+    line-height: 1.1;
+    letter-spacing: -0.7px;
+}
+
+@media (max-width: 1150px) {
+    .admin-clients-layout--details {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-client-panel {
+        position: static;
+        min-height: auto;
+    }
+
+    .admin-client-row {
+        grid-template-columns:
+            minmax(220px, 1.4fr)
+            110px
+            minmax(140px, 1fr);
+    }
+
+    .admin-client-row__created {
+        display: none;
+    }
+}
+
+@media (max-width: 800px) {
+    .admin-clients-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-clients-toolbar input {
+        width: 100%;
+    }
+
+    .admin-client-row {
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+    }
+
+    .admin-client-row__reward {
+        grid-column: 1 / -1;
+        padding-top: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .admin-client-row__created {
+        display: none;
+    }
+}
+
+@media (max-width: 560px) {
+    .admin-tabs {
+        width: 100%;
+    }
+
+    .admin-tab {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .admin-client-row {
+        padding: 18px 12px;
+    }
+
+    .admin-client-panel {
+        padding: 20px;
+    }
+
+    .admin-client-panel__name {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
