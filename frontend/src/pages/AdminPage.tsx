@@ -4,6 +4,7 @@ import api from "../services/api";
 import type {
     AppointmentResponse,
     AppointmentStatus,
+    BarbershopService,
 } from "../types";
 
 type WelcomeRewardType =
@@ -16,7 +17,7 @@ type WelcomeRewardType =
     | "CASH_100"
     | "FREE_HAIRCUT";
 
-type AdminTab = "CALENDAR" | "CLIENTS";
+type AdminTab = "CALENDAR" | "CLIENTS" | "SERVICES";
 
 interface UserResponse {
     id: number;
@@ -75,6 +76,21 @@ function AdminPage() {
     );
     const [usingClientReward, setUsingClientReward] = useState(false);
 
+    const [services, setServices] = useState<BarbershopService[]>([]);
+    const [servicesLoading, setServicesLoading] = useState(true);
+    const [serviceSearch, setServiceSearch] = useState("");
+    const [selectedService, setSelectedService] =
+        useState<BarbershopService | null>(null);
+    const [serviceFormOpen, setServiceFormOpen] = useState(false);
+    const [serviceSaving, setServiceSaving] = useState(false);
+    const [serviceDeletingId, setServiceDeletingId] =
+        useState<number | null>(null);
+    const [serviceName, setServiceName] = useState("");
+    const [serviceDescription, setServiceDescription] = useState("");
+    const [servicePrice, setServicePrice] = useState("");
+    const [serviceDuration, setServiceDuration] = useState("");
+    const [serviceActive, setServiceActive] = useState(true);
+
     const loadAppointments = async () => {
         setLoading(true);
         setError("");
@@ -112,9 +128,26 @@ function AdminPage() {
         }
     };
 
+    const loadServices = async () => {
+        setServicesLoading(true);
+
+        try {
+            const response = await api.get<BarbershopService[]>(
+                "/services"
+            );
+
+            setServices(response.data);
+        } catch {
+            setError("Serviciile nu au putut fi încărcate.");
+        } finally {
+            setServicesLoading(false);
+        }
+    };
+
     useEffect(() => {
         loadAppointments();
         loadClients();
+        loadServices();
     }, []);
 
     const weekDays = useMemo(() => {
@@ -197,17 +230,263 @@ function AdminPage() {
         });
     }, [clients, clientSearch]);
 
+    const filteredServices = useMemo(() => {
+        const search = serviceSearch
+            .trim()
+            .toLocaleLowerCase("ro-RO");
+
+        const sorted = [...services].sort((a, b) => {
+            if (a.active !== b.active) {
+                return a.active ? -1 : 1;
+            }
+
+            return a.name.localeCompare(b.name, "ro-RO");
+        });
+
+        if (!search) {
+            return sorted;
+        }
+
+        return sorted.filter((service) =>
+            `${service.name} ${service.description ?? ""}`
+                .toLocaleLowerCase("ro-RO")
+                .includes(search)
+        );
+    }, [services, serviceSearch]);
+
+    const resetServiceForm = () => {
+        setSelectedService(null);
+        setServiceName("");
+        setServiceDescription("");
+        setServicePrice("");
+        setServiceDuration("");
+        setServiceActive(true);
+        setServiceFormOpen(false);
+    };
+
+    const handleCreateService = () => {
+        setSelectedService(null);
+        setServiceName("");
+        setServiceDescription("");
+        setServicePrice("");
+        setServiceDuration("");
+        setServiceActive(true);
+        setServiceFormOpen(true);
+        setError("");
+    };
+
+    const handleEditService = (service: BarbershopService) => {
+        setSelectedService(service);
+        setServiceName(service.name);
+        setServiceDescription(service.description ?? "");
+        setServicePrice(String(service.price));
+        setServiceDuration(String(service.durationMinutes));
+        setServiceActive(service.active);
+        setServiceFormOpen(true);
+        setError("");
+    };
+
+    const handleSaveService = async (
+        event: React.FormEvent<HTMLFormElement>
+    ) => {
+        event.preventDefault();
+        setError("");
+
+        const normalizedName = serviceName.trim();
+        const normalizedDescription = serviceDescription.trim();
+        const price = Number(servicePrice);
+        const durationMinutes = Number(serviceDuration);
+
+        if (!normalizedName) {
+            setError("Introdu numele serviciului.");
+            return;
+        }
+
+        if (!Number.isFinite(price) || price < 0) {
+            setError("Introdu un preț valid.");
+            return;
+        }
+
+        if (
+            !Number.isInteger(durationMinutes) ||
+            durationMinutes < 1
+        ) {
+            setError("Durata trebuie să fie de cel puțin 1 minut.");
+            return;
+        }
+
+        setServiceSaving(true);
+
+        const payload = {
+            name: normalizedName,
+            description:
+                normalizedDescription === ""
+                    ? ""
+                    : normalizedDescription,
+            price,
+            durationMinutes,
+            active: serviceActive,
+        };
+
+        try {
+            if (selectedService) {
+                const response =
+                    await api.put<BarbershopService>(
+                        `/services/${selectedService.id}`,
+                        payload
+                    );
+
+                setServices((current) =>
+                    current.map((service) =>
+                        service.id === response.data.id
+                            ? response.data
+                            : service
+                    )
+                );
+            } else {
+                const response =
+                    await api.post<BarbershopService>(
+                        "/services",
+                        payload
+                    );
+
+                setServices((current) => [
+                    ...current,
+                    response.data,
+                ]);
+            }
+
+            resetServiceForm();
+        } catch {
+            setError(
+                "Serviciul nu a putut fi salvat. Verifică datele și numele serviciului."
+            );
+        } finally {
+            setServiceSaving(false);
+        }
+    };
+
+    const handleDeactivateService = async (
+        service: BarbershopService
+    ) => {
+        if (
+            !window.confirm(
+                `Dezactivezi serviciul „${service.name}”?`
+            )
+        ) {
+            return;
+        }
+
+        setServiceDeletingId(service.id);
+        setError("");
+
+        try {
+            await api.delete(`/services/${service.id}`);
+
+            setServices((current) =>
+                current.map((item) =>
+                    item.id === service.id
+                        ? {
+                              ...item,
+                              active: false,
+                          }
+                        : item
+                )
+            );
+
+            if (selectedService?.id === service.id) {
+                resetServiceForm();
+            }
+        } catch {
+            setError("Serviciul nu a putut fi dezactivat.");
+        } finally {
+            setServiceDeletingId(null);
+        }
+    };
+
+    const handleReactivateService = async (
+        service: BarbershopService
+    ) => {
+        setServiceDeletingId(service.id);
+        setError("");
+
+        try {
+            const response =
+                await api.put<BarbershopService>(
+                    `/services/${service.id}`,
+                    {
+                        ...service,
+                        active: true,
+                    }
+                );
+
+            setServices((current) =>
+                current.map((item) =>
+                    item.id === response.data.id
+                        ? response.data
+                        : item
+                )
+            );
+        } catch {
+            setError("Serviciul nu a putut fi reactivat.");
+        } finally {
+            setServiceDeletingId(null);
+        }
+    };
+
+    const handleDeleteServicePermanently = async (
+        service: BarbershopService
+    ) => {
+        const confirmed = window.confirm(
+            `Ștergi definitiv serviciul „${service.name}”? Această acțiune nu poate fi anulată.`
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        setServiceDeletingId(service.id);
+        setError("");
+
+        try {
+            await api.delete(
+                `/services/${service.id}/permanent`
+            );
+
+            setServices((current) =>
+                current.filter(
+                    (item) => item.id !== service.id
+                )
+            );
+
+            if (selectedService?.id === service.id) {
+                resetServiceForm();
+            }
+        } catch {
+            setError(
+                "Serviciul nu poate fi șters definitiv. Este posibil să fie folosit într-o programare."
+            );
+        } finally {
+            setServiceDeletingId(null);
+        }
+    };
+
     const handleTabChange = (tab: AdminTab) => {
         setActiveTab(tab);
         setError("");
 
-        if (tab === "CALENDAR") {
-            setSelectedClient(null);
-            return;
+        if (tab !== "CALENDAR") {
+            setSelectedAppointment(null);
+            setSelectedUser(null);
         }
 
-        setSelectedAppointment(null);
-        setSelectedUser(null);
+        if (tab !== "CLIENTS") {
+            setSelectedClient(null);
+        }
+
+        if (tab !== "SERVICES") {
+            resetServiceForm();
+        }
     };
 
     const handleSelectAppointment = async (
@@ -450,13 +729,17 @@ function AdminPage() {
                     <h1>
                         {activeTab === "CALENDAR"
                             ? "Programări."
-                            : "Clienți."}
+                            : activeTab === "CLIENTS"
+                              ? "Clienți."
+                              : "Servicii."}
                     </h1>
 
                     <p>
                         {activeTab === "CALENDAR"
                             ? "Organizează săptămâna și gestionează programările direct din calendar."
-                            : "Vezi clienții, datele de contact și premiile de bun venit într-un singur loc."}
+                            : activeTab === "CLIENTS"
+                              ? "Vezi clienții, datele de contact și premiile de bun venit într-un singur loc."
+                              : "Adaugă, editează, dezactivează și reactivează serviciile afișate pe site."}
                     </p>
                 </div>
 
@@ -537,6 +820,20 @@ function AdminPage() {
                         }
                     >
                         Clienți
+                    </button>
+
+                    <button
+                        type="button"
+                        className={
+                            activeTab === "SERVICES"
+                                ? "admin-tab admin-tab--active"
+                                : "admin-tab"
+                        }
+                        onClick={() =>
+                            handleTabChange("SERVICES")
+                        }
+                    >
+                        Servicii
                     </button>
                 </div>
 
@@ -1336,6 +1633,385 @@ function AdminPage() {
                                             ID client:{" "}
                                             {selectedClient.id}
                                         </p>
+                                    </aside>
+                                )}
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {activeTab === "SERVICES" && (
+                    <>
+                        <div className="admin-services-toolbar">
+                            <div>
+                                <p className="section-eyebrow">
+                                    SERVICII
+                                </p>
+
+                                <strong>
+                                    {services.length}{" "}
+                                    {services.length === 1
+                                        ? "serviciu"
+                                        : "servicii"}
+                                </strong>
+                            </div>
+
+                            <div className="admin-services-toolbar__actions">
+                                <input
+                                    type="search"
+                                    value={serviceSearch}
+                                    onChange={(event) =>
+                                        setServiceSearch(
+                                            event.target.value
+                                        )
+                                    }
+                                    placeholder="Caută serviciu..."
+                                />
+
+                                <button
+                                    type="button"
+                                    className="admin-service-add"
+                                    onClick={handleCreateService}
+                                >
+                                    + Adaugă serviciu
+                                </button>
+                            </div>
+                        </div>
+
+                        {servicesLoading ? (
+                            <p className="admin-message">
+                                Se încarcă serviciile...
+                            </p>
+                        ) : (
+                            <div
+                                className={
+                                    serviceFormOpen
+                                        ? "admin-services-layout admin-services-layout--details"
+                                        : "admin-services-layout"
+                                }
+                            >
+                                <div className="admin-services-list">
+                                    {filteredServices.length === 0 ? (
+                                        <p className="admin-message">
+                                            Nu există servicii pentru căutarea selectată.
+                                        </p>
+                                    ) : (
+                                        filteredServices.map(
+                                            (service) => (
+                                                <article
+                                                    key={service.id}
+                                                    className={
+                                                        selectedService?.id ===
+                                                        service.id
+                                                            ? "admin-service-row admin-service-row--active"
+                                                            : "admin-service-row"
+                                                    }
+                                                >
+                                                    <button
+                                                        type="button"
+                                                        className="admin-service-row__main"
+                                                        onClick={() =>
+                                                            handleEditService(
+                                                                service
+                                                            )
+                                                        }
+                                                    >
+                                                        <div className="admin-service-row__identity">
+                                                            <strong>
+                                                                {service.name}
+                                                            </strong>
+
+                                                            <span>
+                                                                {service.description ||
+                                                                    "Fără descriere"}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="admin-service-row__meta">
+                                                            <span>
+                                                                Preț
+                                                            </span>
+                                                            <strong>
+                                                                {formatCurrency(
+                                                                    Number(
+                                                                        service.price
+                                                                    )
+                                                                )}
+                                                            </strong>
+                                                        </div>
+
+                                                        <div className="admin-service-row__meta">
+                                                            <span>
+                                                                Durată
+                                                            </span>
+                                                            <strong>
+                                                                {
+                                                                    service.durationMinutes
+                                                                }{" "}
+                                                                min
+                                                            </strong>
+                                                        </div>
+
+                                                        <span
+                                                            className={
+                                                                service.active
+                                                                    ? "admin-client-status admin-client-status--active"
+                                                                    : "admin-client-status admin-client-status--inactive"
+                                                            }
+                                                        >
+                                                            {service.active
+                                                                ? "ACTIV"
+                                                                : "INACTIV"}
+                                                        </span>
+                                                    </button>
+
+                                                    <div className="admin-service-row__actions">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                handleEditService(
+                                                                    service
+                                                                )
+                                                            }
+                                                        >
+                                                            Editează
+                                                        </button>
+
+                                                        {service.active ? (
+                                                            <button
+                                                                type="button"
+                                                                className="admin-service-row__danger"
+                                                                disabled={
+                                                                    serviceDeletingId ===
+                                                                    service.id
+                                                                }
+                                                                onClick={() =>
+                                                                    handleDeactivateService(
+                                                                        service
+                                                                    )
+                                                                }
+                                                            >
+                                                                {serviceDeletingId ===
+                                                                service.id
+                                                                    ? "Se actualizează..."
+                                                                    : "Dezactivează"}
+                                                            </button>
+                                                        ) : (
+                                                            <>
+                                                                <button
+                                                                    type="button"
+                                                                    className="admin-service-row__restore"
+                                                                    disabled={
+                                                                        serviceDeletingId ===
+                                                                        service.id
+                                                                    }
+                                                                    onClick={() =>
+                                                                        handleReactivateService(
+                                                                            service
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    {serviceDeletingId ===
+                                                                    service.id
+                                                                        ? "Se actualizează..."
+                                                                        : "Reactivează"}
+                                                                </button>
+
+                                                                <button
+                                                                    type="button"
+                                                                    className="admin-service-row__delete-permanent"
+                                                                    disabled={
+                                                                        serviceDeletingId ===
+                                                                        service.id
+                                                                    }
+                                                                    onClick={() =>
+                                                                        handleDeleteServicePermanently(
+                                                                            service
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    Șterge definitiv
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </article>
+                                            )
+                                        )
+                                    )}
+                                </div>
+
+                                {serviceFormOpen && (
+                                    <aside className="admin-service-panel">
+                                        <div className="admin-appointment-panel__top">
+                                            <div>
+                                                <p className="section-eyebrow">
+                                                    {selectedService
+                                                        ? "EDITARE"
+                                                        : "SERVICIU NOU"}
+                                                </p>
+
+                                                <h2>
+                                                    {selectedService
+                                                        ? "Editează serviciul"
+                                                        : "Adaugă serviciu"}
+                                                </h2>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                className="admin-appointment-panel__close"
+                                                onClick={
+                                                    resetServiceForm
+                                                }
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+
+                                        <form
+                                            className="admin-service-form"
+                                            onSubmit={
+                                                handleSaveService
+                                            }
+                                        >
+                                            <label>
+                                                Nume
+
+                                                <input
+                                                    type="text"
+                                                    value={
+                                                        serviceName
+                                                    }
+                                                    onChange={(
+                                                        event
+                                                    ) =>
+                                                        setServiceName(
+                                                            event
+                                                                .target
+                                                                .value
+                                                        )
+                                                    }
+                                                    required
+                                                />
+                                            </label>
+
+                                            <label>
+                                                Descriere
+
+                                                <textarea
+                                                    value={
+                                                        serviceDescription
+                                                    }
+                                                    onChange={(
+                                                        event
+                                                    ) =>
+                                                        setServiceDescription(
+                                                            event
+                                                                .target
+                                                                .value
+                                                        )
+                                                    }
+                                                    rows={5}
+                                                    maxLength={
+                                                        1000
+                                                    }
+                                                />
+                                            </label>
+
+                                            <div className="admin-service-form__row">
+                                                <label>
+                                                    Preț (lei)
+
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        step="0.01"
+                                                        value={
+                                                            servicePrice
+                                                        }
+                                                        onChange={(
+                                                            event
+                                                        ) =>
+                                                            setServicePrice(
+                                                                event
+                                                                    .target
+                                                                    .value
+                                                            )
+                                                        }
+                                                        required
+                                                    />
+                                                </label>
+
+                                                <label>
+                                                    Durată (minute)
+
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        step="1"
+                                                        value={
+                                                            serviceDuration
+                                                        }
+                                                        onChange={(
+                                                            event
+                                                        ) =>
+                                                            setServiceDuration(
+                                                                event
+                                                                    .target
+                                                                    .value
+                                                            )
+                                                        }
+                                                        required
+                                                    />
+                                                </label>
+                                            </div>
+
+                                            <label className="admin-service-form__toggle">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={
+                                                        serviceActive
+                                                    }
+                                                    onChange={(
+                                                        event
+                                                    ) =>
+                                                        setServiceActive(
+                                                            event
+                                                                .target
+                                                                .checked
+                                                        )
+                                                    }
+                                                />
+
+                                                <span>
+                                                    Serviciu activ
+                                                </span>
+                                            </label>
+
+                                            <button
+                                                type="submit"
+                                                className="admin-service-form__submit"
+                                                disabled={
+                                                    serviceSaving
+                                                }
+                                            >
+                                                {serviceSaving
+                                                    ? "Se salvează..."
+                                                    : selectedService
+                                                      ? "Salvează modificările"
+                                                      : "Adaugă serviciul"}
+                                            </button>
+                                        </form>
+
+                                        {selectedService && (
+                                            <p className="admin-appointment-panel__id">
+                                                ID serviciu:{" "}
+                                                {
+                                                    selectedService.id
+                                                }
+                                            </p>
+                                        )}
                                     </aside>
                                 )}
                             </div>

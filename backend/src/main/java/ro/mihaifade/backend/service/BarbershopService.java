@@ -1,6 +1,9 @@
 package ro.mihaifade.backend.service;
 
 import org.springframework.stereotype.Service;
+import ro.mihaifade.backend.entity.Barber;
+import ro.mihaifade.backend.repository.AppointmentRepository;
+import ro.mihaifade.backend.repository.BarberRepository;
 import ro.mihaifade.backend.repository.ServiceRepository;
 
 import java.util.List;
@@ -9,9 +12,17 @@ import java.util.List;
 public class BarbershopService {
 
     private final ServiceRepository serviceRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final BarberRepository barberRepository;
 
-    public BarbershopService(ServiceRepository serviceRepository) {
+    public BarbershopService(
+            ServiceRepository serviceRepository,
+            AppointmentRepository appointmentRepository,
+            BarberRepository barberRepository
+    ) {
         this.serviceRepository = serviceRepository;
+        this.appointmentRepository = appointmentRepository;
+        this.barberRepository = barberRepository;
     }
 
     public List<ro.mihaifade.backend.entity.Service> getAllServices() {
@@ -62,5 +73,30 @@ public class BarbershopService {
         service.setActive(false);
 
         serviceRepository.save(service);
+    }
+
+    public void deleteServicePermanently(Long id) {
+        ro.mihaifade.backend.entity.Service service =
+                getServiceById(id);
+
+        if (appointmentRepository.existsByServiceId(id)) {
+            throw new RuntimeException(
+                    "Service cannot be permanently deleted because it is used by appointments"
+            );
+        }
+
+        List<Barber> barbers =
+                barberRepository.findByServicesId(id);
+
+        for (Barber barber : barbers) {
+            barber.getServices().removeIf(
+                    barberService ->
+                            barberService.getId().equals(id)
+            );
+        }
+
+        barberRepository.saveAll(barbers);
+
+        serviceRepository.delete(service);
     }
 }

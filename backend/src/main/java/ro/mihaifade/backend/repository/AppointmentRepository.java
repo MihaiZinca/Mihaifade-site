@@ -9,7 +9,10 @@ import java.util.List;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
 
-    List<Appointment> findByBarberIdAndDate(Long barberId, LocalDate date);
+    List<Appointment> findByBarberIdAndDate(
+            Long barberId,
+            LocalDate date
+    );
 
     List<Appointment> findByBarberIdAndDateAndStatusNot(
             Long barberId,
@@ -17,5 +20,11 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             AppointmentStatus status
     );
 
-    List<Appointment> findByUserIdOrderByDateDescStartTimeDesc(Long userId);
+    List<Appointment> findByUserIdOrderByDateDescStartTimeDesc(
+            Long userId
+    );
+
+    boolean existsByServiceId(
+            Long serviceId
+    );
 }

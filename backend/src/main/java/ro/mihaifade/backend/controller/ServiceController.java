@@ -57,4 +57,12 @@ public class ServiceController {
     ) {
         barbershopService.deleteService(id);
     }
+
+    @DeleteMapping("/{id}/permanent")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteServicePermanently(
+            @PathVariable Long id
+    ) {
+        barbershopService.deleteServicePermanently(id);
+    }
 }

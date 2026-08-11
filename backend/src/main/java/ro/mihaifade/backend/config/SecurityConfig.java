@@ -37,22 +37,40 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http
+    ) throws Exception {
+
         http
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
                 )
                 .authorizeHttpRequests(auth -> auth
+
+                        // =====================================
+                        // CORS PREFLIGHT
+                        // =====================================
+
                         .requestMatchers(
                                 HttpMethod.OPTIONS,
                                 "/**"
                         ).permitAll()
 
+                        // =====================================
+                        // AUTH
+                        // =====================================
+
                         .requestMatchers(
                                 "/api/auth/**"
                         ).permitAll()
+
+                        // =====================================
+                        // PUBLIC GET ENDPOINTS
+                        // =====================================
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -69,6 +87,10 @@ public class SecurityConfig {
                                 "/api/availability/**"
                         ).permitAll()
 
+                        // =====================================
+                        // SERVICES - OWNER
+                        // =====================================
+
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/services/**"
@@ -81,8 +103,17 @@ public class SecurityConfig {
 
                         .requestMatchers(
                                 HttpMethod.DELETE,
+                                "/api/services/*/permanent"
+                        ).hasRole("OWNER")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
                                 "/api/services/**"
                         ).hasRole("OWNER")
+
+                        // =====================================
+                        // BARBERS - OWNER
+                        // =====================================
 
                         .requestMatchers(
                                 HttpMethod.POST,
@@ -114,6 +145,10 @@ public class SecurityConfig {
                                 "/api/barbers/*/time-off/**"
                         ).hasRole("OWNER")
 
+                        // =====================================
+                        // USER PROFILE - CLIENT
+                        // =====================================
+
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/users/me/profile"
@@ -124,9 +159,14 @@ public class SecurityConfig {
                                 "/api/users/me"
                         ).hasRole("CLIENT")
 
+                        // OWNER poate vedea lista de useri
                         .requestMatchers(
                                 "/api/users/**"
                         ).hasRole("OWNER")
+
+                        // =====================================
+                        // APPOINTMENTS - OWNER
+                        // =====================================
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -136,6 +176,10 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/appointments/*/status"
                         ).hasRole("OWNER")
+
+                        // =====================================
+                        // APPOINTMENTS - CLIENT
+                        // =====================================
 
                         .requestMatchers(
                                 "/api/appointments/me"
@@ -150,6 +194,10 @@ public class SecurityConfig {
                                 "/api/appointments"
                         ).hasRole("CLIENT")
 
+                        // =====================================
+                        // WELCOME REWARDS - CLIENT
+                        // =====================================
+
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/rewards/me"
@@ -160,15 +208,25 @@ public class SecurityConfig {
                                 "/api/rewards/spin"
                         ).hasRole("CLIENT")
 
+                        // =====================================
+                        // WELCOME REWARDS - OWNER
+                        // =====================================
+
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/rewards/users/*/use"
                         ).hasRole("OWNER")
 
+                        // =====================================
+                        // EVERYTHING ELSE
+                        // =====================================
+
                         .anyRequest()
                         .authenticated()
                 )
-                .authenticationProvider(authenticationProvider())
+                .authenticationProvider(
+                        authenticationProvider()
+                )
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
@@ -179,7 +237,8 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
+        CorsConfiguration configuration =
+                new CorsConfiguration();
 
         configuration.setAllowedOrigins(
                 List.of(
@@ -231,9 +290,13 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider =
-                new DaoAuthenticationProvider(userDetailsService);
+                new DaoAuthenticationProvider(
+                        userDetailsService
+                );
 
-        provider.setPasswordEncoder(passwordEncoder());
+        provider.setPasswordEncoder(
+                passwordEncoder()
+        );
 
         return provider;
     }
