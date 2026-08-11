@@ -170,6 +170,7 @@ public class AppointmentService {
                 appointment.getBarber().getDisplayName(),
                 appointment.getService().getId(),
                 appointment.getService().getName(),
+                appointment.getService().getPrice(),
                 appointment.getDate(),
                 appointment.getStartTime(),
                 appointment.getEndTime(),

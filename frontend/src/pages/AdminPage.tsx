@@ -366,6 +366,44 @@ function AdminPage() {
         }
     };
 
+    const dashboardStats = useMemo(() => {
+        const now = new Date();
+        const today = formatDateForApi(now);
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1;
+
+        const isCurrentMonth = (date: string) => {
+            const [year, month] = date.split("-").map(Number);
+
+            return year === currentYear && month === currentMonth;
+        };
+
+        const todayAppointments = appointments.filter(
+            (appointment) =>
+                appointment.date === today &&
+                appointment.status !== "CANCELLED"
+        ).length;
+
+        const completedThisMonth = appointments.filter(
+            (appointment) =>
+                appointment.status === "COMPLETED" &&
+                isCurrentMonth(appointment.date)
+        );
+
+        const monthlyRevenue = completedThisMonth.reduce(
+            (total, appointment) =>
+                total + Number(appointment.servicePrice ?? 0),
+            0
+        );
+
+        return {
+            todayAppointments,
+            totalClients: clients.length,
+            completedThisMonth: completedThisMonth.length,
+            monthlyRevenue,
+        };
+    }, [appointments, clients]);
+
     const weekLabel = `${formatShortDate(
         weekDays[0]
     )} - ${formatShortDate(weekDays[6])}`;
@@ -420,6 +458,56 @@ function AdminPage() {
                             ? "Organizează săptămâna și gestionează programările direct din calendar."
                             : "Vezi clienții, datele de contact și premiile de bun venit într-un singur loc."}
                     </p>
+                </div>
+
+                <div className="admin-dashboard">
+                    <article className="admin-stat-card">
+                        <span className="admin-stat-card__label">
+                            Programări azi
+                        </span>
+                        <strong className="admin-stat-card__value">
+                            {dashboardStats.todayAppointments}
+                        </strong>
+                        <small className="admin-stat-card__meta">
+                            Fără programările anulate
+                        </small>
+                    </article>
+
+                    <article className="admin-stat-card">
+                        <span className="admin-stat-card__label">
+                            Clienți
+                        </span>
+                        <strong className="admin-stat-card__value">
+                            {dashboardStats.totalClients}
+                        </strong>
+                        <small className="admin-stat-card__meta">
+                            Conturi de client
+                        </small>
+                    </article>
+
+                    <article className="admin-stat-card">
+                        <span className="admin-stat-card__label">
+                            Finalizate luna asta
+                        </span>
+                        <strong className="admin-stat-card__value">
+                            {dashboardStats.completedThisMonth}
+                        </strong>
+                        <small className="admin-stat-card__meta">
+                            Programări completate
+                        </small>
+                    </article>
+
+                    <article className="admin-stat-card admin-stat-card--revenue">
+                        <span className="admin-stat-card__label">
+                            Venit luna asta
+                        </span>
+                        <strong className="admin-stat-card__value">
+                            {formatCurrency(dashboardStats.monthlyRevenue)}
+                        </strong>
+                        <small className="admin-stat-card__meta">
+                            Doar programări finalizate
+                        </small>
+                    </article>
                 </div>
 
                 <div className="admin-tabs">
@@ -1357,6 +1445,15 @@ function formatAccountDate(date: string) {
     ).format(
         new Date(date)
     );
+}
+
+function formatCurrency(value: number) {
+    return new Intl.NumberFormat("ro-RO", {
+        style: "currency",
+        currency: "RON",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+    }).format(value);
 }
 
 function getAppointmentPosition(

@@ -31,6 +31,7 @@ export interface AppointmentResponse {
     barberName: string;
     serviceId: number;
     serviceName: string;
+    servicePrice: number;
     date: string;
     startTime: string;
     endTime: string;
