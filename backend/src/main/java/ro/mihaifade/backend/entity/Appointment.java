@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -30,6 +31,14 @@ public class Appointment {
     @ManyToOne(optional = false)
     @JoinColumn(name = "service_id", nullable = false)
     private Service service;
+
+    @Column(
+            name = "service_price",
+            nullable = false,
+            precision = 10,
+            scale = 2
+    )
+    private BigDecimal servicePrice;
 
     @Column(nullable = false)
     private LocalDate date;

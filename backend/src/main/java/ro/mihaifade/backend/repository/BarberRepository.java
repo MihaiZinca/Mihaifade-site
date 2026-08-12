@@ -15,4 +15,8 @@ public interface BarberRepository extends JpaRepository<Barber, Long> {
     List<Barber> findByServicesId(
             Long serviceId
     );
+
+    Optional<Barber> findByUserEmailIgnoreCase(
+            String email
+    );
 }

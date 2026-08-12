@@ -51,26 +51,107 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
 
-                        // =====================================
-                        // CORS PREFLIGHT
-                        // =====================================
-
                         .requestMatchers(
                                 HttpMethod.OPTIONS,
                                 "/**"
                         ).permitAll()
 
-                        // =====================================
-                        // AUTH
-                        // =====================================
-
                         .requestMatchers(
                                 "/api/auth/**"
                         ).permitAll()
 
-                        // =====================================
-                        // PUBLIC GET ENDPOINTS
-                        // =====================================
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/barbers/me"
+                        ).hasAnyRole(
+                                "BARBER",
+                                "OWNER"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/barbers/me"
+                        ).hasAnyRole(
+                                "BARBER",
+                                "OWNER"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/barbers/me/services"
+                        ).hasAnyRole(
+                                "BARBER",
+                                "OWNER"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/barbers/me/working-hours/**"
+                        ).hasAnyRole(
+                                "BARBER",
+                                "OWNER"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/barbers/me/working-hours/**"
+                        ).hasAnyRole(
+                                "BARBER",
+                                "OWNER"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/barbers/me/time-off/**"
+                        ).hasAnyRole(
+                                "BARBER",
+                                "OWNER"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/barbers/me/time-off/**"
+                        ).hasAnyRole(
+                                "BARBER",
+                                "OWNER"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/barbers/me/time-off/**"
+                        ).hasAnyRole(
+                                "BARBER",
+                                "OWNER"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/barbers/me/stats"
+                        ).hasAnyRole(
+                                "BARBER",
+                                "OWNER"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/barbers/*/stats"
+                        ).hasRole("OWNER")
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/appointments/barber/me"
+                        ).hasAnyRole(
+                                "BARBER",
+                                "OWNER"
+                        )
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/appointments/barber/me/*/status"
+                        ).hasAnyRole(
+                                "BARBER",
+                                "OWNER"
+                        )
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -86,10 +167,6 @@ public class SecurityConfig {
                                 HttpMethod.GET,
                                 "/api/availability/**"
                         ).permitAll()
-
-                        // =====================================
-                        // SERVICES - OWNER
-                        // =====================================
 
                         .requestMatchers(
                                 HttpMethod.POST,
@@ -110,10 +187,6 @@ public class SecurityConfig {
                                 HttpMethod.DELETE,
                                 "/api/services/**"
                         ).hasRole("OWNER")
-
-                        // =====================================
-                        // BARBERS - OWNER
-                        // =====================================
 
                         .requestMatchers(
                                 HttpMethod.POST,
@@ -145,10 +218,6 @@ public class SecurityConfig {
                                 "/api/barbers/*/time-off/**"
                         ).hasRole("OWNER")
 
-                        // =====================================
-                        // USER PROFILE - CLIENT
-                        // =====================================
-
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/users/me/profile"
@@ -159,14 +228,9 @@ public class SecurityConfig {
                                 "/api/users/me"
                         ).hasRole("CLIENT")
 
-                        // OWNER poate vedea lista de useri
                         .requestMatchers(
                                 "/api/users/**"
                         ).hasRole("OWNER")
-
-                        // =====================================
-                        // APPOINTMENTS - OWNER
-                        // =====================================
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -174,18 +238,17 @@ public class SecurityConfig {
                         ).hasRole("OWNER")
 
                         .requestMatchers(
+                                HttpMethod.PUT,
                                 "/api/appointments/*/status"
                         ).hasRole("OWNER")
 
-                        // =====================================
-                        // APPOINTMENTS - CLIENT
-                        // =====================================
-
                         .requestMatchers(
+                                HttpMethod.GET,
                                 "/api/appointments/me"
                         ).hasRole("CLIENT")
 
                         .requestMatchers(
+                                HttpMethod.PUT,
                                 "/api/appointments/*/cancel"
                         ).hasRole("CLIENT")
 
@@ -193,10 +256,6 @@ public class SecurityConfig {
                                 HttpMethod.POST,
                                 "/api/appointments"
                         ).hasRole("CLIENT")
-
-                        // =====================================
-                        // WELCOME REWARDS - CLIENT
-                        // =====================================
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -208,18 +267,15 @@ public class SecurityConfig {
                                 "/api/rewards/spin"
                         ).hasRole("CLIENT")
 
-                        // =====================================
-                        // WELCOME REWARDS - OWNER
-                        // =====================================
-
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/rewards/users/*/use"
                         ).hasRole("OWNER")
 
-                        // =====================================
-                        // EVERYTHING ELSE
-                        // =====================================
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/admin/stats"
+                        ).hasRole("OWNER")
 
                         .anyRequest()
                         .authenticated()

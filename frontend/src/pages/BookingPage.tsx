@@ -7,12 +7,24 @@ import type {
     BarbershopService,
 } from "../types";
 
-const BARBER_ID = 1;
+interface BarberResponse {
+    id: number;
+    displayName: string;
+    bio: string | null;
+    imageUrl: string | null;
+    active: boolean;
+    services: BarbershopService[];
+}
 
 function BookingPage() {
 
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+
+    const [barbers, setBarbers] = useState<BarberResponse[]>([]);
+    const [selectedBarberId, setSelectedBarberId] = useState<number | null>(
+        null
+    );
 
     const [services, setServices] = useState<BarbershopService[]>([]);
     const [selectedServiceId, setSelectedServiceId] = useState<number | null>(
@@ -23,6 +35,7 @@ function BookingPage() {
     const [selectedTime, setSelectedTime] = useState("");
     const [notes, setNotes] = useState("");
 
+    const [loadingBarbers, setLoadingBarbers] = useState(true);
     const [loadingServices, setLoadingServices] = useState(true);
     const [loadingSlots, setLoadingSlots] = useState(false);
     const [creatingAppointment, setCreatingAppointment] = useState(false);
@@ -30,49 +43,120 @@ function BookingPage() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState<AppointmentResponse | null>(null);
 
+    const selectedBarber = useMemo(
+        () =>
+            barbers.find(
+                (barber) => barber.id === selectedBarberId
+            ) ?? null,
+        [barbers, selectedBarberId]
+    );
+
+    const visibleServices = useMemo(() => {
+        if (!selectedBarber) {
+            return [];
+        }
+
+        const offeredServiceIds = new Set(
+            (selectedBarber.services ?? [])
+                .filter((service) => service.active)
+                .map((service) => service.id)
+        );
+
+        return services.filter(
+            (service) =>
+                service.active &&
+                offeredServiceIds.has(service.id)
+        );
+    }, [services, selectedBarber]);
+
     const selectedService = useMemo(
         () =>
-            services.find(
+            visibleServices.find(
                 (service) => service.id === selectedServiceId
             ) ?? null,
-        [services, selectedServiceId]
+        [visibleServices, selectedServiceId]
     );
 
     useEffect(() => {
-        const loadServices = async () => {
-            try {
-                const response = await api.get<BarbershopService[]>("/services");
+        const loadBookingData = async () => {
+            setLoadingBarbers(true);
+            setLoadingServices(true);
 
-                const activeServices = response.data.filter(
-                    (service) => service.active
-                );
+            try {
+                const [barbersResponse, servicesResponse] =
+                    await Promise.all([
+                        api.get<BarberResponse[]>("/barbers"),
+                        api.get<BarbershopService[]>("/services"),
+                    ]);
+
+                const activeServices =
+                    servicesResponse.data.filter(
+                        (service) => service.active
+                    );
+
+                const activeBarbers =
+                    barbersResponse.data.filter(
+                        (barber) => barber.active
+                    );
 
                 setServices(activeServices);
+                setBarbers(activeBarbers);
+
+                const barberIdFromUrl = Number(
+                    searchParams.get("barberId")
+                );
 
                 const serviceIdFromUrl = Number(
                     searchParams.get("serviceId")
                 );
 
-                if (
-                    serviceIdFromUrl &&
-                    activeServices.some(
-                        (service) => service.id === serviceIdFromUrl
-                    )
-                ) {
-                    setSelectedServiceId(serviceIdFromUrl);
+                const initialBarber =
+                    activeBarbers.find(
+                        (barber) =>
+                            barber.id === barberIdFromUrl
+                    ) ??
+                    activeBarbers.find((barber) =>
+                        (barber.services ?? []).some(
+                            (service) =>
+                                service.id === serviceIdFromUrl &&
+                                service.active
+                        )
+                    ) ??
+                    null;
+
+                if (initialBarber) {
+                    setSelectedBarberId(initialBarber.id);
+
+                    if (
+                        serviceIdFromUrl &&
+                        (initialBarber.services ?? []).some(
+                            (service) =>
+                                service.id === serviceIdFromUrl &&
+                                service.active
+                        )
+                    ) {
+                        setSelectedServiceId(serviceIdFromUrl);
+                    }
                 }
             } catch {
-                setError("Serviciile nu au putut fi încărcate.");
+                setError(
+                    "Barberii și serviciile nu au putut fi încărcate."
+                );
             } finally {
+                setLoadingBarbers(false);
                 setLoadingServices(false);
             }
         };
 
-        loadServices();
+        loadBookingData();
     }, [searchParams]);
 
     useEffect(() => {
-        if (!selectedServiceId || !selectedDate) {
+        if (
+            !selectedBarberId ||
+            !selectedServiceId ||
+            !selectedDate
+        ) {
             setAvailableSlots([]);
             setSelectedTime("");
             return;
@@ -88,7 +172,7 @@ function BookingPage() {
                     "/availability",
                     {
                         params: {
-                            barberId: BARBER_ID,
+                            barberId: selectedBarberId,
                             serviceId: selectedServiceId,
                             date: selectedDate,
                         },
@@ -107,12 +191,21 @@ function BookingPage() {
         };
 
         loadAvailability();
-    }, [selectedServiceId, selectedDate]);
+    }, [
+        selectedBarberId,
+        selectedServiceId,
+        selectedDate,
+    ]);
 
     const handleCreateAppointment = async () => {
-        if (!selectedServiceId || !selectedDate || !selectedTime) {
+        if (
+            !selectedBarberId ||
+            !selectedServiceId ||
+            !selectedDate ||
+            !selectedTime
+        ) {
             setError(
-                "Alege serviciul, data și ora înainte de confirmare."
+                "Alege barberul, serviciul, data și ora înainte de confirmare."
             );
             return;
         }
@@ -124,7 +217,7 @@ function BookingPage() {
             const response = await api.post<AppointmentResponse>(
                 "/appointments",
                 {
-                    barberId: BARBER_ID,
+                    barberId: selectedBarberId,
                     serviceId: selectedServiceId,
                     date: selectedDate,
                     startTime: selectedTime,
@@ -155,6 +248,11 @@ function BookingPage() {
                     </h1>
 
                     <div className="booking-success__details">
+                        <div>
+                            <span>Barber</span>
+                            <strong>{success.barberName}</strong>
+                        </div>
+
                         <div>
                             <span>Serviciu</span>
                             <strong>{success.serviceName}</strong>
@@ -210,20 +308,24 @@ function BookingPage() {
                 </div>
 
                 <div className="booking-header__steps">
+                    <span className={selectedBarberId ? "active" : ""}>
+                        01 Barber
+                    </span>
+
                     <span className={selectedServiceId ? "active" : ""}>
-                        01 Serviciu
+                        02 Serviciu
                     </span>
 
                     <span className={selectedDate ? "active" : ""}>
-                        02 Data
+                        03 Data
                     </span>
 
                     <span className={selectedTime ? "active" : ""}>
-                        03 Ora
+                        04 Ora
                     </span>
 
                     <span>
-                        04 Confirmare
+                        05 Confirmare
                     </span>
                 </div>
             </header>
@@ -240,7 +342,7 @@ function BookingPage() {
                     </h1>
 
                     <p>
-                        Selectează serviciul, data și ora disponibilă.
+                        Alege barberul, serviciul, data și ora disponibilă.
                         Programarea va fi asociată automat contului tău.
                     </p>
                 </div>
@@ -257,6 +359,71 @@ function BookingPage() {
 
                         <div>
                             <h2>
+                                Alege barberul
+                            </h2>
+
+                            <p>
+                                Selectează barberul la care vrei să te programezi.
+                            </p>
+                        </div>
+                    </div>
+
+                    {loadingBarbers ? (
+                        <p className="booking-message">
+                            Se încarcă barberii...
+                        </p>
+                    ) : barbers.length === 0 ? (
+                        <p className="booking-message">
+                            Nu există barberi disponibili momentan.
+                        </p>
+                    ) : (
+                        <div className="booking-services">
+                            {barbers.map((barber) => (
+                                <button
+                                    type="button"
+                                    key={barber.id}
+                                    className={
+                                        selectedBarberId === barber.id
+                                            ? "booking-service booking-service--selected"
+                                            : "booking-service"
+                                    }
+                                    onClick={() => {
+                                        setSelectedBarberId(barber.id);
+                                        setSelectedServiceId(null);
+                                        setSelectedDate("");
+                                        setSelectedTime("");
+                                        setAvailableSlots([]);
+                                    }}
+                                >
+                                    <div>
+                                        <h3>{barber.displayName}</h3>
+                                        <p>
+                                            {barber.bio ||
+                                                "Alege acest barber pentru programare."}
+                                        </p>
+                                    </div>
+
+                                    <div className="booking-service__meta">
+                                        <span>
+                                            {(barber.services ?? []).filter(
+                                                (service) => service.active
+                                            ).length} servicii
+                                        </span>
+
+                                        <strong>Alege</strong>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </section>
+
+                <section className="booking-step">
+                    <div className="booking-step__title">
+                        <span>02</span>
+
+                        <div>
+                            <h2>
                                 Alege serviciul
                             </h2>
 
@@ -266,13 +433,21 @@ function BookingPage() {
                         </div>
                     </div>
 
-                    {loadingServices ? (
+                    {!selectedBarberId ? (
+                        <p className="booking-message">
+                            Alege mai întâi barberul.
+                        </p>
+                    ) : loadingServices ? (
                         <p className="booking-message">
                             Se încarcă serviciile...
                         </p>
+                    ) : visibleServices.length === 0 ? (
+                        <p className="booking-message">
+                            Barberul selectat nu are servicii active momentan.
+                        </p>
                     ) : (
                         <div className="booking-services">
-                            {services.map((service) => (
+                            {visibleServices.map((service) => (
                                 <button
                                     type="button"
                                     key={service.id}
@@ -315,7 +490,7 @@ function BookingPage() {
 
                 <section className="booking-step">
                     <div className="booking-step__title">
-                        <span>02</span>
+                        <span>03</span>
 
                         <div>
                             <h2>
@@ -333,7 +508,10 @@ function BookingPage() {
                         type="date"
                         value={selectedDate}
                         min={new Date().toISOString().split("T")[0]}
-                        disabled={!selectedServiceId}
+                        disabled={
+                            !selectedBarberId ||
+                            !selectedServiceId
+                        }
                         onChange={(event) => {
                             setSelectedDate(event.target.value);
                             setSelectedTime("");
@@ -343,7 +521,7 @@ function BookingPage() {
 
                 <section className="booking-step">
                     <div className="booking-step__title">
-                        <span>03</span>
+                        <span>04</span>
 
                         <div>
                             <h2>
@@ -351,14 +529,14 @@ function BookingPage() {
                             </h2>
 
                             <p>
-                                Orele vin în timp real din programul lui Mihai.
+                                Orele vin în timp real din programul barberului selectat.
                             </p>
                         </div>
                     </div>
 
                     {!selectedDate && (
                         <p className="booking-message">
-                            Alege mai întâi serviciul și data.
+                            Alege mai întâi barberul, serviciul și data.
                         </p>
                     )}
 
@@ -400,7 +578,7 @@ function BookingPage() {
 
                 <section className="booking-step">
                     <div className="booking-step__title">
-                        <span>04</span>
+                        <span>05</span>
 
                         <div>
                             <h2>
@@ -415,6 +593,13 @@ function BookingPage() {
 
                     <div className="booking-confirmation">
                         <div className="booking-summary">
+                            <div>
+                                <span>Barber</span>
+                                <strong>
+                                    {selectedBarber?.displayName ?? "—"}
+                                </strong>
+                            </div>
+
                             <div>
                                 <span>Serviciu</span>
                                 <strong>
@@ -474,6 +659,7 @@ function BookingPage() {
                             type="button"
                             className="booking-submit"
                             disabled={
+                                !selectedBarberId ||
                                 !selectedServiceId ||
                                 !selectedDate ||
                                 !selectedTime ||

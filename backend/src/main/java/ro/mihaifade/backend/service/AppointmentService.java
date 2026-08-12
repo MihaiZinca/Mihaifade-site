@@ -43,10 +43,29 @@ public class AppointmentService {
                 .toList();
     }
 
-    public List<AppointmentResponse> getMyAppointments(String email) {
+    public List<AppointmentResponse> getMyAppointments(
+            String email
+    ) {
         User user = getUserByEmail(email);
 
-        return appointmentRepository.findByUserIdOrderByDateDescStartTimeDesc(user.getId())
+        return appointmentRepository
+                .findByUserIdOrderByDateDescStartTimeDesc(
+                        user.getId()
+                )
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<AppointmentResponse> getMyBarberAppointments(
+            String email
+    ) {
+        Barber barber = getBarberByEmail(email);
+
+        return appointmentRepository
+                .findByBarberIdOrderByDateDescStartTimeDesc(
+                        barber.getId()
+                )
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -58,108 +77,276 @@ public class AppointmentService {
     ) {
         User user = getUserByEmail(email);
 
-        Barber barber = barberRepository.findById(request.barberId())
-                .orElseThrow(() -> new RuntimeException(
-                        "Barber not found with id: " + request.barberId()
-                ));
-
-        ro.mihaifade.backend.entity.Service service = serviceRepository.findById(request.serviceId())
-                .orElseThrow(() -> new RuntimeException(
-                        "Service not found with id: " + request.serviceId()
-                ));
-
-        LocalTime endTime = request.startTime()
-                .plusMinutes(service.getDurationMinutes());
-
-        List<Appointment> existingAppointments = appointmentRepository.findByBarberIdAndDateAndStatusNot(
-                barber.getId(),
-                request.date(),
-                AppointmentStatus.CANCELLED
-        );
-
-        boolean overlaps = existingAppointments.stream()
-                .anyMatch(existing ->
-                        request.startTime().isBefore(existing.getEndTime())
-                                && endTime.isAfter(existing.getStartTime())
+        Barber barber = barberRepository.findById(
+                        request.barberId()
+                )
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Barber not found with id: "
+                                        + request.barberId()
+                        )
                 );
 
-        if (overlaps) {
-            throw new RuntimeException("Selected time interval is already booked");
+        if (!Boolean.TRUE.equals(barber.getActive())) {
+            throw new RuntimeException(
+                    "Barber is not active"
+            );
         }
 
-        Appointment appointment = new Appointment();
+        ro.mihaifade.backend.entity.Service service =
+                serviceRepository.findById(
+                                request.serviceId()
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Service not found with id: "
+                                                + request.serviceId()
+                                )
+                        );
+
+        if (!Boolean.TRUE.equals(service.getActive())) {
+            throw new RuntimeException(
+                    "Service is not active"
+            );
+        }
+
+        boolean barberOffersService =
+                barber.getServices()
+                        .stream()
+                        .anyMatch(barberService ->
+                                barberService
+                                        .getId()
+                                        .equals(service.getId())
+                        );
+
+        if (!barberOffersService) {
+            throw new RuntimeException(
+                    "Selected barber does not offer this service"
+            );
+        }
+
+        LocalTime endTime =
+                request.startTime()
+                        .plusMinutes(
+                                service.getDurationMinutes()
+                        );
+
+        List<Appointment> existingAppointments =
+                appointmentRepository
+                        .findByBarberIdAndDateAndStatusNot(
+                                barber.getId(),
+                                request.date(),
+                                AppointmentStatus.CANCELLED
+                        );
+
+        boolean overlaps =
+                existingAppointments.stream()
+                        .anyMatch(existing ->
+                                request.startTime()
+                                        .isBefore(
+                                                existing.getEndTime()
+                                        )
+                                        &&
+                                        endTime.isAfter(
+                                                existing.getStartTime()
+                                        )
+                        );
+
+        if (overlaps) {
+            throw new RuntimeException(
+                    "Selected time interval is already booked"
+            );
+        }
+
+        Appointment appointment =
+                new Appointment();
 
         appointment.setUser(user);
         appointment.setBarber(barber);
         appointment.setService(service);
-        appointment.setDate(request.date());
-        appointment.setStartTime(request.startTime());
-        appointment.setEndTime(endTime);
-        appointment.setStatus(AppointmentStatus.CONFIRMED);
-        appointment.setNotes(request.notes());
 
-        return toResponse(appointmentRepository.save(appointment));
+        appointment.setServicePrice(
+                service.getPrice()
+        );
+
+        appointment.setDate(
+                request.date()
+        );
+
+        appointment.setStartTime(
+                request.startTime()
+        );
+
+        appointment.setEndTime(
+                endTime
+        );
+
+        appointment.setStatus(
+                AppointmentStatus.CONFIRMED
+        );
+
+        appointment.setNotes(
+                request.notes()
+        );
+
+        return toResponse(
+                appointmentRepository.save(
+                        appointment
+                )
+        );
     }
 
     public AppointmentResponse cancelMyAppointment(
             Long id,
             String email
     ) {
-        User user = getUserByEmail(email);
+        User user =
+                getUserByEmail(email);
 
-        Appointment appointment = appointmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Appointment not found with id: " + id
-                ));
+        Appointment appointment =
+                getAppointmentById(id);
 
-        if (!appointment.getUser().getId().equals(user.getId())) {
+        if (!appointment
+                .getUser()
+                .getId()
+                .equals(user.getId())) {
+
             throw new AccessDeniedException(
                     "You cannot cancel another user's appointment"
             );
         }
 
-        if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
+        if (
+                appointment.getStatus()
+                        == AppointmentStatus.COMPLETED
+        ) {
             throw new RuntimeException(
                     "Completed appointment cannot be cancelled"
             );
         }
 
-        if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
+        if (
+                appointment.getStatus()
+                        == AppointmentStatus.CANCELLED
+        ) {
             throw new RuntimeException(
                     "Appointment is already cancelled"
             );
         }
 
-        appointment.setStatus(AppointmentStatus.CANCELLED);
+        appointment.setStatus(
+                AppointmentStatus.CANCELLED
+        );
 
-        return toResponse(appointmentRepository.save(appointment));
+        return toResponse(
+                appointmentRepository.save(
+                        appointment
+                )
+        );
     }
 
     public AppointmentResponse updateStatus(
             Long id,
             AppointmentStatus status
     ) {
-        Appointment appointment = appointmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "Appointment not found with id: " + id
-                ));
+        Appointment appointment =
+                getAppointmentById(id);
 
-        appointment.setStatus(status);
+        appointment.setStatus(
+                status
+        );
 
-        return toResponse(appointmentRepository.save(appointment));
+        return toResponse(
+                appointmentRepository.save(
+                        appointment
+                )
+        );
     }
 
-    private User getUserByEmail(String email) {
-        return userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new RuntimeException(
-                        "User not found with email: " + email
-                ));
+    public AppointmentResponse updateMyBarberAppointmentStatus(
+            Long appointmentId,
+            AppointmentStatus status,
+            String email
+    ) {
+        Barber barber =
+                getBarberByEmail(email);
+
+        Appointment appointment =
+                getAppointmentById(
+                        appointmentId
+                );
+
+        if (!appointment
+                .getBarber()
+                .getId()
+                .equals(barber.getId())) {
+
+            throw new AccessDeniedException(
+                    "You cannot modify another barber's appointment"
+            );
+        }
+
+        appointment.setStatus(
+                status
+        );
+
+        return toResponse(
+                appointmentRepository.save(
+                        appointment
+                )
+        );
     }
 
-    private AppointmentResponse toResponse(Appointment appointment) {
-        String clientName = appointment.getUser().getFirstName()
-                + " "
-                + appointment.getUser().getLastName();
+    private Appointment getAppointmentById(
+            Long id
+    ) {
+        return appointmentRepository
+                .findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Appointment not found with id: "
+                                        + id
+                        )
+                );
+    }
+
+    private User getUserByEmail(
+            String email
+    ) {
+        return userRepository
+                .findByEmailIgnoreCase(email)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "User not found with email: "
+                                        + email
+                        )
+                );
+    }
+
+    private Barber getBarberByEmail(
+            String email
+    ) {
+        return barberRepository
+                .findByUserEmailIgnoreCase(email)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "No barber profile is associated with user: "
+                                        + email
+                        )
+                );
+    }
+
+    private AppointmentResponse toResponse(
+            Appointment appointment
+    ) {
+        String clientName =
+                appointment
+                        .getUser()
+                        .getFirstName()
+                        + " "
+                        + appointment
+                        .getUser()
+                        .getLastName();
 
         return new AppointmentResponse(
                 appointment.getId(),
@@ -170,7 +357,7 @@ public class AppointmentService {
                 appointment.getBarber().getDisplayName(),
                 appointment.getService().getId(),
                 appointment.getService().getName(),
-                appointment.getService().getPrice(),
+                appointment.getServicePrice(),
                 appointment.getDate(),
                 appointment.getStartTime(),
                 appointment.getEndTime(),

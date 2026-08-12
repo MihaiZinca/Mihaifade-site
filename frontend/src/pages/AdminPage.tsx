@@ -17,7 +17,7 @@ type WelcomeRewardType =
     | "CASH_100"
     | "FREE_HAIRCUT";
 
-type AdminTab = "CALENDAR" | "CLIENTS" | "SERVICES";
+type AdminTab = "CALENDAR" | "CLIENTS" | "SERVICES" | "PROGRAM" | "BARBER";
 
 interface UserResponse {
     id: number;
@@ -40,6 +40,41 @@ interface WelcomeRewardStatusResponse {
     rewardUsed: boolean;
 }
 
+type DayOfWeek =
+    | "MONDAY"
+    | "TUESDAY"
+    | "WEDNESDAY"
+    | "THURSDAY"
+    | "FRIDAY"
+    | "SATURDAY"
+    | "SUNDAY";
+
+interface BarberResponse {
+    id: number;
+    displayName: string;
+    bio: string | null;
+    imageUrl: string | null;
+    active: boolean;
+    services?: BarbershopService[];
+}
+
+interface WorkingHoursResponse {
+    id: number | null;
+    dayOfWeek: DayOfWeek;
+    startTime: string;
+    endTime: string;
+    active: boolean;
+}
+
+interface TimeOffResponse {
+    id: number;
+    date: string;
+    startTime: string | null;
+    endTime: string | null;
+    fullDay: boolean;
+    reason: string | null;
+}
+
 const WEEK_DAYS = [
     "Luni",
     "Marți",
@@ -49,6 +84,19 @@ const WEEK_DAYS = [
     "Sâmbătă",
     "Duminică",
 ];
+
+const DAY_OF_WEEK_VALUES: DayOfWeek[] = [
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+    "SUNDAY",
+];
+
+const DEFAULT_PROGRAM_START = "09:00";
+const DEFAULT_PROGRAM_END = "18:00";
 
 const START_HOUR = 8;
 const END_HOUR = 21;
@@ -90,6 +138,28 @@ function AdminPage() {
     const [servicePrice, setServicePrice] = useState("");
     const [serviceDuration, setServiceDuration] = useState("");
     const [serviceActive, setServiceActive] = useState(true);
+
+    const [barber, setBarber] = useState<BarberResponse | null>(null);
+    const [workingHours, setWorkingHours] =
+        useState<WorkingHoursResponse[]>([]);
+    const [timeOff, setTimeOff] = useState<TimeOffResponse[]>([]);
+    const [programLoading, setProgramLoading] = useState(true);
+    const [savingProgramDay, setSavingProgramDay] =
+        useState<DayOfWeek | null>(null);
+    const [timeOffSaving, setTimeOffSaving] = useState(false);
+    const [timeOffDeletingId, setTimeOffDeletingId] =
+        useState<number | null>(null);
+    const [timeOffDate, setTimeOffDate] = useState("");
+    const [timeOffFullDay, setTimeOffFullDay] = useState(true);
+    const [timeOffStart, setTimeOffStart] = useState("12:00");
+    const [timeOffEnd, setTimeOffEnd] = useState("13:00");
+    const [timeOffReason, setTimeOffReason] = useState("");
+
+    const [barberSaving, setBarberSaving] = useState(false);
+    const [barberDisplayName, setBarberDisplayName] = useState("");
+    const [barberBio, setBarberBio] = useState("");
+    const [barberActive, setBarberActive] = useState(true);
+    const [barberServiceIds, setBarberServiceIds] = useState<number[]>([]);
 
     const loadAppointments = async () => {
         setLoading(true);
@@ -144,11 +214,79 @@ function AdminPage() {
         }
     };
 
+    const loadProgram = async () => {
+        setProgramLoading(true);
+
+        try {
+            const barbersResponse =
+                await api.get<BarberResponse[]>("/barbers");
+
+            const selectedBarber =
+                barbersResponse.data.find(
+                    (item) => item.active
+                ) ?? barbersResponse.data[0];
+
+            if (!selectedBarber) {
+                setBarber(null);
+                setWorkingHours([]);
+                setTimeOff([]);
+                setError(
+                    "Nu există niciun barber configurat."
+                );
+                return;
+            }
+
+            setBarber(selectedBarber);
+
+            const [
+                workingHoursResponse,
+                timeOffResponse,
+            ] = await Promise.all([
+                api.get<WorkingHoursResponse[]>(
+                    `/barbers/${selectedBarber.id}/working-hours`
+                ),
+                api.get<TimeOffResponse[]>(
+                    `/barbers/${selectedBarber.id}/time-off`
+                ),
+            ]);
+
+            setWorkingHours(
+                workingHoursResponse.data.map((item) => ({
+                    ...item,
+                    startTime: item.startTime.slice(0, 5),
+                    endTime: item.endTime.slice(0, 5),
+                }))
+            );
+
+            setTimeOff(timeOffResponse.data);
+        } catch {
+            setError(
+                "Programul de lucru nu a putut fi încărcat."
+            );
+        } finally {
+            setProgramLoading(false);
+        }
+    };
+
     useEffect(() => {
         loadAppointments();
         loadClients();
         loadServices();
+        loadProgram();
     }, []);
+
+    useEffect(() => {
+        if (!barber) {
+            return;
+        }
+
+        setBarberDisplayName(barber.displayName);
+        setBarberBio(barber.bio ?? "");
+        setBarberActive(barber.active);
+        setBarberServiceIds(
+            (barber.services ?? []).map((service) => service.id)
+        );
+    }, [barber]);
 
     const weekDays = useMemo(() => {
         const today = new Date();
@@ -200,6 +338,85 @@ function AdminPage() {
         );
     }, [appointments, weekDays]);
 
+    const calendarBounds = useMemo(() => {
+        const activeProgram =
+            workingHours.filter(
+                (item) => item.active
+            );
+
+        let startHour =
+            activeProgram.length > 0
+                ? Math.min(
+                      ...activeProgram.map((item) =>
+                          Math.floor(
+                              timeToMinutes(
+                                  item.startTime
+                              ) / 60
+                          )
+                      )
+                  )
+                : START_HOUR;
+
+        let endHour =
+            activeProgram.length > 0
+                ? Math.max(
+                      ...activeProgram.map((item) =>
+                          Math.ceil(
+                              timeToMinutes(
+                                  item.endTime
+                              ) / 60
+                          )
+                      )
+                  )
+                : END_HOUR;
+
+        if (calendarAppointments.length > 0) {
+            startHour = Math.min(
+                startHour,
+                ...calendarAppointments.map(
+                    (appointment) =>
+                        Math.floor(
+                            timeToMinutes(
+                                appointment.startTime
+                            ) / 60
+                        )
+                )
+            );
+
+            endHour = Math.max(
+                endHour,
+                ...calendarAppointments.map(
+                    (appointment) =>
+                        Math.ceil(
+                            timeToMinutes(
+                                appointment.endTime
+                            ) / 60
+                        )
+                )
+            );
+        }
+
+        startHour = Math.max(0, startHour);
+        endHour = Math.min(23, endHour);
+
+        if (endHour <= startHour) {
+            endHour = Math.min(
+                23,
+                startHour + 1
+            );
+        }
+
+        return {
+            startHour,
+            endHour,
+            hourCount:
+                endHour - startHour + 1,
+        };
+    }, [
+        workingHours,
+        calendarAppointments,
+    ]);
+
     const filteredClients = useMemo(() => {
         const search = clientSearch
             .trim()
@@ -229,6 +446,269 @@ function AdminPage() {
             );
         });
     }, [clients, clientSearch]);
+
+    const programDays = useMemo(
+        () =>
+            DAY_OF_WEEK_VALUES.map((dayOfWeek) => {
+                const existing = workingHours.find(
+                    (item) =>
+                        item.dayOfWeek === dayOfWeek
+                );
+
+                return (
+                    existing ?? {
+                        id: null,
+                        dayOfWeek,
+                        startTime:
+                            DEFAULT_PROGRAM_START,
+                        endTime:
+                            DEFAULT_PROGRAM_END,
+                        active: false,
+                    }
+                );
+            }),
+        [workingHours]
+    );
+
+    const updateWorkingDay = (
+        dayOfWeek: DayOfWeek,
+        patch: Partial<WorkingHoursResponse>
+    ) => {
+        setWorkingHours((current) => {
+            const existing = current.find(
+                (item) =>
+                    item.dayOfWeek === dayOfWeek
+            );
+
+            if (existing) {
+                return current.map((item) =>
+                    item.dayOfWeek === dayOfWeek
+                        ? {
+                              ...item,
+                              ...patch,
+                          }
+                        : item
+                );
+            }
+
+            return [
+                ...current,
+                {
+                    id: null,
+                    dayOfWeek,
+                    startTime:
+                        DEFAULT_PROGRAM_START,
+                    endTime:
+                        DEFAULT_PROGRAM_END,
+                    active: false,
+                    ...patch,
+                },
+            ];
+        });
+    };
+
+    const handleSaveWorkingDay = async (
+        day: WorkingHoursResponse
+    ) => {
+        if (!barber) {
+            return;
+        }
+
+        if (
+            day.active &&
+            day.startTime >= day.endTime
+        ) {
+            setError(
+                "Ora de început trebuie să fie înaintea orei de final."
+            );
+            return;
+        }
+
+        setSavingProgramDay(day.dayOfWeek);
+        setError("");
+
+        try {
+            const response =
+                await api.put<WorkingHoursResponse>(
+                    `/barbers/${barber.id}/working-hours`,
+                    {
+                        dayOfWeek: day.dayOfWeek,
+                        startTime: day.startTime,
+                        endTime: day.endTime,
+                        active: day.active,
+                    }
+                );
+
+            setWorkingHours((current) => {
+                const normalized = {
+                    ...response.data,
+                    startTime:
+                        response.data.startTime.slice(
+                            0,
+                            5
+                        ),
+                    endTime:
+                        response.data.endTime.slice(
+                            0,
+                            5
+                        ),
+                };
+
+                const exists = current.some(
+                    (item) =>
+                        item.dayOfWeek ===
+                        normalized.dayOfWeek
+                );
+
+                if (!exists) {
+                    return [
+                        ...current,
+                        normalized,
+                    ];
+                }
+
+                return current.map((item) =>
+                    item.dayOfWeek ===
+                    normalized.dayOfWeek
+                        ? normalized
+                        : item
+                );
+            });
+        } catch {
+            setError(
+                "Programul pentru această zi nu a putut fi salvat."
+            );
+        } finally {
+            setSavingProgramDay(null);
+        }
+    };
+
+    const handleSaveTimeOff = async (
+        event: React.FormEvent<HTMLFormElement>
+    ) => {
+        event.preventDefault();
+
+        if (!barber) {
+            return;
+        }
+
+        if (!timeOffDate) {
+            setError("Selectează data.");
+            return;
+        }
+
+        if (
+            !timeOffFullDay &&
+            timeOffStart >= timeOffEnd
+        ) {
+            setError(
+                "Ora de început a pauzei trebuie să fie înaintea orei de final."
+            );
+            return;
+        }
+
+        setTimeOffSaving(true);
+        setError("");
+
+        try {
+            const response =
+                await api.put<TimeOffResponse>(
+                    `/barbers/${barber.id}/time-off`,
+                    {
+                        date: timeOffDate,
+                        startTime:
+                            timeOffFullDay
+                                ? null
+                                : timeOffStart,
+                        endTime:
+                            timeOffFullDay
+                                ? null
+                                : timeOffEnd,
+                        fullDay: timeOffFullDay,
+                        reason:
+                            timeOffReason.trim() === ""
+                                ? null
+                                : timeOffReason.trim(),
+                    }
+                );
+
+            setTimeOff((current) => {
+                const exists = current.some(
+                    (item) =>
+                        item.date ===
+                        response.data.date
+                );
+
+                const next = exists
+                    ? current.map((item) =>
+                          item.date ===
+                          response.data.date
+                              ? response.data
+                              : item
+                      )
+                    : [
+                          ...current,
+                          response.data,
+                      ];
+
+                return [...next].sort((a, b) =>
+                    a.date.localeCompare(b.date)
+                );
+            });
+
+            setTimeOffDate("");
+            setTimeOffFullDay(true);
+            setTimeOffStart("12:00");
+            setTimeOffEnd("13:00");
+            setTimeOffReason("");
+        } catch {
+            setError(
+                "Ziua liberă / pauza nu a putut fi salvată."
+            );
+        } finally {
+            setTimeOffSaving(false);
+        }
+    };
+
+    const handleDeleteTimeOff = async (
+        item: TimeOffResponse
+    ) => {
+        if (!barber) {
+            return;
+        }
+
+        if (
+            !window.confirm(
+                `Ștergi indisponibilitatea din ${formatLongDate(
+                    item.date
+                )}?`
+            )
+        ) {
+            return;
+        }
+
+        setTimeOffDeletingId(item.id);
+        setError("");
+
+        try {
+            await api.delete(
+                `/barbers/${barber.id}/time-off/${item.id}`
+            );
+
+            setTimeOff((current) =>
+                current.filter(
+                    (entry) =>
+                        entry.id !== item.id
+                )
+            );
+        } catch {
+            setError(
+                "Indisponibilitatea nu a putut fi ștearsă."
+            );
+        } finally {
+            setTimeOffDeletingId(null);
+        }
+    };
 
     const filteredServices = useMemo(() => {
         const search = serviceSearch
@@ -336,12 +816,16 @@ function AdminPage() {
                         payload
                     );
 
-                setServices((current) =>
-                    current.map((service) =>
-                        service.id === response.data.id
-                            ? response.data
-                            : service
-                    )
+                const nextServices = services.map((service) =>
+                    service.id === response.data.id
+                        ? response.data
+                        : service
+                );
+
+                setServices(nextServices);
+
+                await syncActiveServicesToBarber(
+                    nextServices
                 );
             } else {
                 const response =
@@ -350,10 +834,16 @@ function AdminPage() {
                         payload
                     );
 
-                setServices((current) => [
-                    ...current,
+                const nextServices = [
+                    ...services,
                     response.data,
-                ]);
+                ];
+
+                setServices(nextServices);
+
+                await syncActiveServicesToBarber(
+                    nextServices
+                );
             }
 
             resetServiceForm();
@@ -383,15 +873,19 @@ function AdminPage() {
         try {
             await api.delete(`/services/${service.id}`);
 
-            setServices((current) =>
-                current.map((item) =>
-                    item.id === service.id
-                        ? {
-                              ...item,
-                              active: false,
-                          }
-                        : item
-                )
+            const nextServices = services.map((item) =>
+                item.id === service.id
+                    ? {
+                          ...item,
+                          active: false,
+                      }
+                    : item
+            );
+
+            setServices(nextServices);
+
+            await syncActiveServicesToBarber(
+                nextServices
             );
 
             if (selectedService?.id === service.id) {
@@ -420,12 +914,16 @@ function AdminPage() {
                     }
                 );
 
-            setServices((current) =>
-                current.map((item) =>
-                    item.id === response.data.id
-                        ? response.data
-                        : item
-                )
+            const nextServices = services.map((item) =>
+                item.id === response.data.id
+                    ? response.data
+                    : item
+            );
+
+            setServices(nextServices);
+
+            await syncActiveServicesToBarber(
+                nextServices
             );
         } catch {
             setError("Serviciul nu a putut fi reactivat.");
@@ -453,10 +951,14 @@ function AdminPage() {
                 `/services/${service.id}/permanent`
             );
 
-            setServices((current) =>
-                current.filter(
-                    (item) => item.id !== service.id
-                )
+            const nextServices = services.filter(
+                (item) => item.id !== service.id
+            );
+
+            setServices(nextServices);
+
+            await syncActiveServicesToBarber(
+                nextServices
             );
 
             if (selectedService?.id === service.id) {
@@ -468,6 +970,85 @@ function AdminPage() {
             );
         } finally {
             setServiceDeletingId(null);
+        }
+    };
+
+    const syncActiveServicesToBarber = async (
+        nextServices: BarbershopService[]
+    ) => {
+        if (!barber) {
+            return;
+        }
+
+        const activeServiceIds = nextServices
+            .filter((service) => service.active)
+            .map((service) => service.id);
+
+        const response = await api.put<BarberResponse>(
+            `/barbers/${barber.id}/services`,
+            activeServiceIds
+        );
+
+        setBarberServiceIds(activeServiceIds);
+
+        setBarber((current) =>
+            current
+                ? {
+                      ...current,
+                      services:
+                          response.data.services ??
+                          nextServices.filter(
+                              (service) => service.active
+                          ),
+                  }
+                : current
+        );
+    };
+
+    const handleSaveBarber = async (
+        event: React.FormEvent<HTMLFormElement>
+    ) => {
+        event.preventDefault();
+
+        if (!barber) {
+            return;
+        }
+
+        const displayName = barberDisplayName.trim();
+
+        if (!displayName) {
+            setError("Introdu numele barberului.");
+            return;
+        }
+
+        setBarberSaving(true);
+        setError("");
+
+        try {
+            const profileResponse = await api.put<BarberResponse>(
+                `/barbers/${barber.id}`,
+                {
+                    displayName,
+                    bio: barberBio.trim() === "" ? null : barberBio.trim(),
+                    imageUrl: barber.imageUrl,
+                    active: barberActive,
+                }
+            );
+
+            setBarber((current) => ({
+                ...profileResponse.data,
+                services:
+                    current?.services ??
+                    services.filter(
+                        (service) => service.active
+                    ),
+            }));
+        } catch {
+            setError(
+                "Datele barberului nu au putut fi salvate."
+            );
+        } finally {
+            setBarberSaving(false);
         }
     };
 
@@ -731,7 +1312,11 @@ function AdminPage() {
                             ? "Programări."
                             : activeTab === "CLIENTS"
                               ? "Clienți."
-                              : "Servicii."}
+                              : activeTab === "SERVICES"
+                                ? "Servicii."
+                                : activeTab === "PROGRAM"
+                                  ? "Program."
+                                  : "Barber."}
                     </h1>
 
                     <p>
@@ -739,7 +1324,11 @@ function AdminPage() {
                             ? "Organizează săptămâna și gestionează programările direct din calendar."
                             : activeTab === "CLIENTS"
                               ? "Vezi clienții, datele de contact și premiile de bun venit într-un singur loc."
-                              : "Adaugă, editează, dezactivează și reactivează serviciile afișate pe site."}
+                              : activeTab === "SERVICES"
+                                ? "Adaugă, editează, dezactivează și reactivează serviciile afișate pe site."
+                                : activeTab === "PROGRAM"
+                                  ? "Modifică orele de lucru, zilele închise și perioadele în care nu ești disponibil."
+                                  : "Modifică profilul barberului și serviciile pe care le oferă."}
                     </p>
                 </div>
 
@@ -835,6 +1424,34 @@ function AdminPage() {
                     >
                         Servicii
                     </button>
+
+                    <button
+                        type="button"
+                        className={
+                            activeTab === "PROGRAM"
+                                ? "admin-tab admin-tab--active"
+                                : "admin-tab"
+                        }
+                        onClick={() =>
+                            handleTabChange("PROGRAM")
+                        }
+                    >
+                        Program
+                    </button>
+
+                    <button
+                        type="button"
+                        className={
+                            activeTab === "BARBER"
+                                ? "admin-tab admin-tab--active"
+                                : "admin-tab"
+                        }
+                        onClick={() =>
+                            handleTabChange("BARBER")
+                        }
+                    >
+                        Barber
+                    </button>
                 </div>
 
                 {error && (
@@ -927,13 +1544,11 @@ function AdminPage() {
                                             {Array.from(
                                                 {
                                                     length:
-                                                        END_HOUR -
-                                                        START_HOUR +
-                                                        1,
+                                                        calendarBounds.hourCount,
                                                 },
                                                 (_, index) => {
                                                     const hour =
-                                                        START_HOUR +
+                                                        calendarBounds.startHour +
                                                         index;
 
                                                     return (
@@ -975,18 +1590,14 @@ function AdminPage() {
                                                     className="admin-calendar__day"
                                                     style={{
                                                         height:
-                                                            (END_HOUR -
-                                                                START_HOUR +
-                                                                1) *
+                                                            calendarBounds.hourCount *
                                                             SLOT_HEIGHT,
                                                     }}
                                                 >
                                                     {Array.from(
                                                         {
                                                             length:
-                                                                END_HOUR -
-                                                                START_HOUR +
-                                                                1,
+                                                                calendarBounds.hourCount,
                                                         },
                                                         (
                                                             _,
@@ -1012,7 +1623,8 @@ function AdminPage() {
                                                         ) => {
                                                             const position =
                                                                 getAppointmentPosition(
-                                                                    appointment
+                                                                    appointment,
+                                                                    calendarBounds.startHour
                                                                 );
 
                                                             return (
@@ -2018,6 +2630,618 @@ function AdminPage() {
                         )}
                     </>
                 )}
+
+                {activeTab === "PROGRAM" && (
+                    <>
+                        {programLoading ? (
+                            <p className="admin-message">
+                                Se încarcă programul...
+                            </p>
+                        ) : !barber ? (
+                            <p className="admin-message">
+                                Nu există barber configurat.
+                            </p>
+                        ) : (
+                            <div className="admin-program">
+                                <div className="admin-program__header">
+                                    <div>
+                                        <p className="section-eyebrow">
+                                            PROGRAM SĂPTĂMÂNAL
+                                        </p>
+
+                                        <h2>
+                                            {barber.displayName}
+                                        </h2>
+
+                                        <p>
+                                            Modificările salvate aici sunt folosite automat la disponibilitatea pentru programări și la intervalul afișat în calendarul Admin.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="admin-program-days">
+                                    {programDays.map(
+                                        (day, index) => (
+                                            <article
+                                                key={
+                                                    day.dayOfWeek
+                                                }
+                                                className={
+                                                    day.active
+                                                        ? "admin-program-day admin-program-day--active"
+                                                        : "admin-program-day admin-program-day--closed"
+                                                }
+                                            >
+                                                <div className="admin-program-day__identity">
+                                                    <strong>
+                                                        {
+                                                            WEEK_DAYS[
+                                                                index
+                                                            ]
+                                                        }
+                                                    </strong>
+
+                                                    <span>
+                                                        {day.active
+                                                            ? `${day.startTime} — ${day.endTime}`
+                                                            : "Închis"}
+                                                    </span>
+                                                </div>
+
+                                                <label className="admin-program-day__toggle">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={
+                                                            day.active
+                                                        }
+                                                        onChange={(
+                                                            event
+                                                        ) =>
+                                                            updateWorkingDay(
+                                                                day.dayOfWeek,
+                                                                {
+                                                                    active: event
+                                                                        .target
+                                                                        .checked,
+                                                                }
+                                                            )
+                                                        }
+                                                    />
+
+                                                    <span>
+                                                        Deschis
+                                                    </span>
+                                                </label>
+
+                                                <label>
+                                                    De la
+
+                                                    <input
+                                                        type="time"
+                                                        value={
+                                                            day.startTime
+                                                        }
+                                                        disabled={
+                                                            !day.active
+                                                        }
+                                                        onChange={(
+                                                            event
+                                                        ) =>
+                                                            updateWorkingDay(
+                                                                day.dayOfWeek,
+                                                                {
+                                                                    startTime:
+                                                                        event
+                                                                            .target
+                                                                            .value,
+                                                                }
+                                                            )
+                                                        }
+                                                    />
+                                                </label>
+
+                                                <label>
+                                                    Până la
+
+                                                    <input
+                                                        type="time"
+                                                        value={
+                                                            day.endTime
+                                                        }
+                                                        disabled={
+                                                            !day.active
+                                                        }
+                                                        onChange={(
+                                                            event
+                                                        ) =>
+                                                            updateWorkingDay(
+                                                                day.dayOfWeek,
+                                                                {
+                                                                    endTime:
+                                                                        event
+                                                                            .target
+                                                                            .value,
+                                                                }
+                                                            )
+                                                        }
+                                                    />
+                                                </label>
+
+                                                <button
+                                                    type="button"
+                                                    className="admin-program-day__save"
+                                                    disabled={
+                                                        savingProgramDay ===
+                                                        day.dayOfWeek
+                                                    }
+                                                    onClick={() =>
+                                                        handleSaveWorkingDay(
+                                                            day
+                                                        )
+                                                    }
+                                                >
+                                                    {savingProgramDay ===
+                                                    day.dayOfWeek
+                                                        ? "Se salvează..."
+                                                        : "Salvează"}
+                                                </button>
+                                            </article>
+                                        )
+                                    )}
+                                </div>
+
+                                <div className="admin-time-off">
+                                    <div className="admin-time-off__intro">
+                                        <div>
+                                            <p className="section-eyebrow">
+                                                ZILE LIBERE / PAUZE
+                                            </p>
+
+                                            <h2>
+                                                Indisponibilitate
+                                            </h2>
+
+                                            <p>
+                                                Poți bloca o zi întreagă sau doar un interval. Sloturile respective nu vor mai fi oferite clienților.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="admin-time-off__layout">
+                                        <form
+                                            className="admin-time-off-form"
+                                            onSubmit={
+                                                handleSaveTimeOff
+                                            }
+                                        >
+                                            <label className="admin-date-picker">
+                                                Data
+
+                                                <div className="admin-date-picker__field">
+                                                    <input
+                                                        type="date"
+                                                        value={
+                                                            timeOffDate
+                                                        }
+                                                        min={formatDateForApi(
+                                                            new Date()
+                                                        )}
+                                                        onChange={(
+                                                            event
+                                                        ) =>
+                                                            setTimeOffDate(
+                                                                event
+                                                                    .target
+                                                                    .value
+                                                            )
+                                                        }
+                                                        required
+                                                    />
+
+                                                    <span
+                                                        className="admin-date-picker__icon"
+                                                        aria-hidden="true"
+                                                    >
+                                                        📅
+                                                    </span>
+                                                </div>
+                                            </label>
+
+                                            <label className="admin-time-off-form__toggle">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={
+                                                        timeOffFullDay
+                                                    }
+                                                    onChange={(
+                                                        event
+                                                    ) =>
+                                                        setTimeOffFullDay(
+                                                            event
+                                                                .target
+                                                                .checked
+                                                        )
+                                                    }
+                                                />
+
+                                                <span>
+                                                    Toată ziua
+                                                </span>
+                                            </label>
+
+                                            {!timeOffFullDay && (
+                                                <div className="admin-time-off-form__row">
+                                                    <label>
+                                                        De la
+
+                                                        <input
+                                                            type="time"
+                                                            value={
+                                                                timeOffStart
+                                                            }
+                                                            onChange={(
+                                                                event
+                                                            ) =>
+                                                                setTimeOffStart(
+                                                                    event
+                                                                        .target
+                                                                        .value
+                                                                )
+                                                            }
+                                                            required
+                                                        />
+                                                    </label>
+
+                                                    <label>
+                                                        Până la
+
+                                                        <input
+                                                            type="time"
+                                                            value={
+                                                                timeOffEnd
+                                                            }
+                                                            onChange={(
+                                                                event
+                                                            ) =>
+                                                                setTimeOffEnd(
+                                                                    event
+                                                                        .target
+                                                                        .value
+                                                                )
+                                                            }
+                                                            required
+                                                        />
+                                                    </label>
+                                                </div>
+                                            )}
+
+                                            <label>
+                                                Motiv
+
+                                                <textarea
+                                                    rows={4}
+                                                    maxLength={
+                                                        500
+                                                    }
+                                                    value={
+                                                        timeOffReason
+                                                    }
+                                                    onChange={(
+                                                        event
+                                                    ) =>
+                                                        setTimeOffReason(
+                                                            event
+                                                                .target
+                                                                .value
+                                                        )
+                                                    }
+                                                    placeholder="Ex: concediu, curs, pauză..."
+                                                />
+                                            </label>
+
+                                            <button
+                                                type="submit"
+                                                className="admin-time-off-form__submit"
+                                                disabled={
+                                                    timeOffSaving
+                                                }
+                                            >
+                                                {timeOffSaving
+                                                    ? "Se salvează..."
+                                                    : "Adaugă indisponibilitate"}
+                                            </button>
+                                        </form>
+
+                                        <div className="admin-time-off-list">
+                                            {timeOff.length ===
+                                            0 ? (
+                                                <p className="admin-message">
+                                                    Nu există zile libere sau pauze configurate.
+                                                </p>
+                                            ) : (
+                                                timeOff.map(
+                                                    (item) => (
+                                                        <article
+                                                            key={
+                                                                item.id
+                                                            }
+                                                            className="admin-time-off-item"
+                                                        >
+                                                            <div>
+                                                                <strong>
+                                                                    {formatLongDate(
+                                                                        item.date
+                                                                    )}
+                                                                </strong>
+
+                                                                <span>
+                                                                    {item.fullDay
+                                                                        ? "Toată ziua"
+                                                                        : `${item.startTime?.slice(
+                                                                              0,
+                                                                              5
+                                                                          )} — ${item.endTime?.slice(
+                                                                              0,
+                                                                              5
+                                                                          )}`}
+                                                                </span>
+
+                                                                {item.reason && (
+                                                                    <small>
+                                                                        {
+                                                                            item.reason
+                                                                        }
+                                                                    </small>
+                                                                )}
+                                                            </div>
+
+                                                            <button
+                                                                type="button"
+                                                                disabled={
+                                                                    timeOffDeletingId ===
+                                                                    item.id
+                                                                }
+                                                                onClick={() =>
+                                                                    handleDeleteTimeOff(
+                                                                        item
+                                                                    )
+                                                                }
+                                                            >
+                                                                {timeOffDeletingId ===
+                                                                item.id
+                                                                    ? "Se șterge..."
+                                                                    : "Șterge"}
+                                                            </button>
+                                                        </article>
+                                                    )
+                                                )
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {activeTab === "BARBER" && (
+                    <>
+                        {programLoading ? (
+                            <p className="admin-message">
+                                Se încarcă datele barberului...
+                            </p>
+                        ) : !barber ? (
+                            <p className="admin-message">
+                                Nu există niciun barber configurat.
+                            </p>
+                        ) : (
+                            <div className="admin-program-layout">
+                                <section className="admin-program-card">
+                                    <div className="admin-program-card__header">
+                                        <div>
+                                            <p className="section-eyebrow">
+                                                PROFIL BARBER
+                                            </p>
+
+                                            <h2>
+                                                Date afișate pe site
+                                            </h2>
+                                        </div>
+
+                                        <span
+                                            className={
+                                                barberActive
+                                                    ? "admin-client-status admin-client-status--active"
+                                                    : "admin-client-status admin-client-status--inactive"
+                                            }
+                                        >
+                                            {barberActive
+                                                ? "ACTIV"
+                                                : "INACTIV"}
+                                        </span>
+                                    </div>
+
+                                    <form
+                                        className="admin-time-off-form"
+                                        onSubmit={handleSaveBarber}
+                                    >
+                                        <label>
+                                            Nume afișat
+
+                                            <input
+                                                type="text"
+                                                value={barberDisplayName}
+                                                onChange={(event) =>
+                                                    setBarberDisplayName(
+                                                        event.target.value
+                                                    )
+                                                }
+                                                placeholder="Numele barberului"
+                                                required
+                                            />
+                                        </label>
+
+                                        <label>
+                                            Bio / descriere
+
+                                            <textarea
+                                                value={barberBio}
+                                                onChange={(event) =>
+                                                    setBarberBio(
+                                                        event.target.value
+                                                    )
+                                                }
+                                                placeholder="Descriere scurtă pentru site..."
+                                                rows={6}
+                                            />
+                                        </label>
+
+                                        <label className="admin-program-day__toggle">
+                                            <input
+                                                type="checkbox"
+                                                checked={barberActive}
+                                                onChange={(event) =>
+                                                    setBarberActive(
+                                                        event.target.checked
+                                                    )
+                                                }
+                                            />
+
+                                            <span>
+                                                Barber activ
+                                            </span>
+                                        </label>
+
+                                        <div className="admin-program-card__header">
+                                            <div>
+                                                <p className="section-eyebrow">
+                                                    SERVICII
+                                                </p>
+
+                                                <h2>
+                                                    Servicii oferite
+                                                </h2>
+
+                                                <p>
+                                                    Serviciile active din tab-ul Servicii sunt oferite automat de barber.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="admin-barber-services">
+                                            {services.filter(
+                                                (service) => service.active
+                                            ).length === 0 ? (
+                                                <p className="admin-message">
+                                                    Nu există servicii active.
+                                                </p>
+                                            ) : (
+                                                services
+                                                    .filter(
+                                                        (service) =>
+                                                            service.active
+                                                    )
+                                                    .map((service) => (
+                                                        <article
+                                                            key={service.id}
+                                                            className="admin-barber-service-card"
+                                                        >
+                                                            <div>
+                                                                <strong>
+                                                                    {service.name}
+                                                                </strong>
+
+                                                                <span>
+                                                                    {service.description ||
+                                                                        "Fără descriere"}
+                                                                </span>
+                                                            </div>
+
+                                                            <div className="admin-barber-service-card__meta">
+                                                                <strong>
+                                                                    {formatCurrency(
+                                                                        Number(
+                                                                            service.price
+                                                                        )
+                                                                    )}
+                                                                </strong>
+
+                                                                <span>
+                                                                    {
+                                                                        service.durationMinutes
+                                                                    }{" "}
+                                                                    min
+                                                                </span>
+                                                            </div>
+                                                        </article>
+                                                    ))
+                                            )}
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            className="admin-service-add"
+                                            disabled={barberSaving}
+                                        >
+                                            {barberSaving
+                                                ? "Se salvează..."
+                                                : "Salvează profilul barberului"}
+                                        </button>
+                                    </form>
+                                </section>
+
+                                <aside className="admin-program-card">
+                                    <div className="admin-program-card__header">
+                                        <div>
+                                            <p className="section-eyebrow">
+                                                PREVIZUALIZARE
+                                            </p>
+
+                                            <h2>
+                                                Profil curent
+                                            </h2>
+                                        </div>
+                                    </div>
+
+                                    <div className="admin-appointment-panel__info">
+                                        <div>
+                                            <span>
+                                                Nume
+                                            </span>
+
+                                            <strong>
+                                                {barberDisplayName ||
+                                                    "Fără nume"}
+                                            </strong>
+                                        </div>
+
+                                        <div>
+                                            <span>
+                                                Descriere
+                                            </span>
+
+                                            <strong>
+                                                {barberBio ||
+                                                    "Fără descriere"}
+                                            </strong>
+                                        </div>
+
+                                        <div>
+                                            <span>
+                                                Servicii selectate
+                                            </span>
+
+                                            <strong>
+                                                {barberServiceIds.length}
+                                            </strong>
+                                        </div>
+                                    </div>
+                                </aside>
+                            </div>
+                        )}
+                    </>
+                )}
+
             </section>
         </main>
     );
@@ -2132,8 +3356,17 @@ function formatCurrency(value: number) {
     }).format(value);
 }
 
+function timeToMinutes(time: string) {
+    const [hours, minutes] = time
+        .split(":")
+        .map(Number);
+
+    return hours * 60 + minutes;
+}
+
 function getAppointmentPosition(
-    appointment: AppointmentResponse
+    appointment: AppointmentResponse,
+    calendarStartHour: number
 ) {
     const [startHour, startMinute] =
         appointment.startTime
@@ -2152,7 +3385,7 @@ function getAppointmentPosition(
         endHour * 60 + endMinute;
 
     const calendarStart =
-        START_HOUR * 60;
+        calendarStartHour * 60;
 
     const top =
         ((startMinutes - calendarStart) / 60) *

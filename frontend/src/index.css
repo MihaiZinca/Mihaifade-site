@@ -3929,3 +3929,531 @@ img {
         grid-template-columns: 1fr;
     }
 }
+/* ========================================
+   ADMIN - PROGRAM
+======================================== */
+
+.admin-program {
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+}
+
+.admin-program__header {
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.admin-program__header h2 {
+    margin: 6px 0 10px;
+    font-size: 28px;
+}
+
+.admin-program__header p {
+    max-width: 760px;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.42);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.admin-program-days {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-program-day {
+    display: grid;
+    grid-template-columns:
+        minmax(170px, 1fr)
+        110px
+        150px
+        150px
+        110px;
+    gap: 18px;
+    align-items: center;
+    padding: 18px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition:
+        background 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.admin-program-day--active {
+    background: rgba(255, 255, 255, 0.018);
+}
+
+.admin-program-day--closed {
+    background: rgba(255, 255, 255, 0.008);
+    opacity: 0.65;
+}
+
+.admin-program-day__identity {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.admin-program-day__identity strong {
+    font-size: 15px;
+}
+
+.admin-program-day__identity span {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 10px;
+}
+
+.admin-program-day label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    color: rgba(255, 255, 255, 0.38);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.admin-program-day input[type="time"] {
+    width: 100%;
+    min-height: 40px;
+    box-sizing: border-box;
+    padding: 0 10px;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    outline: none;
+    background: rgba(255, 255, 255, 0.025);
+    color: #fff;
+    font: inherit;
+    font-size: 11px;
+}
+
+.admin-program-day input[type="time"]:focus {
+    border-color: rgba(228, 204, 152, 0.6);
+}
+
+.admin-program-day input[type="time"]:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.admin-program-day__toggle {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 8px !important;
+    cursor: pointer;
+}
+
+.admin-program-day__toggle input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: #e4cc98;
+}
+
+.admin-program-day__toggle span {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.admin-program-day__save {
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid rgba(228, 204, 152, 0.55);
+    background: transparent;
+    color: #e4cc98;
+    font: inherit;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.admin-program-day__save:hover:not(:disabled) {
+    background: #e4cc98;
+    color: #111;
+}
+
+.admin-program-day__save:disabled {
+    opacity: 0.45;
+    cursor: wait;
+}
+
+
+/* ========================================
+   TIME OFF
+======================================== */
+
+.admin-time-off {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.admin-time-off__intro {
+    padding-top: 8px;
+}
+
+.admin-time-off__intro h2 {
+    margin: 6px 0 8px;
+    font-size: 26px;
+}
+
+.admin-time-off__intro p {
+    max-width: 720px;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.admin-time-off__layout {
+    display: grid;
+    grid-template-columns: 360px minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+}
+
+
+/* FORM */
+
+.admin-time-off-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    background: rgba(255, 255, 255, 0.018);
+}
+
+.admin-time-off-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.admin-time-off-form input,
+.admin-time-off-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    outline: none;
+    background: rgba(255, 255, 255, 0.025);
+    color: #fff;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.admin-time-off-form input:focus,
+.admin-time-off-form textarea:focus {
+    border-color: rgba(228, 204, 152, 0.6);
+}
+
+.admin-time-off-form textarea {
+    resize: vertical;
+    min-height: 90px;
+}
+
+.admin-time-off-form__toggle {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 9px !important;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    cursor: pointer;
+}
+
+.admin-time-off-form__toggle input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: #e4cc98;
+}
+
+.admin-time-off-form__toggle span {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.admin-time-off-form__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.admin-time-off-form__submit {
+    min-height: 46px;
+    border: 1px solid #e4cc98;
+    background: #e4cc98;
+    color: #111;
+    font: inherit;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.admin-time-off-form__submit:hover:not(:disabled) {
+    background: transparent;
+    color: #e4cc98;
+}
+
+.admin-time-off-form__submit:disabled {
+    opacity: 0.45;
+    cursor: wait;
+}
+
+
+/* LIST */
+
+.admin-time-off-list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-time-off-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.012);
+}
+
+.admin-time-off-item > div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.admin-time-off-item strong {
+    font-size: 13px;
+}
+
+.admin-time-off-item span {
+    color: #e4cc98;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.admin-time-off-item small {
+    color: rgba(255, 255, 255, 0.38);
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+.admin-time-off-item button {
+    min-width: 84px;
+    padding: 9px 12px;
+    border: 1px solid rgba(220, 70, 70, 0.35);
+    background: transparent;
+    color: #e58b8b;
+    font: inherit;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.admin-time-off-item button:hover:not(:disabled) {
+    border-color: rgba(220, 70, 70, 0.75);
+    background: rgba(220, 70, 70, 0.07);
+}
+
+.admin-time-off-item button:disabled {
+    opacity: 0.4;
+    cursor: wait;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 1050px) {
+    .admin-program-day {
+        grid-template-columns:
+            minmax(160px, 1fr)
+            100px
+            130px
+            130px;
+    }
+
+    .admin-program-day__save {
+        grid-column: 1 / -1;
+        width: fit-content;
+    }
+
+    .admin-time-off__layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .admin-program-day {
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    .admin-program-day__identity {
+        grid-column: 1 / -1;
+    }
+
+    .admin-program-day__save {
+        width: 100%;
+    }
+
+    .admin-time-off-form__row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 500px) {
+    .admin-program-day {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-program-day__identity,
+    .admin-program-day__save {
+        grid-column: auto;
+    }
+
+    .admin-time-off-item {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-time-off-item button {
+        width: 100%;
+    }
+}
+.admin-date-picker__field {
+    position: relative;
+}
+
+.admin-date-picker__field input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 44px 0 12px;
+
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    outline: none;
+
+    background: rgba(255, 255, 255, 0.025);
+    color: #ffffff;
+
+    font: inherit;
+    font-size: 11px;
+
+    cursor: pointer;
+}
+
+.admin-date-picker__field input:focus {
+    border-color: rgba(228, 204, 152, 0.6);
+}
+
+.admin-date-picker__icon {
+    position: absolute;
+    top: 50%;
+    right: 13px;
+
+    transform: translateY(-50%);
+
+    pointer-events: none;
+
+    font-size: 15px;
+    opacity: 0.65;
+}
+
+.admin-date-picker__field
+input::-webkit-calendar-picker-indicator {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    opacity: 0;
+    cursor: pointer;
+}
+.admin-barber-services {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    width: 100%;
+}
+
+.admin-barber-service-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    min-height: 82px;
+    padding: 18px 20px;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.admin-barber-service-card > div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.admin-barber-service-card > div:first-child strong {
+    color: #fff;
+    font-size: 14px;
+}
+
+.admin-barber-service-card > div:first-child span {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.admin-barber-service-card__meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.admin-barber-service-card__meta strong {
+    color: #e4cc98;
+    font-size: 13px;
+}
+
+.admin-barber-service-card__meta span {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 9px;
+}
+
+@media (max-width: 800px) {
+    .admin-barber-services {
+        grid-template-columns: 1fr;
+    }
+}
+

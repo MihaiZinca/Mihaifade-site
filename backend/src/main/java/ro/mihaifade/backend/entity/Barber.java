@@ -32,6 +32,13 @@ public class Barber {
     @Column(nullable = false)
     private Boolean active = true;
 
+    @OneToOne
+    @JoinColumn(
+            name = "user_id",
+            unique = true
+    )
+    private User user;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "barber_services",

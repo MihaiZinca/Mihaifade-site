@@ -15,7 +15,9 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(
+            UserRepository userRepository
+    ) {
         this.userRepository = userRepository;
     }
 
@@ -28,50 +30,113 @@ public class UserService {
 
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
-                        "User not found with id: " + id
-                ));
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "User not found with id: " + id
+                        )
+                );
 
         return toResponse(user);
     }
 
-    public UserResponse createUser(UserRequest request) {
+    public User getUserEntityById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "User not found with id: " + id
+                        )
+                );
+    }
+
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "User not found with email: " + email
+                        )
+                );
+    }
+
+    public UserResponse createUser(
+            UserRequest request
+    ) {
         if (request.email() != null
-                && userRepository.existsByEmailIgnoreCase(request.email())) {
-            throw new RuntimeException("Email already exists");
+                && userRepository.existsByEmailIgnoreCase(
+                request.email()
+        )) {
+            throw new RuntimeException(
+                    "Email already exists"
+            );
         }
 
         if (request.phone() != null
-                && userRepository.existsByPhone(request.phone())) {
-            throw new RuntimeException("Phone already exists");
+                && userRepository.existsByPhone(
+                request.phone()
+        )) {
+            throw new RuntimeException(
+                    "Phone already exists"
+            );
         }
 
         User user = new User();
 
-        user.setFirstName(request.firstName());
-        user.setLastName(request.lastName());
-        user.setEmail(request.email());
-        user.setPhone(request.phone());
-        user.setRole(Role.CLIENT);
+        user.setFirstName(
+                request.firstName()
+        );
+
+        user.setLastName(
+                request.lastName()
+        );
+
+        user.setEmail(
+                request.email()
+        );
+
+        user.setPhone(
+                request.phone()
+        );
+
+        user.setRole(
+                Role.CLIENT
+        );
+
         user.setActive(true);
 
-        return toResponse(userRepository.save(user));
+        return toResponse(
+                userRepository.save(user)
+        );
+    }
+
+    public UserResponse changeUserRole(
+            Long userId,
+            Role role
+    ) {
+        User user =
+                getUserEntityById(userId);
+
+        user.setRole(role);
+
+        User savedUser =
+                userRepository.save(user);
+
+        return toResponse(savedUser);
     }
 
     public UserResponse completeMyProfile(
             String email,
             CompleteProfileRequest request
     ) {
-        User user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new RuntimeException(
-                        "User not found"
-                ));
+        User user =
+                getUserByEmail(email);
 
-        String phone = request.phone().trim();
+        String phone =
+                request.phone().trim();
 
         userRepository.findByPhone(phone)
                 .filter(existingUser ->
-                        !existingUser.getId().equals(user.getId())
+                        !existingUser
+                                .getId()
+                                .equals(user.getId())
                 )
                 .ifPresent(existingUser -> {
                     throw new RuntimeException(
@@ -81,23 +146,26 @@ public class UserService {
 
         user.setPhone(phone);
 
-        User savedUser = userRepository.save(user);
+        User savedUser =
+                userRepository.save(user);
 
         return toResponse(savedUser);
     }
 
-    public void deactivateMyAccount(String email) {
-        User user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new RuntimeException(
-                        "User not found"
-                ));
+    public void deactivateMyAccount(
+            String email
+    ) {
+        User user =
+                getUserByEmail(email);
 
         user.setActive(false);
 
         userRepository.save(user);
     }
 
-    private UserResponse toResponse(User user) {
+    private UserResponse toResponse(
+            User user
+    ) {
         return new UserResponse(
                 user.getId(),
                 user.getFirstName(),

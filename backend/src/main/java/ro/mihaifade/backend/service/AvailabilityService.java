@@ -4,9 +4,14 @@ import org.springframework.stereotype.Service;
 import ro.mihaifade.backend.dto.AvailabilityResponse;
 import ro.mihaifade.backend.entity.Appointment;
 import ro.mihaifade.backend.entity.AppointmentStatus;
+import ro.mihaifade.backend.entity.Barber;
 import ro.mihaifade.backend.entity.TimeOff;
 import ro.mihaifade.backend.entity.WorkingHours;
-import ro.mihaifade.backend.repository.*;
+import ro.mihaifade.backend.repository.AppointmentRepository;
+import ro.mihaifade.backend.repository.BarberRepository;
+import ro.mihaifade.backend.repository.ServiceRepository;
+import ro.mihaifade.backend.repository.TimeOffRepository;
+import ro.mihaifade.backend.repository.WorkingHoursRepository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -44,9 +49,16 @@ public class AvailabilityService {
             Long serviceId,
             LocalDate date
     ) {
-        if (!barberRepository.existsById(barberId)) {
+        Barber barber = barberRepository.findById(barberId)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Barber not found with id: " + barberId
+                        )
+                );
+
+        if (!Boolean.TRUE.equals(barber.getActive())) {
             throw new RuntimeException(
-                    "Barber not found with id: " + barberId
+                    "Barber is not active"
             );
         }
 
@@ -58,14 +70,41 @@ public class AvailabilityService {
                                 )
                         );
 
+        if (!Boolean.TRUE.equals(service.getActive())) {
+            throw new RuntimeException(
+                    "Service is not active"
+            );
+        }
+
+        boolean barberOffersService =
+                barber.getServices()
+                        .stream()
+                        .anyMatch(barberService ->
+                                barberService
+                                        .getId()
+                                        .equals(serviceId)
+                        );
+
+        if (!barberOffersService) {
+            throw new RuntimeException(
+                    "Selected barber does not offer this service"
+            );
+        }
+
         Optional<WorkingHours> workingHoursOptional =
                 workingHoursRepository.findByBarberIdAndDayOfWeek(
                         barberId,
                         date.getDayOfWeek()
                 );
 
-        if (workingHoursOptional.isEmpty()
-                || !workingHoursOptional.get().getActive()) {
+        if (
+                workingHoursOptional.isEmpty()
+                        || !Boolean.TRUE.equals(
+                        workingHoursOptional
+                                .get()
+                                .getActive()
+                )
+        ) {
             return new AvailabilityResponse(
                     date,
                     barberId,
@@ -84,8 +123,14 @@ public class AvailabilityService {
                         date
                 );
 
-        if (timeOffOptional.isPresent()
-                && timeOffOptional.get().getFullDay()) {
+        if (
+                timeOffOptional.isPresent()
+                        && Boolean.TRUE.equals(
+                        timeOffOptional
+                                .get()
+                                .getFullDay()
+                )
+        ) {
             return new AvailabilityResponse(
                     date,
                     barberId,
@@ -96,11 +141,12 @@ public class AvailabilityService {
         }
 
         List<Appointment> appointments =
-                appointmentRepository.findByBarberIdAndDateAndStatusNot(
-                        barberId,
-                        date,
-                        AppointmentStatus.CANCELLED
-                );
+                appointmentRepository
+                        .findByBarberIdAndDateAndStatusNot(
+                                barberId,
+                                date,
+                                AppointmentStatus.CANCELLED
+                        );
 
         List<LocalTime> availableSlots =
                 new ArrayList<>();
@@ -108,11 +154,17 @@ public class AvailabilityService {
         LocalTime current =
                 workingHours.getStartTime();
 
-        while (!current
-                .plusMinutes(service.getDurationMinutes())
-                .isAfter(workingHours.getEndTime())) {
-
-            LocalTime slotStart = current;
+        while (
+                !current
+                        .plusMinutes(
+                                service.getDurationMinutes()
+                        )
+                        .isAfter(
+                                workingHours.getEndTime()
+                        )
+        ) {
+            LocalTime slotStart =
+                    current;
 
             LocalTime slotEnd =
                     slotStart.plusMinutes(
@@ -125,16 +177,23 @@ public class AvailabilityService {
                                     slotStart.isBefore(
                                             appointment.getEndTime()
                                     )
-                                            && slotEnd.isAfter(
-                                            appointment.getStartTime()
-                                    )
+                                            &&
+                                            slotEnd.isAfter(
+                                                    appointment.getStartTime()
+                                            )
                             );
 
-            boolean overlapsTimeOff = false;
+            boolean overlapsTimeOff =
+                    false;
 
-            if (timeOffOptional.isPresent()
-                    && !timeOffOptional.get().getFullDay()) {
-
+            if (
+                    timeOffOptional.isPresent()
+                            && !Boolean.TRUE.equals(
+                            timeOffOptional
+                                    .get()
+                                    .getFullDay()
+                    )
+            ) {
                 TimeOff timeOff =
                         timeOffOptional.get();
 
@@ -142,19 +201,25 @@ public class AvailabilityService {
                         slotStart.isBefore(
                                 timeOff.getEndTime()
                         )
-                                && slotEnd.isAfter(
-                                timeOff.getStartTime()
-                        );
+                                &&
+                                slotEnd.isAfter(
+                                        timeOff.getStartTime()
+                                );
             }
 
-            if (!overlapsAppointment
-                    && !overlapsTimeOff) {
-                availableSlots.add(slotStart);
+            if (
+                    !overlapsAppointment
+                            && !overlapsTimeOff
+            ) {
+                availableSlots.add(
+                        slotStart
+                );
             }
 
-            current = current.plusMinutes(
-                    SLOT_INTERVAL_MINUTES
-            );
+            current =
+                    current.plusMinutes(
+                            SLOT_INTERVAL_MINUTES
+                    );
         }
 
         return new AvailabilityResponse(

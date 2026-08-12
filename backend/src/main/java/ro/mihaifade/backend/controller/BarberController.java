@@ -2,7 +2,9 @@ package ro.mihaifade.backend.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import ro.mihaifade.backend.dto.CreateBarberAccountRequest;
 import ro.mihaifade.backend.entity.Barber;
 import ro.mihaifade.backend.service.BarberService;
 
@@ -26,6 +28,15 @@ public class BarberController {
         return barberService.getAllBarbers();
     }
 
+    @GetMapping("/me")
+    public Barber getMyBarberProfile(
+            Authentication authentication
+    ) {
+        return barberService.getBarberByUserEmail(
+                authentication.getName()
+        );
+    }
+
     @GetMapping("/{id}")
     public Barber getBarberById(
             @PathVariable Long id
@@ -39,7 +50,43 @@ public class BarberController {
             @Valid
             @RequestBody Barber barber
     ) {
-        return barberService.createBarber(barber);
+        return barberService.createBarber(
+                barber
+        );
+    }
+
+    @PostMapping("/account")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Barber createBarberAccount(
+            @Valid
+            @RequestBody CreateBarberAccountRequest request
+    ) {
+        return barberService.createBarberAccount(
+                request
+        );
+    }
+
+    @PutMapping("/me")
+    public Barber updateMyBarberProfile(
+            @Valid
+            @RequestBody Barber barber,
+            Authentication authentication
+    ) {
+        return barberService.updateMyBarberProfile(
+                authentication.getName(),
+                barber
+        );
+    }
+
+    @PutMapping("/me/services")
+    public Barber assignMyServices(
+            @RequestBody Set<Long> serviceIds,
+            Authentication authentication
+    ) {
+        return barberService.assignMyServices(
+                authentication.getName(),
+                serviceIds
+        );
     }
 
     @PutMapping("/{id}")
@@ -48,7 +95,10 @@ public class BarberController {
             @Valid
             @RequestBody Barber barber
     ) {
-        return barberService.updateBarber(id, barber);
+        return barberService.updateBarber(
+                id,
+                barber
+        );
     }
 
     @PutMapping("/{id}/services")
@@ -67,6 +117,8 @@ public class BarberController {
     public void deactivateBarber(
             @PathVariable Long id
     ) {
-        barberService.deactivateBarber(id);
+        barberService.deactivateBarber(
+                id
+        );
     }
 }
