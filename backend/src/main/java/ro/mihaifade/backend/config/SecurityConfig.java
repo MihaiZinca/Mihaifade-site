@@ -91,6 +91,68 @@ public class SecurityConfig {
 
                                 .requestMatchers(
                                         HttpMethod.GET,
+                                        "/api/reviews"
+                                )
+                                .permitAll()
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/reviews/me"
+                                )
+                                .hasRole(
+                                        "CLIENT"
+                                )
+
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/reviews/me"
+                                )
+                                .hasRole(
+                                        "CLIENT"
+                                )
+
+                                .requestMatchers(
+                                        HttpMethod.PUT,
+                                        "/api/reviews/me"
+                                )
+                                .hasRole(
+                                        "CLIENT"
+                                )
+
+                                .requestMatchers(
+                                        HttpMethod.DELETE,
+                                        "/api/reviews/me"
+                                )
+                                .hasRole(
+                                        "CLIENT"
+                                )
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/reviews/admin"
+                                )
+                                .hasRole(
+                                        "OWNER"
+                                )
+
+                                .requestMatchers(
+                                        HttpMethod.PUT,
+                                        "/api/reviews/*/active"
+                                )
+                                .hasRole(
+                                        "OWNER"
+                                )
+
+                                .requestMatchers(
+                                        HttpMethod.DELETE,
+                                        "/api/reviews/*/permanent"
+                                )
+                                .hasRole(
+                                        "OWNER"
+                                )
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
                                         "/api/barbers/me"
                                 )
                                 .hasAnyRole(

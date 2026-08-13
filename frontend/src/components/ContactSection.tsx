@@ -130,7 +130,7 @@ function ContactSection() {
                 </div>
 
                 <p className="home-contact__intro">
-                    Descoperă barberii,
+                    Descoperă frizerii,
                     urmărește-i pe platformele
                     preferate și alege omul
                     potrivit pentru stilul tău.

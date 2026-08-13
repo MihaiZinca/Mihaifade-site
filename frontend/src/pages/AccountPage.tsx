@@ -4,15 +4,63 @@ import api from "../services/api";
 import { getRole, logout } from "../services/auth";
 import type { AppointmentResponse } from "../types";
 
+interface ReviewResponse {
+    id: number;
+    userId: number;
+    clientName: string;
+    rating: number;
+    comment: string;
+    active: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
 function AccountPage() {
     const navigate = useNavigate();
     const role = getRole();
 
-    const [appointments, setAppointments] = useState<AppointmentResponse[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-    const [cancellingId, setCancellingId] = useState<number | null>(null);
-    const [deletingAccount, setDeletingAccount] = useState(false);
+    const [appointments, setAppointments] =
+        useState<AppointmentResponse[]>([]);
+
+    const [loading, setLoading] =
+        useState(true);
+
+    const [error, setError] =
+        useState("");
+
+    const [cancellingId, setCancellingId] =
+        useState<number | null>(null);
+
+    const [deletingAccount, setDeletingAccount] =
+        useState(false);
+
+    /*
+     * REVIEW
+     */
+
+    const [review, setReview] =
+        useState<ReviewResponse | null>(null);
+
+    const [reviewRating, setReviewRating] =
+        useState(5);
+
+    const [reviewComment, setReviewComment] =
+        useState("");
+
+    const [reviewLoading, setReviewLoading] =
+        useState(false);
+
+    const [reviewSaving, setReviewSaving] =
+        useState(false);
+
+    const [reviewDeleting, setReviewDeleting] =
+        useState(false);
+
+    const [reviewError, setReviewError] =
+        useState("");
+
+    const [reviewSuccess, setReviewSuccess] =
+        useState("");
 
     const loadAppointments = async () => {
         setLoading(true);
@@ -43,6 +91,7 @@ function AccountPage() {
             }
 
             setAppointments([]);
+
             setError(
                 "Rolul contului nu a putut fi identificat."
             );
@@ -57,8 +106,52 @@ function AccountPage() {
         }
     };
 
+    const loadMyReview = async () => {
+        if (role !== "CLIENT") {
+            return;
+        }
+
+        setReviewLoading(true);
+        setReviewError("");
+
+        try {
+            const response =
+                await api.get<ReviewResponse>(
+                    "/reviews/me"
+                );
+
+            setReview(response.data);
+
+            setReviewRating(
+                response.data.rating
+            );
+
+            setReviewComment(
+                response.data.comment
+            );
+        } catch {
+            /*
+             * Dacă utilizatorul nu are încă o recenzie,
+             * endpoint-ul poate răspunde cu eroare.
+             *
+             * Nu afișăm eroare generală deoarece acest caz
+             * înseamnă pur și simplu că trebuie afișat
+             * formularul pentru prima recenzie.
+             */
+            setReview(null);
+            setReviewRating(5);
+            setReviewComment("");
+        } finally {
+            setReviewLoading(false);
+        }
+    };
+
     useEffect(() => {
         loadAppointments();
+
+        if (role === "CLIENT") {
+            loadMyReview();
+        }
     }, [role]);
 
     const activeAppointments = useMemo(
@@ -93,7 +186,9 @@ function AccountPage() {
         [appointments]
     );
 
-    const handleCancel = async (appointmentId: number) => {
+    const handleCancel = async (
+        appointmentId: number
+    ) => {
         if (role !== "CLIENT") {
             return;
         }
@@ -102,9 +197,10 @@ function AccountPage() {
         setError("");
 
         try {
-            const response = await api.put<AppointmentResponse>(
-                `/appointments/${appointmentId}/cancel`
-            );
+            const response =
+                await api.put<AppointmentResponse>(
+                    `/appointments/${appointmentId}/cancel`
+                );
 
             setAppointments((current) =>
                 current.map((appointment) =>
@@ -114,7 +210,9 @@ function AccountPage() {
                 )
             );
         } catch {
-            setError("Programarea nu a putut fi anulată.");
+            setError(
+                "Programarea nu a putut fi anulată."
+            );
         } finally {
             setCancellingId(null);
         }
@@ -122,7 +220,10 @@ function AccountPage() {
 
     const handleBarberStatusChange = async (
         appointmentId: number,
-        status: "COMPLETED" | "CANCELLED" | "NO_SHOW"
+        status:
+            | "COMPLETED"
+            | "CANCELLED"
+            | "NO_SHOW"
     ) => {
         if (
             role !== "BARBER" &&
@@ -135,15 +236,16 @@ function AccountPage() {
         setError("");
 
         try {
-            const response = await api.put<AppointmentResponse>(
-                `/appointments/barber/me/${appointmentId}/status`,
-                null,
-                {
-                    params: {
-                        status,
-                    },
-                }
-            );
+            const response =
+                await api.put<AppointmentResponse>(
+                    `/appointments/barber/me/${appointmentId}/status`,
+                    null,
+                    {
+                        params: {
+                            status,
+                        },
+                    }
+                );
 
             setAppointments((current) =>
                 current.map((appointment) =>
@@ -158,6 +260,141 @@ function AccountPage() {
             );
         } finally {
             setCancellingId(null);
+        }
+    };
+
+    /*
+     * REVIEW - SAVE
+     */
+
+    const handleSaveReview = async () => {
+        if (role !== "CLIENT") {
+            return;
+        }
+
+        const cleanComment =
+            reviewComment.trim();
+
+        setReviewError("");
+        setReviewSuccess("");
+
+        if (
+            reviewRating < 1 ||
+            reviewRating > 5
+        ) {
+            setReviewError(
+                "Alege un rating între 1 și 5 stele."
+            );
+            return;
+        }
+
+        if (!cleanComment) {
+            setReviewError(
+                "Scrie câteva cuvinte despre experiența ta."
+            );
+            return;
+        }
+
+        if (cleanComment.length > 1500) {
+            setReviewError(
+                "Recenzia poate avea maximum 1500 de caractere."
+            );
+            return;
+        }
+
+        setReviewSaving(true);
+
+        try {
+            const payload = {
+                rating: reviewRating,
+                comment: cleanComment,
+            };
+
+            let response;
+
+            if (review) {
+                response =
+                    await api.put<ReviewResponse>(
+                        "/reviews/me",
+                        payload
+                    );
+            } else {
+                response =
+                    await api.post<ReviewResponse>(
+                        "/reviews/me",
+                        payload
+                    );
+            }
+
+            setReview(response.data);
+
+            setReviewRating(
+                response.data.rating
+            );
+
+            setReviewComment(
+                response.data.comment
+            );
+
+            setReviewSuccess(
+                review
+                    ? "Recenzia a fost actualizată."
+                    : "Recenzia a fost publicată. Mulțumim!"
+            );
+        } catch {
+            setReviewError(
+                review
+                    ? "Recenzia nu a putut fi actualizată."
+                    : "Recenzia nu a putut fi publicată."
+            );
+        } finally {
+            setReviewSaving(false);
+        }
+    };
+
+    /*
+     * REVIEW - DELETE
+     */
+
+    const handleDeleteReview = async () => {
+        if (
+            role !== "CLIENT" ||
+            !review
+        ) {
+            return;
+        }
+
+        const confirmed =
+            window.confirm(
+                "Sigur vrei să ștergi recenzia?"
+            );
+
+        if (!confirmed) {
+            return;
+        }
+
+        setReviewDeleting(true);
+        setReviewError("");
+        setReviewSuccess("");
+
+        try {
+            await api.delete(
+                "/reviews/me"
+            );
+
+            setReview(null);
+            setReviewRating(5);
+            setReviewComment("");
+
+            setReviewSuccess(
+                "Recenzia a fost ștearsă."
+            );
+        } catch {
+            setReviewError(
+                "Recenzia nu a putut fi ștearsă."
+            );
+        } finally {
+            setReviewDeleting(false);
         }
     };
 
@@ -178,9 +415,10 @@ function AccountPage() {
             return;
         }
 
-        const confirmed = window.confirm(
-            "Sigur vrei să îți ștergi contul? Nu vei mai putea folosi acest cont pentru autentificare."
-        );
+        const confirmed =
+            window.confirm(
+                "Sigur vrei să îți ștergi contul? Nu vei mai putea folosi acest cont pentru autentificare."
+            );
 
         if (!confirmed) {
             return;
@@ -190,7 +428,9 @@ function AccountPage() {
         setError("");
 
         try {
-            await api.delete("/users/me");
+            await api.delete(
+                "/users/me"
+            );
 
             logout();
 
@@ -209,7 +449,10 @@ function AccountPage() {
     return (
         <main className="account-page">
             <header className="account-header">
-                <Link to="/" className="account-header__brand">
+                <Link
+                    to="/"
+                    className="account-header__brand"
+                >
                     MIHAIFADE
                 </Link>
 
@@ -303,17 +546,22 @@ function AccountPage() {
                                 </div>
 
                                 <span>
-                                    {activeAppointments.length}
+                                    {
+                                        activeAppointments.length
+                                    }
                                 </span>
                             </div>
 
-                            {activeAppointments.length === 0 ? (
+                            {activeAppointments.length ===
+                            0 ? (
                                 <div className="account-empty">
                                     <p>
-                                        Nu ai nicio programare activă.
+                                        Nu ai nicio
+                                        programare activă.
                                     </p>
 
-                                    {role === "CLIENT" && (
+                                    {role ===
+                                        "CLIENT" && (
                                         <Link to="/programare">
                                             Fă o programare
                                         </Link>
@@ -321,108 +569,130 @@ function AccountPage() {
                                 </div>
                             ) : (
                                 <div className="account-appointments">
-                                    {activeAppointments.map((appointment) => (
-                                        <article
-                                            key={appointment.id}
-                                            className="account-appointment"
-                                        >
-                                            <div className="account-appointment__main">
-                                                <div>
-                                                    <span className="account-appointment__status">
-                                                        {appointment.status}
-                                                    </span>
+                                    {activeAppointments.map(
+                                        (
+                                            appointment
+                                        ) => (
+                                            <article
+                                                key={
+                                                    appointment.id
+                                                }
+                                                className="account-appointment"
+                                            >
+                                                <div className="account-appointment__main">
+                                                    <div>
+                                                        <span className="account-appointment__status">
+                                                            {
+                                                                appointment.status
+                                                            }
+                                                        </span>
 
-                                                    <h3>
-                                                        {appointment.serviceName}
-                                                    </h3>
+                                                        <h3>
+                                                            {
+                                                                appointment.serviceName
+                                                            }
+                                                        </h3>
 
-                                                    <p>
-                                                        {appointment.barberName}
+                                                        <p>
+                                                            {
+                                                                appointment.barberName
+                                                            }
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="account-appointment__date">
+                                                        <strong>
+                                                            {
+                                                                appointment.date
+                                                            }
+                                                        </strong>
+
+                                                        <span>
+                                                            {appointment.startTime.slice(
+                                                                0,
+                                                                5
+                                                            )}
+
+                                                            {
+                                                                " - "
+                                                            }
+
+                                                            {appointment.endTime.slice(
+                                                                0,
+                                                                5
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {appointment.notes && (
+                                                    <p className="account-appointment__notes">
+                                                        {
+                                                            appointment.notes
+                                                        }
                                                     </p>
-                                                </div>
-
-                                                <div className="account-appointment__date">
-                                                    <strong>
-                                                        {appointment.date}
-                                                    </strong>
-
-                                                    <span>
-                                                        {appointment.startTime.slice(
-                                                            0,
-                                                            5
-                                                        )}
-                                                        {" - "}
-                                                        {appointment.endTime.slice(
-                                                            0,
-                                                            5
-                                                        )}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            {appointment.notes && (
-                                                <p className="account-appointment__notes">
-                                                    {appointment.notes}
-                                                </p>
-                                            )}
-
-                                            <div className="account-appointment__actions">
-                                                {role === "CLIENT" ? (
-                                                    <button
-                                                        type="button"
-                                                        disabled={
-                                                            cancellingId ===
-                                                            appointment.id
-                                                        }
-                                                        onClick={() =>
-                                                            handleCancel(
-                                                                appointment.id
-                                                            )
-                                                        }
-                                                    >
-                                                        {cancellingId ===
-                                                        appointment.id
-                                                            ? "Se anulează..."
-                                                            : "Anulează programarea"}
-                                                    </button>
-                                                ) : (
-                                                    <>
-                                                        <button
-                                                            type="button"
-                                                            disabled={
-                                                                cancellingId ===
-                                                                appointment.id
-                                                            }
-                                                            onClick={() =>
-                                                                handleBarberStatusChange(
-                                                                    appointment.id,
-                                                                    "COMPLETED"
-                                                                )
-                                                            }
-                                                        >
-                                                            Finalizează
-                                                        </button>
-
-                                                        <button
-                                                            type="button"
-                                                            disabled={
-                                                                cancellingId ===
-                                                                appointment.id
-                                                            }
-                                                            onClick={() =>
-                                                                handleBarberStatusChange(
-                                                                    appointment.id,
-                                                                    "NO_SHOW"
-                                                                )
-                                                            }
-                                                        >
-                                                            No show
-                                                        </button>
-                                                    </>
                                                 )}
-                                            </div>
-                                        </article>
-                                    ))}
+
+                                                <div className="account-appointment__actions">
+                                                    {role ===
+                                                    "CLIENT" ? (
+                                                        <button
+                                                            type="button"
+                                                            disabled={
+                                                                cancellingId ===
+                                                                appointment.id
+                                                            }
+                                                            onClick={() =>
+                                                                handleCancel(
+                                                                    appointment.id
+                                                                )
+                                                            }
+                                                        >
+                                                            {cancellingId ===
+                                                            appointment.id
+                                                                ? "Se anulează..."
+                                                                : "Anulează programarea"}
+                                                        </button>
+                                                    ) : (
+                                                        <>
+                                                            <button
+                                                                type="button"
+                                                                disabled={
+                                                                    cancellingId ===
+                                                                    appointment.id
+                                                                }
+                                                                onClick={() =>
+                                                                    handleBarberStatusChange(
+                                                                        appointment.id,
+                                                                        "COMPLETED"
+                                                                    )
+                                                                }
+                                                            >
+                                                                Finalizează
+                                                            </button>
+
+                                                            <button
+                                                                type="button"
+                                                                disabled={
+                                                                    cancellingId ===
+                                                                    appointment.id
+                                                                }
+                                                                onClick={() =>
+                                                                    handleBarberStatusChange(
+                                                                        appointment.id,
+                                                                        "NO_SHOW"
+                                                                    )
+                                                                }
+                                                            >
+                                                                No
+                                                                show
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </article>
+                                        )
+                                    )}
                                 </div>
                             )}
                         </section>
@@ -435,87 +705,347 @@ function AccountPage() {
                                     </p>
 
                                     <h2>
-                                        Programări anterioare
+                                        Programări
+                                        anterioare
                                     </h2>
                                 </div>
 
                                 <span>
-                                    {historyAppointments.length}
+                                    {
+                                        historyAppointments.length
+                                    }
                                 </span>
                             </div>
 
-                            {historyAppointments.length === 0 ? (
+                            {historyAppointments.length ===
+                            0 ? (
                                 <p className="account-message">
-                                    Nu există încă programări în istoric.
+                                    Nu există încă
+                                    programări în istoric.
                                 </p>
                             ) : (
                                 <div className="account-history">
-                                    {historyAppointments.map((appointment) => (
-                                        <article
-                                            key={appointment.id}
-                                            className="account-history__item"
-                                        >
-                                            <div>
-                                                <span>
-                                                    {appointment.status}
-                                                </span>
+                                    {historyAppointments.map(
+                                        (
+                                            appointment
+                                        ) => (
+                                            <article
+                                                key={
+                                                    appointment.id
+                                                }
+                                                className="account-history__item"
+                                            >
+                                                <div>
+                                                    <span>
+                                                        {
+                                                            appointment.status
+                                                        }
+                                                    </span>
 
-                                                <strong>
-                                                    {appointment.serviceName}
-                                                </strong>
-                                            </div>
+                                                    <strong>
+                                                        {
+                                                            appointment.serviceName
+                                                        }
+                                                    </strong>
+                                                </div>
 
-                                            <div>
-                                                <span>
-                                                    {appointment.date}
-                                                </span>
+                                                <div>
+                                                    <span>
+                                                        {
+                                                            appointment.date
+                                                        }
+                                                    </span>
 
-                                                <strong>
-                                                    {appointment.startTime.slice(
-                                                        0,
-                                                        5
-                                                    )}
-                                                </strong>
-                                            </div>
-                                        </article>
-                                    ))}
+                                                    <strong>
+                                                        {appointment.startTime.slice(
+                                                            0,
+                                                            5
+                                                        )}
+                                                    </strong>
+                                                </div>
+                                            </article>
+                                        )
+                                    )}
                                 </div>
                             )}
                         </section>
 
                         {role === "CLIENT" && (
-                        <section className="account-danger">
-                            <div>
-                                <p className="section-eyebrow">
-                                    CONT
-                                </p>
+                            <section className="account-section account-review">
+                                <div className="account-section__header">
+                                    <div>
+                                        <p className="section-eyebrow">
+                                            RECENZIA MEA
+                                        </p>
 
-                                <h2>
-                                    Șterge contul
-                                </h2>
+                                        <h2>
+                                            Spune-ne cum a
+                                            fost.
+                                        </h2>
+                                    </div>
 
-                                <p>
-                                    Contul va fi dezactivat și nu te vei
-                                    mai putea autentifica folosind acest cont.
-                                </p>
-                            </div>
+                                    {review && (
+                                        <span>
+                                            {
+                                                review.rating
+                                            }
+                                            /5
+                                        </span>
+                                    )}
+                                </div>
 
-                            <button
-                                type="button"
-                                onClick={handleDeleteAccount}
-                                disabled={deletingAccount}
-                            >
-                                {deletingAccount
-                                    ? "Se șterge..."
-                                    : "Șterge contul"}
-                            </button>
-                        </section>
+                                {reviewLoading ? (
+                                    <p className="account-message">
+                                        Se încarcă
+                                        recenzia...
+                                    </p>
+                                ) : (
+                                    <div className="account-review__content">
+                                        <div className="account-review__intro">
+                                            <p>
+                                                Experiența ta
+                                                contează.
+                                                Alege numărul
+                                                de stele și
+                                                spune-ne cum a
+                                                fost vizita ta
+                                                la MIHAIFADE.
+                                            </p>
+
+                                            {review && (
+                                                <span className="account-review__published">
+                                                    Recenzie
+                                                    publicată
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <div className="account-review__rating">
+                                            <span className="account-review__label">
+                                                Rating
+                                            </span>
+
+                                            <div className="account-review__stars">
+                                                {[
+                                                    1, 2, 3, 4,
+                                                    5,
+                                                ].map(
+                                                    (
+                                                        star
+                                                    ) => (
+                                                        <button
+                                                            key={
+                                                                star
+                                                            }
+                                                            type="button"
+                                                            className={
+                                                                star <=
+                                                                reviewRating
+                                                                    ? "account-review__star account-review__star--active"
+                                                                    : "account-review__star"
+                                                            }
+                                                            onClick={() => {
+                                                                setReviewRating(
+                                                                    star
+                                                                );
+
+                                                                setReviewError(
+                                                                    ""
+                                                                );
+
+                                                                setReviewSuccess(
+                                                                    ""
+                                                                );
+                                                            }}
+                                                            aria-label={`${star} stele`}
+                                                            title={`${star} stele`}
+                                                        >
+                                                            ★
+                                                        </button>
+                                                    )
+                                                )}
+                                            </div>
+
+                                            <strong>
+                                                {
+                                                    reviewRating
+                                                }
+                                                /5
+                                            </strong>
+                                        </div>
+
+                                        <label className="account-review__field">
+                                            <span>
+                                                Recenzia ta
+                                            </span>
+
+                                            <textarea
+                                                value={
+                                                    reviewComment
+                                                }
+                                                onChange={(
+                                                    event
+                                                ) => {
+                                                    setReviewComment(
+                                                        event
+                                                            .target
+                                                            .value
+                                                    );
+
+                                                    setReviewError(
+                                                        ""
+                                                    );
+
+                                                    setReviewSuccess(
+                                                        ""
+                                                    );
+                                                }}
+                                                maxLength={
+                                                    1500
+                                                }
+                                                rows={6}
+                                                placeholder="Scrie aici cum a fost experiența ta..."
+                                            />
+
+                                            <small>
+                                                {
+                                                    reviewComment.length
+                                                }
+                                                /1500
+                                            </small>
+                                        </label>
+
+                                        {reviewError && (
+                                            <p className="account-review__error">
+                                                {
+                                                    reviewError
+                                                }
+                                            </p>
+                                        )}
+
+                                        {reviewSuccess && (
+                                            <p className="account-review__success">
+                                                {
+                                                    reviewSuccess
+                                                }
+                                            </p>
+                                        )}
+
+                                        <div className="account-review__actions">
+                                            <button
+                                                type="button"
+                                                className="account-review__save"
+                                                onClick={
+                                                    handleSaveReview
+                                                }
+                                                disabled={
+                                                    reviewSaving ||
+                                                    reviewDeleting
+                                                }
+                                            >
+                                                {reviewSaving
+                                                    ? "Se salvează..."
+                                                    : review
+                                                      ? "Salvează modificările"
+                                                      : "Publică recenzia"}
+                                            </button>
+
+                                            {review && (
+                                                <button
+                                                    type="button"
+                                                    className="account-review__delete"
+                                                    onClick={
+                                                        handleDeleteReview
+                                                    }
+                                                    disabled={
+                                                        reviewSaving ||
+                                                        reviewDeleting
+                                                    }
+                                                >
+                                                    {reviewDeleting
+                                                        ? "Se șterge..."
+                                                        : "Șterge recenzia"}
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {review && (
+                                            <p className="account-review__date">
+                                                Publicată la{" "}
+                                                {formatReviewDate(
+                                                    review.createdAt
+                                                )}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+                            </section>
+                        )}
+
+                        {role === "CLIENT" && (
+                            <section className="account-danger">
+                                <div>
+                                    <p className="section-eyebrow">
+                                        CONT
+                                    </p>
+
+                                    <h2>
+                                        Șterge contul
+                                    </h2>
+
+                                    <p>
+                                        Contul va fi
+                                        dezactivat și nu te
+                                        vei mai putea
+                                        autentifica folosind
+                                        acest cont.
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={
+                                        handleDeleteAccount
+                                    }
+                                    disabled={
+                                        deletingAccount
+                                    }
+                                >
+                                    {deletingAccount
+                                        ? "Se șterge..."
+                                        : "Șterge contul"}
+                                </button>
+                            </section>
                         )}
                     </>
                 )}
             </section>
         </main>
     );
+}
+
+function formatReviewDate(
+    value: string
+) {
+    const date =
+        new Date(value);
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return value;
+    }
+
+    return new Intl.DateTimeFormat(
+        "ro-RO",
+        {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+        }
+    ).format(date);
 }
 
 export default AccountPage;

@@ -3,6 +3,7 @@ import FinalStatement from "../components/FinalStatement";
 import GallerySection from "../components/GallerySection";
 import Hero from "../components/Hero";
 import Navbar from "../components/Navbar";
+import ReviewsSection from "../components/ReviewsSection";
 import ServicesSection from "../components/ServicesSection";
 
 function HomePage() {
@@ -14,6 +15,7 @@ function HomePage() {
                 <Hero />
                 <ServicesSection />
                 <GallerySection />
+                <ReviewsSection />
                 <ContactSection />
                 <FinalStatement />
             </main>

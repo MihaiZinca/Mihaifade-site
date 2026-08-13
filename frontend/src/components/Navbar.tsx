@@ -31,6 +31,7 @@ function Navbar() {
             <nav className="navbar__links">
                 <a href="#servicii">Servicii</a>
                 <a href="#galerie">Galerie</a>
+                <a href="#recenzii">Recenzii</a>
                 <a href="#contact">Contact</a>
             </nav>
 
