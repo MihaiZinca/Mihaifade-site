@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
-import { logout } from "../services/auth";
+import { getRole, logout } from "../services/auth";
 import type { AppointmentResponse } from "../types";
 
 function AccountPage() {
     const navigate = useNavigate();
+    const role = getRole();
 
     const [appointments, setAppointments] = useState<AppointmentResponse[]>([]);
     const [loading, setLoading] = useState(true);
@@ -18,13 +19,39 @@ function AccountPage() {
         setError("");
 
         try {
-            const response = await api.get<AppointmentResponse[]>(
-                "/appointments/me"
-            );
+            if (role === "CLIENT") {
+                const response =
+                    await api.get<AppointmentResponse[]>(
+                        "/appointments/me"
+                    );
 
-            setAppointments(response.data);
+                setAppointments(response.data);
+                return;
+            }
+
+            if (
+                role === "BARBER" ||
+                role === "OWNER"
+            ) {
+                const response =
+                    await api.get<AppointmentResponse[]>(
+                        "/appointments/barber/me"
+                    );
+
+                setAppointments(response.data);
+                return;
+            }
+
+            setAppointments([]);
+            setError(
+                "Rolul contului nu a putut fi identificat."
+            );
         } catch {
-            setError("Programările nu au putut fi încărcate.");
+            setError(
+                role === "CLIENT"
+                    ? "Programările nu au putut fi încărcate."
+                    : "Programările barberului nu au putut fi încărcate."
+            );
         } finally {
             setLoading(false);
         }
@@ -32,7 +59,7 @@ function AccountPage() {
 
     useEffect(() => {
         loadAppointments();
-    }, []);
+    }, [role]);
 
     const activeAppointments = useMemo(
         () =>
@@ -67,6 +94,10 @@ function AccountPage() {
     );
 
     const handleCancel = async (appointmentId: number) => {
+        if (role !== "CLIENT") {
+            return;
+        }
+
         setCancellingId(appointmentId);
         setError("");
 
@@ -89,6 +120,47 @@ function AccountPage() {
         }
     };
 
+    const handleBarberStatusChange = async (
+        appointmentId: number,
+        status: "COMPLETED" | "CANCELLED" | "NO_SHOW"
+    ) => {
+        if (
+            role !== "BARBER" &&
+            role !== "OWNER"
+        ) {
+            return;
+        }
+
+        setCancellingId(appointmentId);
+        setError("");
+
+        try {
+            const response = await api.put<AppointmentResponse>(
+                `/appointments/barber/me/${appointmentId}/status`,
+                null,
+                {
+                    params: {
+                        status,
+                    },
+                }
+            );
+
+            setAppointments((current) =>
+                current.map((appointment) =>
+                    appointment.id === appointmentId
+                        ? response.data
+                        : appointment
+                )
+            );
+        } catch {
+            setError(
+                "Statusul programării nu a putut fi actualizat."
+            );
+        } finally {
+            setCancellingId(null);
+        }
+    };
+
     const handleBack = () => {
         navigate("/");
     };
@@ -102,6 +174,10 @@ function AccountPage() {
     };
 
     const handleDeleteAccount = async () => {
+        if (role !== "CLIENT") {
+            return;
+        }
+
         const confirmed = window.confirm(
             "Sigur vrei să îți ștergi contul? Nu vei mai putea folosi acest cont pentru autentificare."
         );
@@ -146,12 +222,32 @@ function AccountPage() {
                         Înapoi
                     </button>
 
-                    <Link
-                        to="/programare"
-                        className="account-header__booking"
-                    >
-                        Programare nouă
-                    </Link>
+                    {role === "CLIENT" && (
+                        <Link
+                            to="/programare"
+                            className="account-header__booking"
+                        >
+                            Programare nouă
+                        </Link>
+                    )}
+
+                    {role === "OWNER" && (
+                        <Link
+                            to="/admin"
+                            className="account-header__booking"
+                        >
+                            Panou
+                        </Link>
+                    )}
+
+                    {role === "BARBER" && (
+                        <Link
+                            to="/barber"
+                            className="account-header__booking"
+                        >
+                            Panou
+                        </Link>
+                    )}
 
                     <button
                         type="button"
@@ -170,12 +266,15 @@ function AccountPage() {
                     </p>
 
                     <h1>
-                        Programările mele.
+                        {role === "CLIENT"
+                            ? "Programările mele."
+                            : "Programările mele ca barber."}
                     </h1>
 
                     <p>
-                        Vezi programările active, istoricul și anulează
-                        programările care nu mai sunt de actualitate.
+                        {role === "CLIENT"
+                            ? "Vezi programările active, istoricul și anulează programările care nu mai sunt de actualitate."
+                            : "Vezi programările tale de barber și actualizează statusul lor."}
                     </p>
                 </div>
 
@@ -214,9 +313,11 @@ function AccountPage() {
                                         Nu ai nicio programare activă.
                                     </p>
 
-                                    <Link to="/programare">
-                                        Fă o programare
-                                    </Link>
+                                    {role === "CLIENT" && (
+                                        <Link to="/programare">
+                                            Fă o programare
+                                        </Link>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="account-appointments">
@@ -266,23 +367,59 @@ function AccountPage() {
                                             )}
 
                                             <div className="account-appointment__actions">
-                                                <button
-                                                    type="button"
-                                                    disabled={
-                                                        cancellingId ===
-                                                        appointment.id
-                                                    }
-                                                    onClick={() =>
-                                                        handleCancel(
+                                                {role === "CLIENT" ? (
+                                                    <button
+                                                        type="button"
+                                                        disabled={
+                                                            cancellingId ===
                                                             appointment.id
-                                                        )
-                                                    }
-                                                >
-                                                    {cancellingId ===
-                                                    appointment.id
-                                                        ? "Se anulează..."
-                                                        : "Anulează programarea"}
-                                                </button>
+                                                        }
+                                                        onClick={() =>
+                                                            handleCancel(
+                                                                appointment.id
+                                                            )
+                                                        }
+                                                    >
+                                                        {cancellingId ===
+                                                        appointment.id
+                                                            ? "Se anulează..."
+                                                            : "Anulează programarea"}
+                                                    </button>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            type="button"
+                                                            disabled={
+                                                                cancellingId ===
+                                                                appointment.id
+                                                            }
+                                                            onClick={() =>
+                                                                handleBarberStatusChange(
+                                                                    appointment.id,
+                                                                    "COMPLETED"
+                                                                )
+                                                            }
+                                                        >
+                                                            Finalizează
+                                                        </button>
+
+                                                        <button
+                                                            type="button"
+                                                            disabled={
+                                                                cancellingId ===
+                                                                appointment.id
+                                                            }
+                                                            onClick={() =>
+                                                                handleBarberStatusChange(
+                                                                    appointment.id,
+                                                                    "NO_SHOW"
+                                                                )
+                                                            }
+                                                        >
+                                                            No show
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                         </article>
                                     ))}
@@ -346,6 +483,7 @@ function AccountPage() {
                             )}
                         </section>
 
+                        {role === "CLIENT" && (
                         <section className="account-danger">
                             <div>
                                 <p className="section-eyebrow">
@@ -372,6 +510,7 @@ function AccountPage() {
                                     : "Șterge contul"}
                             </button>
                         </section>
+                        )}
                     </>
                 )}
             </section>

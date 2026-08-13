@@ -28,6 +28,10 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             Long serviceId
     );
 
+    boolean existsByBarberId(
+            Long barberId
+    );
+
     List<Appointment> findByBarberIdOrderByDateDescStartTimeDesc(
             Long barberId
     );

@@ -15,15 +15,21 @@ public class TimeOffController {
 
     private final TimeOffService timeOffService;
 
-    public TimeOffController(TimeOffService timeOffService) {
-        this.timeOffService = timeOffService;
+    public TimeOffController(
+            TimeOffService timeOffService
+    ) {
+        this.timeOffService =
+                timeOffService;
     }
 
     @GetMapping
     public List<TimeOffResponse> getTimeOff(
             @PathVariable Long barberId
     ) {
-        return timeOffService.getTimeOffForBarber(barberId);
+        return timeOffService
+                .getTimeOffForBarber(
+                        barberId
+                );
     }
 
     @PutMapping
@@ -32,10 +38,11 @@ public class TimeOffController {
             @Valid
             @RequestBody TimeOffRequest request
     ) {
-        return timeOffService.setTimeOff(
-                barberId,
-                request
-        );
+        return timeOffService
+                .setTimeOff(
+                        barberId,
+                        request
+                );
     }
 
     @DeleteMapping("/{id}")
@@ -44,9 +51,10 @@ public class TimeOffController {
             @PathVariable Long barberId,
             @PathVariable Long id
     ) {
-        timeOffService.deleteTimeOff(
-                barberId,
-                id
-        );
+        timeOffService
+                .deleteTimeOff(
+                        barberId,
+                        id
+                );
     }
 }

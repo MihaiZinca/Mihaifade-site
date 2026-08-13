@@ -1,7 +1,7 @@
 export const TOKEN_KEY = "mihaifade_token";
 export const ROLE_KEY = "mihaifade_role";
 
-export type UserRole = "CLIENT" | "OWNER";
+export type UserRole = "CLIENT" | "BARBER" | "OWNER";
 
 export function getToken() {
     return localStorage.getItem(TOKEN_KEY);
@@ -10,7 +10,11 @@ export function getToken() {
 export function getRole(): UserRole | null {
     const role = localStorage.getItem(ROLE_KEY);
 
-    if (role === "CLIENT" || role === "OWNER") {
+    if (
+        role === "CLIENT" ||
+        role === "BARBER" ||
+        role === "OWNER"
+    ) {
         return role;
     }
 

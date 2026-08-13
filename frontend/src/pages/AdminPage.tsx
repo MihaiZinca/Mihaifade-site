@@ -17,7 +17,7 @@ type WelcomeRewardType =
     | "CASH_100"
     | "FREE_HAIRCUT";
 
-type AdminTab = "CALENDAR" | "CLIENTS" | "SERVICES" | "PROGRAM" | "BARBER";
+type AdminTab = "CALENDAR" | "CLIENTS" | "SERVICES" | "PROGRAM" | "BARBER" | "CONTACT";
 
 interface UserResponse {
     id: number;
@@ -25,7 +25,7 @@ interface UserResponse {
     lastName: string;
     email: string;
     phone: string | null;
-    role: "CLIENT" | "OWNER";
+    role: "CLIENT" | "BARBER" | "OWNER";
     active: boolean;
     welcomeSpinUsed: boolean;
     welcomeReward: WelcomeRewardType | null;
@@ -54,8 +54,21 @@ interface BarberResponse {
     displayName: string;
     bio: string | null;
     imageUrl: string | null;
+    instagramUrl: string | null;
+    facebookUrl: string | null;
+    youtubeUrl: string | null;
+    tiktokUrl: string | null;
     active: boolean;
     services?: BarbershopService[];
+    user?: {
+        id: number;
+        firstName: string;
+        lastName: string;
+        email: string;
+        phone: string | null;
+        role: "BARBER" | "OWNER";
+        active: boolean;
+    } | null;
 }
 
 interface WorkingHoursResponse {
@@ -73,6 +86,13 @@ interface TimeOffResponse {
     endTime: string | null;
     fullDay: boolean;
     reason: string | null;
+}
+
+interface ShopSettingsResponse {
+    id: number;
+    address: string;
+    mapEmbedUrl: string | null;
+    mapsUrl: string | null;
 }
 
 const WEEK_DAYS = [
@@ -139,6 +159,7 @@ function AdminPage() {
     const [serviceDuration, setServiceDuration] = useState("");
     const [serviceActive, setServiceActive] = useState(true);
 
+    const [barbers, setBarbers] = useState<BarberResponse[]>([]);
     const [barber, setBarber] = useState<BarberResponse | null>(null);
     const [workingHours, setWorkingHours] =
         useState<WorkingHoursResponse[]>([]);
@@ -156,10 +177,69 @@ function AdminPage() {
     const [timeOffReason, setTimeOffReason] = useState("");
 
     const [barberSaving, setBarberSaving] = useState(false);
+    const [barberDeletingId, setBarberDeletingId] =
+        useState<number | null>(null);
     const [barberDisplayName, setBarberDisplayName] = useState("");
     const [barberBio, setBarberBio] = useState("");
+    const [barberInstagramUrl, setBarberInstagramUrl] = useState("");
+    const [barberFacebookUrl, setBarberFacebookUrl] = useState("");
+    const [barberYoutubeUrl, setBarberYoutubeUrl] = useState("");
+    const [barberTiktokUrl, setBarberTiktokUrl] = useState("");
     const [barberActive, setBarberActive] = useState(true);
     const [barberServiceIds, setBarberServiceIds] = useState<number[]>([]);
+
+    const [shopSettings, setShopSettings] =
+        useState<ShopSettingsResponse | null>(null);
+    const [shopSettingsLoading, setShopSettingsLoading] = useState(true);
+    const [shopSettingsSaving, setShopSettingsSaving] = useState(false);
+    const [shopAddress, setShopAddress] = useState("");
+    const [shopMapEmbedUrl, setShopMapEmbedUrl] = useState("");
+    const [shopMapsUrl, setShopMapsUrl] = useState("");
+
+    const [barberCreateOpen, setBarberCreateOpen] = useState(false);
+    const [barberCreating, setBarberCreating] = useState(false);
+    const [newBarberFirstName, setNewBarberFirstName] = useState("");
+    const [newBarberLastName, setNewBarberLastName] = useState("");
+    const [newBarberEmail, setNewBarberEmail] = useState("");
+    const [newBarberPhone, setNewBarberPhone] = useState("");
+    const [newBarberPassword, setNewBarberPassword] = useState("");
+    const [newBarberDisplayName, setNewBarberDisplayName] = useState("");
+    const [newBarberBio, setNewBarberBio] = useState("");
+    const [newBarberServiceIds, setNewBarberServiceIds] = useState<number[]>([]);
+
+    const loadShopSettings = async () => {
+        setShopSettingsLoading(true);
+
+        try {
+            const response =
+                await api.get<ShopSettingsResponse>(
+                    "/shop-settings"
+                );
+
+            setShopSettings(
+                response.data
+            );
+
+            setShopAddress(
+                response.data.address ?? ""
+            );
+
+            setShopMapEmbedUrl(
+                response.data.mapEmbedUrl ?? ""
+            );
+
+            setShopMapsUrl(
+                response.data.mapsUrl ?? ""
+            );
+        } catch {
+            setShopSettings(null);
+            setError(
+                "Datele de contact ale frizeriei nu au putut fi încărcate."
+            );
+        } finally {
+            setShopSettingsLoading(false);
+        }
+    };
 
     const loadAppointments = async () => {
         setLoading(true);
@@ -214,30 +294,12 @@ function AdminPage() {
         }
     };
 
-    const loadProgram = async () => {
+    const loadBarberSchedule = async (
+        selectedBarber: BarberResponse
+    ) => {
         setProgramLoading(true);
 
         try {
-            const barbersResponse =
-                await api.get<BarberResponse[]>("/barbers");
-
-            const selectedBarber =
-                barbersResponse.data.find(
-                    (item) => item.active
-                ) ?? barbersResponse.data[0];
-
-            if (!selectedBarber) {
-                setBarber(null);
-                setWorkingHours([]);
-                setTimeOff([]);
-                setError(
-                    "Nu există niciun barber configurat."
-                );
-                return;
-            }
-
-            setBarber(selectedBarber);
-
             const [
                 workingHoursResponse,
                 timeOffResponse,
@@ -260,6 +322,8 @@ function AdminPage() {
 
             setTimeOff(timeOffResponse.data);
         } catch {
+            setWorkingHours([]);
+            setTimeOff([]);
             setError(
                 "Programul de lucru nu a putut fi încărcat."
             );
@@ -268,11 +332,73 @@ function AdminPage() {
         }
     };
 
+    const loadProgram = async () => {
+        setProgramLoading(true);
+
+        try {
+            const barbersResponse =
+                await api.get<BarberResponse[]>("/barbers");
+
+            setBarbers(barbersResponse.data);
+
+            const selectedBarber =
+                barbersResponse.data.find(
+                    (item) => item.active
+                ) ?? barbersResponse.data[0];
+
+            if (!selectedBarber) {
+                setBarber(null);
+                setWorkingHours([]);
+                setTimeOff([]);
+                setError(
+                    "Nu există niciun barber configurat."
+                );
+                return;
+            }
+
+            setBarber(selectedBarber);
+
+            await loadBarberSchedule(
+                selectedBarber
+            );
+        } catch {
+            setBarbers([]);
+            setBarber(null);
+            setWorkingHours([]);
+            setTimeOff([]);
+            setError(
+                "Barberii nu au putut fi încărcați."
+            );
+            setProgramLoading(false);
+        }
+    };
+
+    const handleSelectBarber = async (
+        barberId: number
+    ) => {
+        const selectedBarber =
+            barbers.find(
+                (item) => item.id === barberId
+            );
+
+        if (!selectedBarber) {
+            return;
+        }
+
+        setBarber(selectedBarber);
+        setError("");
+
+        await loadBarberSchedule(
+            selectedBarber
+        );
+    };
+
     useEffect(() => {
         loadAppointments();
         loadClients();
         loadServices();
         loadProgram();
+        loadShopSettings();
     }, []);
 
     useEffect(() => {
@@ -282,6 +408,10 @@ function AdminPage() {
 
         setBarberDisplayName(barber.displayName);
         setBarberBio(barber.bio ?? "");
+        setBarberInstagramUrl(barber.instagramUrl ?? "");
+        setBarberFacebookUrl(barber.facebookUrl ?? "");
+        setBarberYoutubeUrl(barber.youtubeUrl ?? "");
+        setBarberTiktokUrl(barber.tiktokUrl ?? "");
         setBarberActive(barber.active);
         setBarberServiceIds(
             (barber.services ?? []).map((service) => service.id)
@@ -824,9 +954,6 @@ function AdminPage() {
 
                 setServices(nextServices);
 
-                await syncActiveServicesToBarber(
-                    nextServices
-                );
             } else {
                 const response =
                     await api.post<BarbershopService>(
@@ -841,9 +968,6 @@ function AdminPage() {
 
                 setServices(nextServices);
 
-                await syncActiveServicesToBarber(
-                    nextServices
-                );
             }
 
             resetServiceForm();
@@ -884,9 +1008,6 @@ function AdminPage() {
 
             setServices(nextServices);
 
-            await syncActiveServicesToBarber(
-                nextServices
-            );
 
             if (selectedService?.id === service.id) {
                 resetServiceForm();
@@ -922,9 +1043,6 @@ function AdminPage() {
 
             setServices(nextServices);
 
-            await syncActiveServicesToBarber(
-                nextServices
-            );
         } catch {
             setError("Serviciul nu a putut fi reactivat.");
         } finally {
@@ -957,9 +1075,6 @@ function AdminPage() {
 
             setServices(nextServices);
 
-            await syncActiveServicesToBarber(
-                nextServices
-            );
 
             if (selectedService?.id === service.id) {
                 resetServiceForm();
@@ -973,36 +1088,261 @@ function AdminPage() {
         }
     };
 
-    const syncActiveServicesToBarber = async (
-        nextServices: BarbershopService[]
+    const handleToggleBarberService = (
+        serviceId: number
     ) => {
-        if (!barber) {
+        setBarberServiceIds((current) =>
+            current.includes(serviceId)
+                ? current.filter(
+                      (id) => id !== serviceId
+                  )
+                : [...current, serviceId]
+        );
+    };
+
+    const handleToggleNewBarberService = (
+        serviceId: number
+    ) => {
+        setNewBarberServiceIds((current) =>
+            current.includes(serviceId)
+                ? current.filter(
+                      (id) => id !== serviceId
+                  )
+                : [...current, serviceId]
+        );
+    };
+
+    const resetNewBarberForm = () => {
+        setNewBarberFirstName("");
+        setNewBarberLastName("");
+        setNewBarberEmail("");
+        setNewBarberPhone("");
+        setNewBarberPassword("");
+        setNewBarberDisplayName("");
+        setNewBarberBio("");
+        setNewBarberServiceIds([]);
+        setBarberCreateOpen(false);
+    };
+
+    const handleCreateBarberAccount = async (
+        event: React.FormEvent<HTMLFormElement>
+    ) => {
+        event.preventDefault();
+
+        const firstName =
+            newBarberFirstName.trim();
+        const lastName =
+            newBarberLastName.trim();
+        const email =
+            newBarberEmail.trim();
+        const displayName =
+            newBarberDisplayName.trim();
+
+        if (
+            !firstName ||
+            !lastName ||
+            !email ||
+            !newBarberPassword ||
+            !displayName
+        ) {
+            setError(
+                "Completează numele, emailul, parola și numele afișat."
+            );
             return;
         }
 
-        const activeServiceIds = nextServices
-            .filter((service) => service.active)
-            .map((service) => service.id);
+        setBarberCreating(true);
+        setError("");
 
-        const response = await api.put<BarberResponse>(
-            `/barbers/${barber.id}/services`,
-            activeServiceIds
+        try {
+            const createResponse =
+                await api.post<BarberResponse>(
+                    "/barbers/account",
+                    {
+                        firstName,
+                        lastName,
+                        email,
+                        phone:
+                            newBarberPhone.trim() === ""
+                                ? null
+                                : newBarberPhone.trim(),
+                        password:
+                            newBarberPassword,
+                        displayName,
+                        bio:
+                            newBarberBio.trim() === ""
+                                ? null
+                                : newBarberBio.trim(),
+                    }
+                );
+
+            let createdBarber =
+                createResponse.data;
+
+            if (
+                newBarberServiceIds.length > 0
+            ) {
+                const servicesResponse =
+                    await api.put<BarberResponse>(
+                        `/barbers/${createdBarber.id}/services`,
+                        newBarberServiceIds
+                    );
+
+                createdBarber =
+                    servicesResponse.data;
+            }
+
+            setBarbers((current) => [
+                ...current,
+                createdBarber,
+            ]);
+
+            setBarber(createdBarber);
+            resetNewBarberForm();
+
+            await loadBarberSchedule(
+                createdBarber
+            );
+        } catch {
+            setError(
+                "Contul barberului nu a putut fi creat. Verifică emailul, telefonul și datele introduse."
+            );
+        } finally {
+            setBarberCreating(false);
+        }
+    };
+
+    const handleDeleteBarberPermanently = async (
+        barberToDelete: BarberResponse
+    ) => {
+        if (
+            barberToDelete.user?.role === "OWNER"
+        ) {
+            setError(
+                "Contul OWNER nu poate fi șters din lista de barberi."
+            );
+            return;
+        }
+
+        const confirmed = window.confirm(
+            `Ștergi definitiv barberul „${barberToDelete.displayName}”? Profilul și contul lui vor fi șterse definitiv. Dacă are programări în istoric, ștergerea va fi refuzată.`
         );
 
-        setBarberServiceIds(activeServiceIds);
+        if (!confirmed) {
+            return;
+        }
 
-        setBarber((current) =>
-            current
-                ? {
-                      ...current,
-                      services:
-                          response.data.services ??
-                          nextServices.filter(
-                              (service) => service.active
-                          ),
-                  }
-                : current
+        setBarberDeletingId(
+            barberToDelete.id
         );
+        setError("");
+
+        try {
+            await api.delete(
+                `/barbers/${barberToDelete.id}/permanent`
+            );
+
+            const remainingBarbers =
+                barbers.filter(
+                    (item) =>
+                        item.id !==
+                        barberToDelete.id
+                );
+
+            setBarbers(
+                remainingBarbers
+            );
+
+            if (
+                barber?.id ===
+                barberToDelete.id
+            ) {
+                const nextBarber =
+                    remainingBarbers.find(
+                        (item) => item.active
+                    ) ??
+                    remainingBarbers[0] ??
+                    null;
+
+                setBarber(
+                    nextBarber
+                );
+
+                if (nextBarber) {
+                    await loadBarberSchedule(
+                        nextBarber
+                    );
+                } else {
+                    setWorkingHours([]);
+                    setTimeOff([]);
+                }
+            }
+        } catch {
+            setError(
+                "Barberul nu poate fi șters definitiv. Dacă are programări în istoric, păstrează-l dezactivat."
+            );
+        } finally {
+            setBarberDeletingId(null);
+        }
+    };
+
+    const handleSaveShopSettings = async (
+        event: React.FormEvent<HTMLFormElement>
+    ) => {
+        event.preventDefault();
+
+        const address =
+            shopAddress.trim();
+
+        if (!address) {
+            setError(
+                "Introdu adresa frizeriei."
+            );
+            return;
+        }
+
+        setShopSettingsSaving(true);
+        setError("");
+
+        try {
+            const response =
+                await api.put<ShopSettingsResponse>(
+                    "/shop-settings",
+                    {
+                        address,
+                        mapEmbedUrl:
+                            shopMapEmbedUrl.trim() === ""
+                                ? null
+                                : shopMapEmbedUrl.trim(),
+                        mapsUrl:
+                            shopMapsUrl.trim() === ""
+                                ? null
+                                : shopMapsUrl.trim(),
+                    }
+                );
+
+            setShopSettings(
+                response.data
+            );
+
+            setShopAddress(
+                response.data.address ?? ""
+            );
+
+            setShopMapEmbedUrl(
+                response.data.mapEmbedUrl ?? ""
+            );
+
+            setShopMapsUrl(
+                response.data.mapsUrl ?? ""
+            );
+        } catch {
+            setError(
+                "Datele de contact ale frizeriei nu au putut fi salvate."
+            );
+        } finally {
+            setShopSettingsSaving(false);
+        }
     };
 
     const handleSaveBarber = async (
@@ -1029,20 +1369,60 @@ function AdminPage() {
                 `/barbers/${barber.id}`,
                 {
                     displayName,
-                    bio: barberBio.trim() === "" ? null : barberBio.trim(),
+                    bio:
+                        barberBio.trim() === ""
+                            ? null
+                            : barberBio.trim(),
                     imageUrl: barber.imageUrl,
+                    instagramUrl:
+                        barberInstagramUrl.trim() === ""
+                            ? null
+                            : barberInstagramUrl.trim(),
+                    facebookUrl:
+                        barberFacebookUrl.trim() === ""
+                            ? null
+                            : barberFacebookUrl.trim(),
+                    youtubeUrl:
+                        barberYoutubeUrl.trim() === ""
+                            ? null
+                            : barberYoutubeUrl.trim(),
+                    tiktokUrl:
+                        barberTiktokUrl.trim() === ""
+                            ? null
+                            : barberTiktokUrl.trim(),
                     active: barberActive,
                 }
             );
 
-            setBarber((current) => ({
+            const servicesResponse =
+                await api.put<BarberResponse>(
+                    `/barbers/${barber.id}/services`,
+                    barberServiceIds
+                );
+
+            const updatedBarber: BarberResponse = {
                 ...profileResponse.data,
                 services:
-                    current?.services ??
-                    services.filter(
-                        (service) => service.active
+                    servicesResponse.data.services ??
+                    services.filter((service) =>
+                        barberServiceIds.includes(
+                            service.id
+                        )
                     ),
-            }));
+                user:
+                    profileResponse.data.user ??
+                    barber.user,
+            };
+
+            setBarber(updatedBarber);
+
+            setBarbers((current) =>
+                current.map((item) =>
+                    item.id === updatedBarber.id
+                        ? updatedBarber
+                        : item
+                )
+            );
         } catch {
             setError(
                 "Datele barberului nu au putut fi salvate."
@@ -1316,7 +1696,9 @@ function AdminPage() {
                                 ? "Servicii."
                                 : activeTab === "PROGRAM"
                                   ? "Program."
-                                  : "Barber."}
+                                  : activeTab === "BARBER"
+                                    ? "Barberi."
+                                    : "Contact."}
                     </h1>
 
                     <p>
@@ -1328,7 +1710,9 @@ function AdminPage() {
                                 ? "Adaugă, editează, dezactivează și reactivează serviciile afișate pe site."
                                 : activeTab === "PROGRAM"
                                   ? "Modifică orele de lucru, zilele închise și perioadele în care nu ești disponibil."
-                                  : "Modifică profilul barberului și serviciile pe care le oferă."}
+                                  : activeTab === "BARBER"
+                                    ? "Administrează echipa, conturile, serviciile și rețelele sociale ale fiecărui barber."
+                                    : "Modifică adresa frizeriei și linkurile Google Maps afișate pe pagina de contact."}
                     </p>
                 </div>
 
@@ -1451,6 +1835,20 @@ function AdminPage() {
                         }
                     >
                         Barber
+                    </button>
+
+                    <button
+                        type="button"
+                        className={
+                            activeTab === "CONTACT"
+                                ? "admin-tab admin-tab--active"
+                                : "admin-tab"
+                        }
+                        onClick={() =>
+                            handleTabChange("CONTACT")
+                        }
+                    >
+                        Contact
                     </button>
                 </div>
 
@@ -2654,9 +3052,39 @@ function AdminPage() {
                                         </h2>
 
                                         <p>
-                                            Modificările salvate aici sunt folosite automat la disponibilitatea pentru programări și la intervalul afișat în calendarul Admin.
+                                            Selectează barberul și modifică programul lui de lucru. Disponibilitatea clienților se actualizează automat.
                                         </p>
                                     </div>
+
+                                    <label className="admin-barber-select-field">
+                                        Barber
+
+                                        <select
+                                            className="admin-barber-select"
+                                            value={barber.id}
+                                            onChange={(event) =>
+                                                handleSelectBarber(
+                                                    Number(
+                                                        event.target.value
+                                                    )
+                                                )
+                                            }
+                                        >
+                                            {barbers.map(
+                                                (item) => (
+                                                    <option
+                                                        key={item.id}
+                                                        value={item.id}
+                                                    >
+                                                        {item.displayName}
+                                                        {!item.active
+                                                            ? " (inactiv)"
+                                                            : ""}
+                                                    </option>
+                                                )
+                                            )}
+                                        </select>
+                                    </label>
                                 </div>
 
                                 <div className="admin-program-days">
@@ -3026,11 +3454,256 @@ function AdminPage() {
 
                 {activeTab === "BARBER" && (
                     <>
-                        {programLoading ? (
+                        <div className="admin-services-toolbar">
+                            <div>
+                                <p className="section-eyebrow">
+                                    BARBERI
+                                </p>
+
+                                <strong>
+                                    {barbers.length}{" "}
+                                    {barbers.length === 1
+                                        ? "barber"
+                                        : "barberi"}
+                                </strong>
+                            </div>
+
+                            <button
+                                type="button"
+                                className="admin-service-add"
+                                onClick={() => {
+                                    setBarberCreateOpen(true);
+                                    setError("");
+                                }}
+                            >
+                                + Adaugă barber
+                            </button>
+                        </div>
+
+                        {barberCreateOpen && (
+                            <section className="admin-program-card">
+                                <div className="admin-program-card__header">
+                                    <div>
+                                        <p className="section-eyebrow">
+                                            CONT NOU
+                                        </p>
+
+                                        <h2>
+                                            Adaugă barber
+                                        </h2>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        className="admin-appointment-panel__close"
+                                        onClick={
+                                            resetNewBarberForm
+                                        }
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+
+                                <form
+                                    className="admin-time-off-form"
+                                    onSubmit={
+                                        handleCreateBarberAccount
+                                    }
+                                >
+                                    <div className="admin-time-off-form__row">
+                                        <label>
+                                            Prenume
+
+                                            <input
+                                                type="text"
+                                                value={
+                                                    newBarberFirstName
+                                                }
+                                                onChange={(event) =>
+                                                    setNewBarberFirstName(
+                                                        event.target.value
+                                                    )
+                                                }
+                                                required
+                                            />
+                                        </label>
+
+                                        <label>
+                                            Nume
+
+                                            <input
+                                                type="text"
+                                                value={
+                                                    newBarberLastName
+                                                }
+                                                onChange={(event) =>
+                                                    setNewBarberLastName(
+                                                        event.target.value
+                                                    )
+                                                }
+                                                required
+                                            />
+                                        </label>
+                                    </div>
+
+                                    <div className="admin-time-off-form__row">
+                                        <label>
+                                            Email
+
+                                            <input
+                                                type="email"
+                                                value={
+                                                    newBarberEmail
+                                                }
+                                                onChange={(event) =>
+                                                    setNewBarberEmail(
+                                                        event.target.value
+                                                    )
+                                                }
+                                                required
+                                            />
+                                        </label>
+
+                                        <label>
+                                            Telefon
+
+                                            <input
+                                                type="tel"
+                                                value={
+                                                    newBarberPhone
+                                                }
+                                                onChange={(event) =>
+                                                    setNewBarberPhone(
+                                                        event.target.value
+                                                    )
+                                                }
+                                            />
+                                        </label>
+                                    </div>
+
+                                    <div className="admin-time-off-form__row">
+                                        <label>
+                                            Parolă inițială
+
+                                            <input
+                                                type="password"
+                                                value={
+                                                    newBarberPassword
+                                                }
+                                                onChange={(event) =>
+                                                    setNewBarberPassword(
+                                                        event.target.value
+                                                    )
+                                                }
+                                                required
+                                            />
+                                        </label>
+
+                                        <label>
+                                            Nume afișat
+
+                                            <input
+                                                type="text"
+                                                value={
+                                                    newBarberDisplayName
+                                                }
+                                                onChange={(event) =>
+                                                    setNewBarberDisplayName(
+                                                        event.target.value
+                                                    )
+                                                }
+                                                required
+                                            />
+                                        </label>
+                                    </div>
+
+                                    <label>
+                                        Bio / descriere
+
+                                        <textarea
+                                            rows={5}
+                                            value={newBarberBio}
+                                            onChange={(event) =>
+                                                setNewBarberBio(
+                                                    event.target.value
+                                                )
+                                            }
+                                        />
+                                    </label>
+
+                                    <div className="admin-program-card__header">
+                                        <div>
+                                            <p className="section-eyebrow">
+                                                SERVICII
+                                            </p>
+
+                                            <h2>
+                                                Serviciile noului barber
+                                            </h2>
+                                        </div>
+                                    </div>
+
+                                    <div className="admin-barber-services">
+                                        {services
+                                            .filter(
+                                                (service) =>
+                                                    service.active
+                                            )
+                                            .map((service) => (
+                                                <label
+                                                    key={service.id}
+                                                    className="admin-barber-service-card"
+                                                >
+                                                    <div>
+                                                        <strong>
+                                                            {service.name}
+                                                        </strong>
+
+                                                        <span>
+                                                            {service.description ||
+                                                                "Fără descriere"}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="admin-barber-service-card__meta">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={newBarberServiceIds.includes(
+                                                                service.id
+                                                            )}
+                                                            onChange={() =>
+                                                                handleToggleNewBarberService(
+                                                                    service.id
+                                                                )
+                                                            }
+                                                        />
+
+                                                        <span>
+                                                            {service.durationMinutes} min
+                                                        </span>
+                                                    </div>
+                                                </label>
+                                            ))}
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        className="admin-service-form__submit"
+                                        disabled={barberCreating}
+                                    >
+                                        {barberCreating
+                                            ? "Se creează..."
+                                            : "Creează contul barberului"}
+                                    </button>
+                                </form>
+                            </section>
+                        )}
+
+                        {programLoading && barbers.length === 0 ? (
                             <p className="admin-message">
-                                Se încarcă datele barberului...
+                                Se încarcă barberii...
                             </p>
-                        ) : !barber ? (
+                        ) : barbers.length === 0 ? (
                             <p className="admin-message">
                                 Nu există niciun barber configurat.
                             </p>
@@ -3040,153 +3713,501 @@ function AdminPage() {
                                     <div className="admin-program-card__header">
                                         <div>
                                             <p className="section-eyebrow">
-                                                PROFIL BARBER
+                                                ECHIPĂ
                                             </p>
 
                                             <h2>
-                                                Date afișate pe site
+                                                Barberi
                                             </h2>
                                         </div>
+                                    </div>
 
-                                        <span
-                                            className={
-                                                barberActive
-                                                    ? "admin-client-status admin-client-status--active"
-                                                    : "admin-client-status admin-client-status--inactive"
+                                    <div className="admin-clients-list">
+                                        {barbers.map(
+                                            (item) => (
+                                                <button
+                                                    key={item.id}
+                                                    type="button"
+                                                    className={
+                                                        barber?.id ===
+                                                        item.id
+                                                            ? "admin-client-row admin-client-row--active"
+                                                            : "admin-client-row"
+                                                    }
+                                                    onClick={() =>
+                                                        handleSelectBarber(
+                                                            item.id
+                                                        )
+                                                    }
+                                                >
+                                                    <div className="admin-client-row__identity">
+                                                        <strong>
+                                                            {
+                                                                item.displayName
+                                                            }
+                                                        </strong>
+
+                                                        <span>
+                                                            {item.user?.email ??
+                                                                "Cont neasociat"}
+                                                        </span>
+
+                                                        <span>
+                                                            {item.bio ||
+                                                                "Fără descriere"}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="admin-client-row__status">
+                                                        <span
+                                                            className={
+                                                                item.active
+                                                                    ? "admin-client-status admin-client-status--active"
+                                                                    : "admin-client-status admin-client-status--inactive"
+                                                            }
+                                                        >
+                                                            {item.active
+                                                                ? "ACTIV"
+                                                                : "INACTIV"}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="admin-client-row__reward">
+                                                        <span>
+                                                            Servicii
+                                                        </span>
+
+                                                        <strong>
+                                                            {
+                                                                (
+                                                                    item.services ??
+                                                                    []
+                                                                ).length
+                                                            }
+                                                        </strong>
+                                                    </div>
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
+                                </section>
+
+                                {barber && (
+                                    <aside className="admin-program-card">
+                                        <div className="admin-program-card__header">
+                                            <div>
+                                                <p className="section-eyebrow">
+                                                    PROFIL BARBER
+                                                </p>
+
+                                                <h2>
+                                                    {
+                                                        barber.displayName
+                                                    }
+                                                </h2>
+                                            </div>
+
+                                            <span
+                                                className={
+                                                    barberActive
+                                                        ? "admin-client-status admin-client-status--active"
+                                                        : "admin-client-status admin-client-status--inactive"
+                                                }
+                                            >
+                                                {barberActive
+                                                    ? "ACTIV"
+                                                    : "INACTIV"}
+                                            </span>
+                                        </div>
+
+                                        <form
+                                            className="admin-time-off-form"
+                                            onSubmit={
+                                                handleSaveBarber
                                             }
                                         >
-                                            {barberActive
-                                                ? "ACTIV"
-                                                : "INACTIV"}
-                                        </span>
+                                            {barber.user && (
+                                                <div className="admin-appointment-panel__info">
+                                                    <div>
+                                                        <span>
+                                                            Cont
+                                                        </span>
+
+                                                        <strong>
+                                                            {
+                                                                barber.user
+                                                                    .email
+                                                            }
+                                                        </strong>
+                                                    </div>
+
+                                                    <div>
+                                                        <span>
+                                                            Rol
+                                                        </span>
+
+                                                        <strong>
+                                                            {
+                                                                barber.user
+                                                                    .role
+                                                            }
+                                                        </strong>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <label>
+                                                Nume afișat
+
+                                                <input
+                                                    type="text"
+                                                    value={
+                                                        barberDisplayName
+                                                    }
+                                                    onChange={(event) =>
+                                                        setBarberDisplayName(
+                                                            event.target.value
+                                                        )
+                                                    }
+                                                    required
+                                                />
+                                            </label>
+
+                                            <label>
+                                                Bio / descriere
+
+                                                <textarea
+                                                    value={
+                                                        barberBio
+                                                    }
+                                                    onChange={(event) =>
+                                                        setBarberBio(
+                                                            event.target.value
+                                                        )
+                                                    }
+                                                    rows={6}
+                                                />
+                                            </label>
+
+                                            <div className="admin-program-card__header">
+                                                <div>
+                                                    <p className="section-eyebrow">
+                                                        CONTACT BARBER
+                                                    </p>
+
+                                                    <h2>
+                                                        Rețele sociale
+                                                    </h2>
+
+                                                    <p>
+                                                        Completează doar platformele pe care barberul le folosește. Linkurile vor fi afișate pe pagina de contact.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <label>
+                                                Instagram
+
+                                                <input
+                                                    type="url"
+                                                    value={
+                                                        barberInstagramUrl
+                                                    }
+                                                    onChange={(event) =>
+                                                        setBarberInstagramUrl(
+                                                            event.target.value
+                                                        )
+                                                    }
+                                                    placeholder="https://instagram.com/..."
+                                                />
+                                            </label>
+
+                                            <label>
+                                                Facebook
+
+                                                <input
+                                                    type="url"
+                                                    value={
+                                                        barberFacebookUrl
+                                                    }
+                                                    onChange={(event) =>
+                                                        setBarberFacebookUrl(
+                                                            event.target.value
+                                                        )
+                                                    }
+                                                    placeholder="https://facebook.com/..."
+                                                />
+                                            </label>
+
+                                            <label>
+                                                YouTube
+
+                                                <input
+                                                    type="url"
+                                                    value={
+                                                        barberYoutubeUrl
+                                                    }
+                                                    onChange={(event) =>
+                                                        setBarberYoutubeUrl(
+                                                            event.target.value
+                                                        )
+                                                    }
+                                                    placeholder="https://youtube.com/..."
+                                                />
+                                            </label>
+
+                                            <label>
+                                                TikTok
+
+                                                <input
+                                                    type="url"
+                                                    value={
+                                                        barberTiktokUrl
+                                                    }
+                                                    onChange={(event) =>
+                                                        setBarberTiktokUrl(
+                                                            event.target.value
+                                                        )
+                                                    }
+                                                    placeholder="https://tiktok.com/@..."
+                                                />
+                                            </label>
+
+                                            <label className="admin-program-day__toggle">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={
+                                                        barberActive
+                                                    }
+                                                    onChange={(event) =>
+                                                        setBarberActive(
+                                                            event.target.checked
+                                                        )
+                                                    }
+                                                />
+
+                                                <span>
+                                                    Barber activ
+                                                </span>
+                                            </label>
+
+                                            <div className="admin-program-card__header">
+                                                <div>
+                                                    <p className="section-eyebrow">
+                                                        SERVICII
+                                                    </p>
+
+                                                    <h2>
+                                                        Servicii oferite
+                                                    </h2>
+
+                                                    <p>
+                                                        Fiecare barber poate avea propriul set de servicii.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="admin-barber-services">
+                                                {services
+                                                    .filter(
+                                                        (service) =>
+                                                            service.active
+                                                    )
+                                                    .map(
+                                                        (service) => (
+                                                            <label
+                                                                key={
+                                                                    service.id
+                                                                }
+                                                                className="admin-barber-service-card"
+                                                            >
+                                                                <div>
+                                                                    <strong>
+                                                                        {
+                                                                            service.name
+                                                                        }
+                                                                    </strong>
+
+                                                                    <span>
+                                                                        {service.description ||
+                                                                            "Fără descriere"}
+                                                                    </span>
+                                                                </div>
+
+                                                                <div className="admin-barber-service-card__meta">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={barberServiceIds.includes(
+                                                                            service.id
+                                                                        )}
+                                                                        onChange={() =>
+                                                                            handleToggleBarberService(
+                                                                                service.id
+                                                                            )
+                                                                        }
+                                                                    />
+
+                                                                    <strong>
+                                                                        {formatCurrency(
+                                                                            Number(
+                                                                                service.price
+                                                                            )
+                                                                        )}
+                                                                    </strong>
+
+                                                                    <span>
+                                                                        {
+                                                                            service.durationMinutes
+                                                                        }{" "}
+                                                                        min
+                                                                    </span>
+                                                                </div>
+                                                            </label>
+                                                        )
+                                                    )}
+                                            </div>
+
+                                            <button
+                                                type="submit"
+                                                className="admin-service-form__submit"
+                                                disabled={
+                                                    barberSaving
+                                                }
+                                            >
+                                                {barberSaving
+                                                    ? "Se salvează..."
+                                                    : "Salvează barberul"}
+                                            </button>
+
+                                            {barber.user?.role !== "OWNER" && (
+                                                <button
+                                                    type="button"
+                                                    className="admin-barber-delete"
+                                                    disabled={
+                                                        barberDeletingId ===
+                                                        barber.id
+                                                    }
+                                                    onClick={() =>
+                                                        handleDeleteBarberPermanently(
+                                                            barber
+                                                        )
+                                                    }
+                                                >
+                                                    {barberDeletingId ===
+                                                    barber.id
+                                                        ? "Se șterge..."
+                                                        : "Șterge definitiv barberul"}
+                                                </button>
+                                            )}
+                                        </form>
+                                    </aside>
+                                )}
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {activeTab === "CONTACT" && (
+                    <>
+                        {shopSettingsLoading ? (
+                            <p className="admin-message">
+                                Se încarcă datele de contact...
+                            </p>
+                        ) : (
+                            <div className="admin-program-layout">
+                                <section className="admin-program-card">
+                                    <div className="admin-program-card__header">
+                                        <div>
+                                            <p className="section-eyebrow">
+                                                FRIZERIE
+                                            </p>
+
+                                            <h2>
+                                                Locație
+                                            </h2>
+
+                                            <p>
+                                                Adresa și harta salvate aici vor fi afișate pe pagina publică de contact.
+                                            </p>
+                                        </div>
                                     </div>
 
                                     <form
                                         className="admin-time-off-form"
-                                        onSubmit={handleSaveBarber}
+                                        onSubmit={
+                                            handleSaveShopSettings
+                                        }
                                     >
                                         <label>
-                                            Nume afișat
+                                            Adresa frizeriei
 
                                             <input
                                                 type="text"
-                                                value={barberDisplayName}
+                                                value={
+                                                    shopAddress
+                                                }
                                                 onChange={(event) =>
-                                                    setBarberDisplayName(
+                                                    setShopAddress(
                                                         event.target.value
                                                     )
                                                 }
-                                                placeholder="Numele barberului"
+                                                placeholder="Strada, număr, oraș"
                                                 required
                                             />
                                         </label>
 
                                         <label>
-                                            Bio / descriere
+                                            Google Maps Embed URL
 
                                             <textarea
-                                                value={barberBio}
+                                                rows={5}
+                                                value={
+                                                    shopMapEmbedUrl
+                                                }
                                                 onChange={(event) =>
-                                                    setBarberBio(
+                                                    setShopMapEmbedUrl(
                                                         event.target.value
                                                     )
                                                 }
-                                                placeholder="Descriere scurtă pentru site..."
-                                                rows={6}
+                                                placeholder="https://www.google.com/maps/embed?pb=..."
                                             />
                                         </label>
 
-                                        <label className="admin-program-day__toggle">
-                                            <input
-                                                type="checkbox"
-                                                checked={barberActive}
+                                        <label>
+                                            Google Maps URL
+
+                                            <textarea
+                                                rows={4}
+                                                value={
+                                                    shopMapsUrl
+                                                }
                                                 onChange={(event) =>
-                                                    setBarberActive(
-                                                        event.target.checked
+                                                    setShopMapsUrl(
+                                                        event.target.value
                                                     )
                                                 }
+                                                placeholder="https://maps.google.com/..."
                                             />
-
-                                            <span>
-                                                Barber activ
-                                            </span>
                                         </label>
-
-                                        <div className="admin-program-card__header">
-                                            <div>
-                                                <p className="section-eyebrow">
-                                                    SERVICII
-                                                </p>
-
-                                                <h2>
-                                                    Servicii oferite
-                                                </h2>
-
-                                                <p>
-                                                    Serviciile active din tab-ul Servicii sunt oferite automat de barber.
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="admin-barber-services">
-                                            {services.filter(
-                                                (service) => service.active
-                                            ).length === 0 ? (
-                                                <p className="admin-message">
-                                                    Nu există servicii active.
-                                                </p>
-                                            ) : (
-                                                services
-                                                    .filter(
-                                                        (service) =>
-                                                            service.active
-                                                    )
-                                                    .map((service) => (
-                                                        <article
-                                                            key={service.id}
-                                                            className="admin-barber-service-card"
-                                                        >
-                                                            <div>
-                                                                <strong>
-                                                                    {service.name}
-                                                                </strong>
-
-                                                                <span>
-                                                                    {service.description ||
-                                                                        "Fără descriere"}
-                                                                </span>
-                                                            </div>
-
-                                                            <div className="admin-barber-service-card__meta">
-                                                                <strong>
-                                                                    {formatCurrency(
-                                                                        Number(
-                                                                            service.price
-                                                                        )
-                                                                    )}
-                                                                </strong>
-
-                                                                <span>
-                                                                    {
-                                                                        service.durationMinutes
-                                                                    }{" "}
-                                                                    min
-                                                                </span>
-                                                            </div>
-                                                        </article>
-                                                    ))
-                                            )}
-                                        </div>
 
                                         <button
                                             type="submit"
-                                            className="admin-service-add"
-                                            disabled={barberSaving}
+                                            className="admin-service-form__submit"
+                                            disabled={
+                                                shopSettingsSaving
+                                            }
                                         >
-                                            {barberSaving
+                                            {shopSettingsSaving
                                                 ? "Se salvează..."
-                                                : "Salvează profilul barberului"}
+                                                : "Salvează locația"}
                                         </button>
+
+                                        {shopSettings && (
+                                            <p className="admin-appointment-panel__id">
+                                                ID setări:{" "}
+                                                {shopSettings.id}
+                                            </p>
+                                        )}
                                     </form>
                                 </section>
 
@@ -3198,44 +4219,64 @@ function AdminPage() {
                                             </p>
 
                                             <h2>
-                                                Profil curent
+                                                Contact public
                                             </h2>
+
+                                            <p>
+                                                Verifică rapid datele care vor apărea pe pagina de contact.
+                                            </p>
                                         </div>
                                     </div>
 
                                     <div className="admin-appointment-panel__info">
                                         <div>
                                             <span>
-                                                Nume
+                                                Adresă
                                             </span>
 
                                             <strong>
-                                                {barberDisplayName ||
-                                                    "Fără nume"}
+                                                {shopAddress.trim() ||
+                                                    "Adresă neconfigurată"}
                                             </strong>
                                         </div>
 
                                         <div>
                                             <span>
-                                                Descriere
+                                                Embed hartă
                                             </span>
 
                                             <strong>
-                                                {barberBio ||
-                                                    "Fără descriere"}
+                                                {shopMapEmbedUrl.trim()
+                                                    ? "CONFIGURAT"
+                                                    : "NECONFIGURAT"}
                                             </strong>
                                         </div>
 
                                         <div>
                                             <span>
-                                                Servicii selectate
+                                                Link Google Maps
                                             </span>
 
                                             <strong>
-                                                {barberServiceIds.length}
+                                                {shopMapsUrl.trim()
+                                                    ? "CONFIGURAT"
+                                                    : "NECONFIGURAT"}
                                             </strong>
                                         </div>
                                     </div>
+
+                                    {shopMapsUrl.trim() && (
+                                        <a
+                                            href={
+                                                shopMapsUrl
+                                            }
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="admin-service-form__submit"
+                                        >
+                                            Deschide în Google Maps
+                                        </a>
+                                    )}
                                 </aside>
                             </div>
                         )}

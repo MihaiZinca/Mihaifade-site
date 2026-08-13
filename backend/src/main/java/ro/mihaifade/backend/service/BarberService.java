@@ -6,11 +6,16 @@ import org.springframework.transaction.annotation.Transactional;
 import ro.mihaifade.backend.dto.CreateBarberAccountRequest;
 import ro.mihaifade.backend.entity.AuthProvider;
 import ro.mihaifade.backend.entity.Barber;
+import ro.mihaifade.backend.entity.BarberServiceOffering;
 import ro.mihaifade.backend.entity.Role;
 import ro.mihaifade.backend.entity.User;
+import ro.mihaifade.backend.repository.AppointmentRepository;
 import ro.mihaifade.backend.repository.BarberRepository;
+import ro.mihaifade.backend.repository.BarberServiceOfferingRepository;
 import ro.mihaifade.backend.repository.ServiceRepository;
+import ro.mihaifade.backend.repository.TimeOffRepository;
 import ro.mihaifade.backend.repository.UserRepository;
+import ro.mihaifade.backend.repository.WorkingHoursRepository;
 
 import java.util.List;
 import java.util.Set;
@@ -23,34 +28,72 @@ public class BarberService {
     private final ServiceRepository serviceRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AppointmentRepository appointmentRepository;
+    private final WorkingHoursRepository workingHoursRepository;
+    private final TimeOffRepository timeOffRepository;
+    private final BarberServiceOfferingRepository barberServiceOfferingRepository;
 
     public BarberService(
             BarberRepository barberRepository,
             ServiceRepository serviceRepository,
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            AppointmentRepository appointmentRepository,
+            WorkingHoursRepository workingHoursRepository,
+            TimeOffRepository timeOffRepository,
+            BarberServiceOfferingRepository barberServiceOfferingRepository
     ) {
-        this.barberRepository = barberRepository;
-        this.serviceRepository = serviceRepository;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
+        this.barberRepository =
+                barberRepository;
+
+        this.serviceRepository =
+                serviceRepository;
+
+        this.userRepository =
+                userRepository;
+
+        this.passwordEncoder =
+                passwordEncoder;
+
+        this.appointmentRepository =
+                appointmentRepository;
+
+        this.workingHoursRepository =
+                workingHoursRepository;
+
+        this.timeOffRepository =
+                timeOffRepository;
+
+        this.barberServiceOfferingRepository =
+                barberServiceOfferingRepository;
     }
 
     public List<Barber> getAllBarbers() {
         return barberRepository.findAll();
     }
 
-    public Barber getBarberById(Long id) {
-        return barberRepository.findById(id)
+    public Barber getBarberById(
+            Long id
+    ) {
+        return barberRepository
+                .findById(
+                        id
+                )
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "Barber not found with id: " + id
+                                "Barber not found with id: "
+                                        + id
                         )
                 );
     }
 
-    public Barber getBarberByUserEmail(String email) {
-        return barberRepository.findByUserEmailIgnoreCase(email)
+    public Barber getBarberByUserEmail(
+            String email
+    ) {
+        return barberRepository
+                .findByUserEmailIgnoreCase(
+                        email
+                )
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "No barber profile is associated with user: "
@@ -59,17 +102,23 @@ public class BarberService {
                 );
     }
 
-    public Barber createBarber(Barber barber) {
-        return barberRepository.save(barber);
+    public Barber createBarber(
+            Barber barber
+    ) {
+        return barberRepository.save(
+                barber
+        );
     }
 
     @Transactional
     public Barber createBarberAccount(
             CreateBarberAccountRequest request
     ) {
-        if (userRepository.existsByEmailIgnoreCase(
-                request.email()
-        )) {
+        if (
+                userRepository.existsByEmailIgnoreCase(
+                        request.email()
+                )
+        ) {
             throw new RuntimeException(
                     "Email already exists"
             );
@@ -87,7 +136,8 @@ public class BarberService {
             );
         }
 
-        User user = new User();
+        User user =
+                new User();
 
         user.setFirstName(
                 request.firstName()
@@ -122,12 +172,17 @@ public class BarberService {
                 Role.BARBER
         );
 
-        user.setActive(true);
+        user.setActive(
+                true
+        );
 
         User savedUser =
-                userRepository.save(user);
+                userRepository.save(
+                        user
+                );
 
-        Barber barber = new Barber();
+        Barber barber =
+                new Barber();
 
         barber.setDisplayName(
                 request.displayName()
@@ -137,9 +192,29 @@ public class BarberService {
                 request.bio()
         );
 
-        barber.setImageUrl(null);
+        barber.setImageUrl(
+                null
+        );
 
-        barber.setActive(true);
+        barber.setInstagramUrl(
+                null
+        );
+
+        barber.setFacebookUrl(
+                null
+        );
+
+        barber.setYoutubeUrl(
+                null
+        );
+
+        barber.setTiktokUrl(
+                null
+        );
+
+        barber.setActive(
+                true
+        );
 
         barber.setUser(
                 savedUser
@@ -155,7 +230,9 @@ public class BarberService {
             Barber updatedBarber
     ) {
         Barber existingBarber =
-                getBarberById(id);
+                getBarberById(
+                        id
+                );
 
         existingBarber.setDisplayName(
                 updatedBarber.getDisplayName()
@@ -167,6 +244,30 @@ public class BarberService {
 
         existingBarber.setImageUrl(
                 updatedBarber.getImageUrl()
+        );
+
+        existingBarber.setInstagramUrl(
+                normalizeOptionalUrl(
+                        updatedBarber.getInstagramUrl()
+                )
+        );
+
+        existingBarber.setFacebookUrl(
+                normalizeOptionalUrl(
+                        updatedBarber.getFacebookUrl()
+                )
+        );
+
+        existingBarber.setYoutubeUrl(
+                normalizeOptionalUrl(
+                        updatedBarber.getYoutubeUrl()
+                )
+        );
+
+        existingBarber.setTiktokUrl(
+                normalizeOptionalUrl(
+                        updatedBarber.getTiktokUrl()
+                )
         );
 
         existingBarber.setActive(
@@ -183,7 +284,9 @@ public class BarberService {
             Barber updatedBarber
     ) {
         Barber existingBarber =
-                getBarberByUserEmail(email);
+                getBarberByUserEmail(
+                        email
+                );
 
         existingBarber.setDisplayName(
                 updatedBarber.getDisplayName()
@@ -191,6 +294,30 @@ public class BarberService {
 
         existingBarber.setBio(
                 updatedBarber.getBio()
+        );
+
+        existingBarber.setInstagramUrl(
+                normalizeOptionalUrl(
+                        updatedBarber.getInstagramUrl()
+                )
+        );
+
+        existingBarber.setFacebookUrl(
+                normalizeOptionalUrl(
+                        updatedBarber.getFacebookUrl()
+                )
+        );
+
+        existingBarber.setYoutubeUrl(
+                normalizeOptionalUrl(
+                        updatedBarber.getYoutubeUrl()
+                )
+        );
+
+        existingBarber.setTiktokUrl(
+                normalizeOptionalUrl(
+                        updatedBarber.getTiktokUrl()
+                )
         );
 
         existingBarber.setActive(
@@ -202,17 +329,27 @@ public class BarberService {
         );
     }
 
+    @Transactional
     public Barber assignServices(
             Long barberId,
             Set<Long> serviceIds
     ) {
         Barber barber =
-                getBarberById(barberId);
+                getBarberById(
+                        barberId
+                );
 
         Set<ro.mihaifade.backend.entity.Service> services =
-                getServicesByIds(serviceIds);
+                getServicesByIds(
+                        serviceIds
+                );
 
         barber.setServices(
+                services
+        );
+
+        syncServiceOfferings(
+                barber,
                 services
         );
 
@@ -221,17 +358,27 @@ public class BarberService {
         );
     }
 
+    @Transactional
     public Barber assignMyServices(
             String email,
             Set<Long> serviceIds
     ) {
         Barber barber =
-                getBarberByUserEmail(email);
+                getBarberByUserEmail(
+                        email
+                );
 
         Set<ro.mihaifade.backend.entity.Service> services =
-                getServicesByIds(serviceIds);
+                getServicesByIds(
+                        serviceIds
+                );
 
         barber.setServices(
+                services
+        );
+
+        syncServiceOfferings(
+                barber,
                 services
         );
 
@@ -240,12 +387,111 @@ public class BarberService {
         );
     }
 
+    private void syncServiceOfferings(
+            Barber barber,
+            Set<ro.mihaifade.backend.entity.Service> selectedServices
+    ) {
+        List<BarberServiceOffering> existingOfferings =
+                barberServiceOfferingRepository
+                        .findByBarberIdOrderByServiceNameAsc(
+                                barber.getId()
+                        );
+
+        Set<Long> selectedServiceIds =
+                selectedServices
+                        .stream()
+                        .map(
+                                ro.mihaifade.backend.entity.Service::getId
+                        )
+                        .collect(
+                                Collectors.toSet()
+                        );
+
+        for (
+                BarberServiceOffering offering
+                : existingOfferings
+        ) {
+            Long serviceId =
+                    offering
+                            .getService()
+                            .getId();
+
+            if (
+                    selectedServiceIds.contains(
+                            serviceId
+                    )
+            ) {
+                offering.setActive(
+                        true
+                );
+            } else {
+                offering.setActive(
+                        false
+                );
+            }
+
+            barberServiceOfferingRepository.save(
+                    offering
+            );
+        }
+
+        for (
+                ro.mihaifade.backend.entity.Service service
+                : selectedServices
+        ) {
+            BarberServiceOffering offering =
+                    barberServiceOfferingRepository
+                            .findByBarberIdAndServiceId(
+                                    barber.getId(),
+                                    service.getId()
+                            )
+                            .orElse(
+                                    null
+                            );
+
+            if (
+                    offering == null
+            ) {
+                BarberServiceOffering newOffering =
+                        new BarberServiceOffering();
+
+                newOffering.setBarber(
+                        barber
+                );
+
+                newOffering.setService(
+                        service
+                );
+
+                newOffering.setPrice(
+                        service.getPrice()
+                );
+
+                newOffering.setDurationMinutes(
+                        service.getDurationMinutes()
+                );
+
+                newOffering.setActive(
+                        true
+                );
+
+                barberServiceOfferingRepository.save(
+                        newOffering
+                );
+            }
+        }
+    }
+
     private Set<ro.mihaifade.backend.entity.Service> getServicesByIds(
             Set<Long> serviceIds
     ) {
-        return serviceIds.stream()
+        return serviceIds
+                .stream()
                 .map(serviceId ->
-                        serviceRepository.findById(serviceId)
+                        serviceRepository
+                                .findById(
+                                        serviceId
+                                )
                                 .orElseThrow(() ->
                                         new RuntimeException(
                                                 "Service not found: "
@@ -258,14 +504,95 @@ public class BarberService {
                 );
     }
 
-    public void deactivateBarber(Long id) {
-        Barber barber =
-                getBarberById(id);
+    private String normalizeOptionalUrl(
+            String value
+    ) {
+        if (
+                value == null
+                        || value.isBlank()
+        ) {
+            return null;
+        }
 
-        barber.setActive(false);
+        return value.trim();
+    }
+
+    public void deactivateBarber(
+            Long id
+    ) {
+        Barber barber =
+                getBarberById(
+                        id
+                );
+
+        barber.setActive(
+                false
+        );
 
         barberRepository.save(
                 barber
         );
+    }
+
+    @Transactional
+    public void deleteBarberPermanently(
+            Long id
+    ) {
+        Barber barber =
+                getBarberById(
+                        id
+                );
+
+        if (
+                appointmentRepository.existsByBarberId(
+                        id
+                )
+        ) {
+            throw new RuntimeException(
+                    "Barber cannot be permanently deleted because it has appointments"
+            );
+        }
+
+        workingHoursRepository.deleteByBarberId(
+                id
+        );
+
+        timeOffRepository.deleteByBarberId(
+                id
+        );
+
+        barberServiceOfferingRepository.deleteByBarberId(
+                id
+        );
+
+        barber.getServices()
+                .clear();
+
+        barberRepository.save(
+                barber
+        );
+
+        User linkedUser =
+                barber.getUser();
+
+        barber.setUser(
+                null
+        );
+
+        barberRepository.save(
+                barber
+        );
+
+        barberRepository.delete(
+                barber
+        );
+
+        if (
+                linkedUser != null
+        ) {
+            userRepository.delete(
+                    linkedUser
+            );
+        }
     }
 }

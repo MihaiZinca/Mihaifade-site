@@ -29,6 +29,18 @@ public class Barber {
 
     private String imageUrl;
 
+    @Column(length = 1000)
+    private String instagramUrl;
+
+    @Column(length = 1000)
+    private String facebookUrl;
+
+    @Column(length = 1000)
+    private String youtubeUrl;
+
+    @Column(length = 1000)
+    private String tiktokUrl;
+
     @Column(nullable = false)
     private Boolean active = true;
 
@@ -53,9 +65,51 @@ public class Barber {
             String imageUrl,
             Boolean active
     ) {
-        this.displayName = displayName;
-        this.bio = bio;
-        this.imageUrl = imageUrl;
-        this.active = active;
+        this.displayName =
+                displayName;
+
+        this.bio =
+                bio;
+
+        this.imageUrl =
+                imageUrl;
+
+        this.active =
+                active;
+    }
+
+    public Barber(
+            String displayName,
+            String bio,
+            String imageUrl,
+            String instagramUrl,
+            String facebookUrl,
+            String youtubeUrl,
+            String tiktokUrl,
+            Boolean active
+    ) {
+        this.displayName =
+                displayName;
+
+        this.bio =
+                bio;
+
+        this.imageUrl =
+                imageUrl;
+
+        this.instagramUrl =
+                instagramUrl;
+
+        this.facebookUrl =
+                facebookUrl;
+
+        this.youtubeUrl =
+                youtubeUrl;
+
+        this.tiktokUrl =
+                tiktokUrl;
+
+        this.active =
+                active;
     }
 }

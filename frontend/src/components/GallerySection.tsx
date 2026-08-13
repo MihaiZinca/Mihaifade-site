@@ -47,7 +47,7 @@ function GallerySection() {
                     <h2>
                         Rezultatele{" "}
                         <span>
-                             vorbesc singure.
+                            vorbesc singure.
                         </span>
                     </h2>
                 </div>
@@ -59,41 +59,35 @@ function GallerySection() {
             </div>
 
             <div className="gallery__grid">
-                {galleryImages.map((image, index) => (
-                    <figure
-                        className={`gallery__item ${image.className}`}
-                        key={image.src}
-                    >
-                        <img
-                            src={image.src}
-                            alt={image.alt}
-                            loading="lazy"
-                        />
+                {galleryImages.map(
+                    (image, index) => (
+                        <figure
+                            className={`gallery__item ${image.className}`}
+                            key={image.src}
+                        >
+                            <img
+                                src={image.src}
+                                alt={image.alt}
+                                loading="lazy"
+                            />
 
-                        <figcaption>
-                            <span>
-                                {String(index + 1).padStart(2, "0")}
-                            </span>
+                            <figcaption>
+                                <span>
+                                    {String(
+                                        index + 1
+                                    ).padStart(
+                                        2,
+                                        "0"
+                                    )}
+                                </span>
 
-                            <span>
-                                MIHAI FADE
-                            </span>
-                        </figcaption>
-                    </figure>
-                ))}
-            </div>
-
-            <div className="gallery__statement">
-                <p>
-                    PRECIZIE / STIL / ATITUDINE
-                </p>
-
-                <h3>
-                    Nu e doar un fade,
-                    <span>
-                        e Mihai Fade.
-                    </span>
-                </h3>
+                                <span>
+                                    MIHAI FADE
+                                </span>
+                            </figcaption>
+                        </figure>
+                    )
+                )}
             </div>
         </section>
     );

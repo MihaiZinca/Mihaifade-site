@@ -121,4 +121,14 @@ public class BarberController {
                 id
         );
     }
+
+    @DeleteMapping("/{id}/permanent")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteBarberPermanently(
+            @PathVariable Long id
+    ) {
+        barberService.deleteBarberPermanently(
+                id
+        );
+    }
 }

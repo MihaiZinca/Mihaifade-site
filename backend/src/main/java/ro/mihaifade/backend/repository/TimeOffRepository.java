@@ -9,10 +9,16 @@ import java.util.Optional;
 
 public interface TimeOffRepository extends JpaRepository<TimeOff, Long> {
 
-    List<TimeOff> findByBarberIdOrderByDateAsc(Long barberId);
+    List<TimeOff> findByBarberIdOrderByDateAsc(
+            Long barberId
+    );
 
     Optional<TimeOff> findByBarberIdAndDate(
             Long barberId,
             LocalDate date
+    );
+
+    void deleteByBarberId(
+            Long barberId
     );
 }

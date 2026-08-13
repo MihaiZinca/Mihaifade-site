@@ -15,4 +15,8 @@ public interface WorkingHoursRepository extends JpaRepository<WorkingHours, Long
             Long barberId,
             DayOfWeek dayOfWeek
     );
+
+    void deleteByBarberId(
+            Long barberId
+    );
 }

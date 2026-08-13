@@ -16,6 +16,18 @@ interface BarberResponse {
     services: BarbershopService[];
 }
 
+interface BarberServiceOfferingResponse {
+    id: number;
+    barberId: number;
+    barberName: string;
+    serviceId: number;
+    serviceName: string;
+    serviceDescription: string | null;
+    price: number;
+    durationMinutes: number;
+    active: boolean;
+}
+
 function BookingPage() {
 
     const navigate = useNavigate();
@@ -27,6 +39,8 @@ function BookingPage() {
     );
 
     const [services, setServices] = useState<BarbershopService[]>([]);
+    const [barberOfferings, setBarberOfferings] =
+        useState<BarberServiceOfferingResponse[]>([]);
     const [selectedServiceId, setSelectedServiceId] = useState<number | null>(
         null
     );
@@ -37,6 +51,7 @@ function BookingPage() {
 
     const [loadingBarbers, setLoadingBarbers] = useState(true);
     const [loadingServices, setLoadingServices] = useState(true);
+    const [loadingOfferings, setLoadingOfferings] = useState(false);
     const [loadingSlots, setLoadingSlots] = useState(false);
     const [creatingAppointment, setCreatingAppointment] = useState(false);
 
@@ -52,29 +67,37 @@ function BookingPage() {
     );
 
     const visibleServices = useMemo(() => {
-        if (!selectedBarber) {
+        if (!selectedBarberId) {
             return [];
         }
 
-        const offeredServiceIds = new Set(
-            (selectedBarber.services ?? [])
-                .filter((service) => service.active)
-                .map((service) => service.id)
-        );
-
-        return services.filter(
-            (service) =>
-                service.active &&
-                offeredServiceIds.has(service.id)
-        );
-    }, [services, selectedBarber]);
+        return barberOfferings
+            .filter(
+                (offering) =>
+                    offering.active
+            )
+            .sort((a, b) =>
+                a.serviceName.localeCompare(
+                    b.serviceName,
+                    "ro-RO"
+                )
+            );
+    }, [
+        barberOfferings,
+        selectedBarberId,
+    ]);
 
     const selectedService = useMemo(
         () =>
             visibleServices.find(
-                (service) => service.id === selectedServiceId
+                (service) =>
+                    service.serviceId ===
+                    selectedServiceId
             ) ?? null,
-        [visibleServices, selectedServiceId]
+        [
+            visibleServices,
+            selectedServiceId,
+        ]
     );
 
     useEffect(() => {
@@ -125,17 +148,14 @@ function BookingPage() {
                     null;
 
                 if (initialBarber) {
-                    setSelectedBarberId(initialBarber.id);
+                    setSelectedBarberId(
+                        initialBarber.id
+                    );
 
-                    if (
-                        serviceIdFromUrl &&
-                        (initialBarber.services ?? []).some(
-                            (service) =>
-                                service.id === serviceIdFromUrl &&
-                                service.active
-                        )
-                    ) {
-                        setSelectedServiceId(serviceIdFromUrl);
+                    if (serviceIdFromUrl) {
+                        setSelectedServiceId(
+                            serviceIdFromUrl
+                        );
                     }
                 }
             } catch {
@@ -150,6 +170,62 @@ function BookingPage() {
 
         loadBookingData();
     }, [searchParams]);
+
+    useEffect(() => {
+        if (!selectedBarberId) {
+            setBarberOfferings([]);
+            setSelectedServiceId(null);
+            return;
+        }
+
+        const loadBarberOfferings = async () => {
+            setLoadingOfferings(true);
+            setError("");
+
+            try {
+                const response =
+                    await api.get<
+                        BarberServiceOfferingResponse[]
+                    >(
+                        `/barber-service-offerings/barber/${selectedBarberId}/active`
+                    );
+
+                setBarberOfferings(
+                    response.data
+                );
+
+                setSelectedServiceId(
+                    (current) => {
+                        if (!current) {
+                            return null;
+                        }
+
+                        const stillAvailable =
+                            response.data.some(
+                                (offering) =>
+                                    offering.serviceId ===
+                                    current &&
+                                    offering.active
+                            );
+
+                        return stillAvailable
+                            ? current
+                            : null;
+                    }
+                );
+            } catch {
+                setBarberOfferings([]);
+                setSelectedServiceId(null);
+                setError(
+                    "Serviciile barberului selectat nu au putut fi încărcate."
+                );
+            } finally {
+                setLoadingOfferings(false);
+            }
+        };
+
+        loadBarberOfferings();
+    }, [selectedBarberId]);
 
     useEffect(() => {
         if (
@@ -256,6 +332,13 @@ function BookingPage() {
                         <div>
                             <span>Serviciu</span>
                             <strong>{success.serviceName}</strong>
+                        </div>
+
+                        <div>
+                            <span>Preț</span>
+                            <strong>
+                                {success.servicePrice} lei
+                            </strong>
                         </div>
 
                         <div>
@@ -389,6 +472,7 @@ function BookingPage() {
                                     }
                                     onClick={() => {
                                         setSelectedBarberId(barber.id);
+                                        setBarberOfferings([]);
                                         setSelectedServiceId(null);
                                         setSelectedDate("");
                                         setSelectedTime("");
@@ -437,9 +521,9 @@ function BookingPage() {
                         <p className="booking-message">
                             Alege mai întâi barberul.
                         </p>
-                    ) : loadingServices ? (
+                    ) : loadingServices || loadingOfferings ? (
                         <p className="booking-message">
-                            Se încarcă serviciile...
+                            Se încarcă serviciile barberului...
                         </p>
                     ) : visibleServices.length === 0 ? (
                         <p className="booking-message">
@@ -452,12 +536,14 @@ function BookingPage() {
                                     type="button"
                                     key={service.id}
                                     className={
-                                        selectedServiceId === service.id
+                                        selectedServiceId === service.serviceId
                                             ? "booking-service booking-service--selected"
                                             : "booking-service"
                                     }
                                     onClick={() => {
-                                        setSelectedServiceId(service.id);
+                                        setSelectedServiceId(
+                                            service.serviceId
+                                        );
                                         setSelectedDate("");
                                         setSelectedTime("");
                                         setAvailableSlots([]);
@@ -465,11 +551,12 @@ function BookingPage() {
                                 >
                                     <div>
                                         <h3>
-                                            {service.name}
+                                            {service.serviceName}
                                         </h3>
 
                                         <p>
-                                            {service.description}
+                                            {service.serviceDescription ||
+                                                "Fără descriere"}
                                         </p>
                                     </div>
 
@@ -603,7 +690,7 @@ function BookingPage() {
                             <div>
                                 <span>Serviciu</span>
                                 <strong>
-                                    {selectedService?.name ?? "—"}
+                                    {selectedService?.serviceName ?? "—"}
                                 </strong>
                             </div>
 

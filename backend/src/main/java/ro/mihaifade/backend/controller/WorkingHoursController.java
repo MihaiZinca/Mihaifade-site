@@ -17,14 +17,18 @@ public class WorkingHoursController {
     public WorkingHoursController(
             WorkingHoursService workingHoursService
     ) {
-        this.workingHoursService = workingHoursService;
+        this.workingHoursService =
+                workingHoursService;
     }
 
     @GetMapping
     public List<WorkingHoursResponse> getWorkingHours(
             @PathVariable Long barberId
     ) {
-        return workingHoursService.getWorkingHoursForBarber(barberId);
+        return workingHoursService
+                .getWorkingHoursForBarber(
+                        barberId
+                );
     }
 
     @PutMapping
@@ -33,9 +37,10 @@ public class WorkingHoursController {
             @Valid
             @RequestBody WorkingHoursRequest request
     ) {
-        return workingHoursService.setWorkingHours(
-                barberId,
-                request
-        );
+        return workingHoursService
+                .setWorkingHours(
+                        barberId,
+                        request
+                );
     }
 }

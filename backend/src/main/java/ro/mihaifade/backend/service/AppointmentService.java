@@ -7,67 +7,112 @@ import ro.mihaifade.backend.dto.AppointmentResponse;
 import ro.mihaifade.backend.entity.Appointment;
 import ro.mihaifade.backend.entity.AppointmentStatus;
 import ro.mihaifade.backend.entity.Barber;
+import ro.mihaifade.backend.entity.BarberServiceOffering;
 import ro.mihaifade.backend.entity.User;
 import ro.mihaifade.backend.repository.AppointmentRepository;
 import ro.mihaifade.backend.repository.BarberRepository;
+import ro.mihaifade.backend.repository.BarberServiceOfferingRepository;
 import ro.mihaifade.backend.repository.ServiceRepository;
 import ro.mihaifade.backend.repository.UserRepository;
 
+import java.text.Normalizer;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class AppointmentService {
+
+    private static final LocalTime COLORING_SLOT_TIME =
+            LocalTime.of(
+                    8,
+                    0
+            );
+
+    private static final Set<String> COLORING_SERVICE_NAMES =
+            Set.of(
+                    "vopsit suvite",
+                    "vopsit total",
+                    "vopsit suvite+tuns",
+                    "vopsit total+tuns",
+                    "vopsit suvite+tuns+barba",
+                    "vopsit total+tuns+barba"
+            );
 
     private final AppointmentRepository appointmentRepository;
     private final BarberRepository barberRepository;
     private final ServiceRepository serviceRepository;
     private final UserRepository userRepository;
+    private final BarberServiceOfferingRepository barberServiceOfferingRepository;
 
     public AppointmentService(
             AppointmentRepository appointmentRepository,
             BarberRepository barberRepository,
             ServiceRepository serviceRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            BarberServiceOfferingRepository barberServiceOfferingRepository
     ) {
-        this.appointmentRepository = appointmentRepository;
-        this.barberRepository = barberRepository;
-        this.serviceRepository = serviceRepository;
-        this.userRepository = userRepository;
+        this.appointmentRepository =
+                appointmentRepository;
+
+        this.barberRepository =
+                barberRepository;
+
+        this.serviceRepository =
+                serviceRepository;
+
+        this.userRepository =
+                userRepository;
+
+        this.barberServiceOfferingRepository =
+                barberServiceOfferingRepository;
     }
 
     public List<AppointmentResponse> getAllAppointments() {
-        return appointmentRepository.findAll()
+        return appointmentRepository
+                .findAll()
                 .stream()
-                .map(this::toResponse)
+                .map(
+                        this::toResponse
+                )
                 .toList();
     }
 
     public List<AppointmentResponse> getMyAppointments(
             String email
     ) {
-        User user = getUserByEmail(email);
+        User user =
+                getUserByEmail(
+                        email
+                );
 
         return appointmentRepository
                 .findByUserIdOrderByDateDescStartTimeDesc(
                         user.getId()
                 )
                 .stream()
-                .map(this::toResponse)
+                .map(
+                        this::toResponse
+                )
                 .toList();
     }
 
     public List<AppointmentResponse> getMyBarberAppointments(
             String email
     ) {
-        Barber barber = getBarberByEmail(email);
+        Barber barber =
+                getBarberByEmail(
+                        email
+                );
 
         return appointmentRepository
                 .findByBarberIdOrderByDateDescStartTimeDesc(
                         barber.getId()
                 )
                 .stream()
-                .map(this::toResponse)
+                .map(
+                        this::toResponse
+                )
                 .toList();
     }
 
@@ -75,26 +120,36 @@ public class AppointmentService {
             AppointmentRequest request,
             String email
     ) {
-        User user = getUserByEmail(email);
-
-        Barber barber = barberRepository.findById(
-                        request.barberId()
-                )
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Barber not found with id: "
-                                        + request.barberId()
-                        )
+        User user =
+                getUserByEmail(
+                        email
                 );
 
-        if (!Boolean.TRUE.equals(barber.getActive())) {
+        Barber barber =
+                barberRepository
+                        .findById(
+                                request.barberId()
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Barber not found with id: "
+                                                + request.barberId()
+                                )
+                        );
+
+        if (
+                !Boolean.TRUE.equals(
+                        barber.getActive()
+                )
+        ) {
             throw new RuntimeException(
                     "Barber is not active"
             );
         }
 
         ro.mihaifade.backend.entity.Service service =
-                serviceRepository.findById(
+                serviceRepository
+                        .findById(
                                 request.serviceId()
                         )
                         .orElseThrow(() ->
@@ -104,7 +159,11 @@ public class AppointmentService {
                                 )
                         );
 
-        if (!Boolean.TRUE.equals(service.getActive())) {
+        if (
+                !Boolean.TRUE.equals(
+                        service.getActive()
+                )
+        ) {
             throw new RuntimeException(
                     "Service is not active"
             );
@@ -116,7 +175,9 @@ public class AppointmentService {
                         .anyMatch(barberService ->
                                 barberService
                                         .getId()
-                                        .equals(service.getId())
+                                        .equals(
+                                                service.getId()
+                                        )
                         );
 
         if (!barberOffersService) {
@@ -125,10 +186,45 @@ public class AppointmentService {
             );
         }
 
+        BarberServiceOffering offering =
+                barberServiceOfferingRepository
+                        .findByBarberIdAndServiceId(
+                                barber.getId(),
+                                service.getId()
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Selected barber does not have pricing configured for this service"
+                                )
+                        );
+
+        if (
+                !Boolean.TRUE.equals(
+                        offering.getActive()
+                )
+        ) {
+            throw new RuntimeException(
+                    "Selected service is not active for this barber"
+            );
+        }
+
+        if (
+                isColoringService(
+                        service.getName()
+                )
+                        && !COLORING_SLOT_TIME.equals(
+                        request.startTime()
+                )
+        ) {
+            throw new RuntimeException(
+                    "Coloring services can only be booked at 08:00"
+            );
+        }
+
         LocalTime endTime =
                 request.startTime()
                         .plusMinutes(
-                                service.getDurationMinutes()
+                                offering.getDurationMinutes()
                         );
 
         List<Appointment> existingAppointments =
@@ -140,7 +236,8 @@ public class AppointmentService {
                         );
 
         boolean overlaps =
-                existingAppointments.stream()
+                existingAppointments
+                        .stream()
                         .anyMatch(existing ->
                                 request.startTime()
                                         .isBefore(
@@ -161,12 +258,20 @@ public class AppointmentService {
         Appointment appointment =
                 new Appointment();
 
-        appointment.setUser(user);
-        appointment.setBarber(barber);
-        appointment.setService(service);
+        appointment.setUser(
+                user
+        );
+
+        appointment.setBarber(
+                barber
+        );
+
+        appointment.setService(
+                service
+        );
 
         appointment.setServicePrice(
-                service.getPrice()
+                offering.getPrice()
         );
 
         appointment.setDate(
@@ -190,9 +295,10 @@ public class AppointmentService {
         );
 
         return toResponse(
-                appointmentRepository.save(
-                        appointment
-                )
+                appointmentRepository
+                        .save(
+                                appointment
+                        )
         );
     }
 
@@ -201,16 +307,23 @@ public class AppointmentService {
             String email
     ) {
         User user =
-                getUserByEmail(email);
+                getUserByEmail(
+                        email
+                );
 
         Appointment appointment =
-                getAppointmentById(id);
+                getAppointmentById(
+                        id
+                );
 
-        if (!appointment
-                .getUser()
-                .getId()
-                .equals(user.getId())) {
-
+        if (
+                !appointment
+                        .getUser()
+                        .getId()
+                        .equals(
+                                user.getId()
+                        )
+        ) {
             throw new AccessDeniedException(
                     "You cannot cancel another user's appointment"
             );
@@ -239,9 +352,10 @@ public class AppointmentService {
         );
 
         return toResponse(
-                appointmentRepository.save(
-                        appointment
-                )
+                appointmentRepository
+                        .save(
+                                appointment
+                        )
         );
     }
 
@@ -250,16 +364,19 @@ public class AppointmentService {
             AppointmentStatus status
     ) {
         Appointment appointment =
-                getAppointmentById(id);
+                getAppointmentById(
+                        id
+                );
 
         appointment.setStatus(
                 status
         );
 
         return toResponse(
-                appointmentRepository.save(
-                        appointment
-                )
+                appointmentRepository
+                        .save(
+                                appointment
+                        )
         );
     }
 
@@ -269,18 +386,23 @@ public class AppointmentService {
             String email
     ) {
         Barber barber =
-                getBarberByEmail(email);
+                getBarberByEmail(
+                        email
+                );
 
         Appointment appointment =
                 getAppointmentById(
                         appointmentId
                 );
 
-        if (!appointment
-                .getBarber()
-                .getId()
-                .equals(barber.getId())) {
-
+        if (
+                !appointment
+                        .getBarber()
+                        .getId()
+                        .equals(
+                                barber.getId()
+                        )
+        ) {
             throw new AccessDeniedException(
                     "You cannot modify another barber's appointment"
             );
@@ -291,9 +413,10 @@ public class AppointmentService {
         );
 
         return toResponse(
-                appointmentRepository.save(
-                        appointment
-                )
+                appointmentRepository
+                        .save(
+                                appointment
+                        )
         );
     }
 
@@ -301,7 +424,9 @@ public class AppointmentService {
             Long id
     ) {
         return appointmentRepository
-                .findById(id)
+                .findById(
+                        id
+                )
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "Appointment not found with id: "
@@ -314,7 +439,9 @@ public class AppointmentService {
             String email
     ) {
         return userRepository
-                .findByEmailIgnoreCase(email)
+                .findByEmailIgnoreCase(
+                        email
+                )
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "User not found with email: "
@@ -327,12 +454,51 @@ public class AppointmentService {
             String email
     ) {
         return barberRepository
-                .findByUserEmailIgnoreCase(email)
+                .findByUserEmailIgnoreCase(
+                        email
+                )
                 .orElseThrow(() ->
                         new RuntimeException(
                                 "No barber profile is associated with user: "
                                         + email
                         )
+                );
+    }
+
+    private boolean isColoringService(
+            String serviceName
+    ) {
+        if (
+                serviceName == null
+                        || serviceName.isBlank()
+        ) {
+            return false;
+        }
+
+        String normalizedName =
+                Normalizer
+                        .normalize(
+                                serviceName,
+                                Normalizer.Form.NFD
+                        )
+                        .replaceAll(
+                                "\\p{M}",
+                                ""
+                        )
+                        .toLowerCase()
+                        .trim()
+                        .replaceAll(
+                                "\\s*\\+\\s*",
+                                "+"
+                        )
+                        .replaceAll(
+                                "\\s+",
+                                " "
+                        );
+
+        return COLORING_SERVICE_NAMES
+                .contains(
+                        normalizedName
                 );
     }
 

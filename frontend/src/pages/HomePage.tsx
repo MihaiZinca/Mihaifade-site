@@ -1,3 +1,5 @@
+import ContactSection from "../components/ContactSection";
+import FinalStatement from "../components/FinalStatement";
 import GallerySection from "../components/GallerySection";
 import Hero from "../components/Hero";
 import Navbar from "../components/Navbar";
@@ -12,6 +14,8 @@ function HomePage() {
                 <Hero />
                 <ServicesSection />
                 <GallerySection />
+                <ContactSection />
+                <FinalStatement />
             </main>
         </>
     );
