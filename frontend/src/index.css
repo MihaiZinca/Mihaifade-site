@@ -6172,3 +6172,256 @@ input::-webkit-calendar-picker-indicator {
         font-size: 44px;
     }
 }
+/* ========================================
+   ADMIN - BARBER STACKED LAYOUT
+======================================== */
+
+.admin-barber-layout {
+    grid-template-columns: 1fr;
+    gap: 28px;
+}
+
+.admin-barber-layout > .admin-program-card {
+    width: 100%;
+    max-width: none;
+}
+
+.admin-barber-layout > aside.admin-program-card {
+    width: 100%;
+    max-width: none;
+}
+/* ========================================
+   ADMIN - BARBER SERVICES FINAL
+======================================== */
+
+.admin-barber-services {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+
+/* CARD */
+
+.admin-barber-service-card {
+    width: 100%;
+    min-width: 0;
+    min-height: 78px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    padding: 16px 18px;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.018);
+
+    cursor: pointer;
+
+    text-align: left !important;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.admin-barber-service-card:hover {
+    border-color: rgba(228, 204, 152, 0.38);
+    background: rgba(228, 204, 152, 0.035);
+    transform: translateY(-1px);
+}
+
+
+/* =========================
+   LEFT SIDE
+========================= */
+
+.admin-barber-service-card > div:first-child {
+    flex: 1;
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start !important;
+    justify-content: center;
+
+    gap: 6px;
+
+    text-align: left !important;
+}
+
+.admin-barber-service-card > div:first-child strong {
+    width: 100%;
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0.07em;
+
+    text-align: left !important;
+}
+
+.admin-barber-service-card > div:first-child span {
+    width: 100%;
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.38);
+
+    font-size: 9px;
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: 0.05em;
+
+    text-align: left !important;
+}
+
+
+/* =========================
+   RIGHT SIDE
+========================= */
+
+.admin-barber-service-card__meta {
+    flex: 0 0 auto;
+
+    display: grid;
+    grid-template-columns: auto 22px;
+    grid-template-rows: auto auto;
+
+    align-items: center;
+    justify-content: end;
+
+    column-gap: 12px;
+    row-gap: 4px;
+
+    min-width: 105px;
+
+    text-align: right !important;
+}
+
+
+/* PRICE */
+
+.admin-barber-service-card__meta strong {
+    grid-column: 1;
+    grid-row: 1;
+
+    margin: 0;
+
+    color: #e4cc98;
+
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+
+    white-space: nowrap;
+}
+
+
+/* DURATION */
+
+.admin-barber-service-card__meta span {
+    grid-column: 1;
+    grid-row: 2;
+
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.35);
+
+    font-size: 8px;
+    font-weight: 600;
+    line-height: 1;
+
+    letter-spacing: 0.08em;
+
+    white-space: nowrap;
+}
+
+
+/* CHECKBOX */
+
+.admin-barber-service-card__meta input[type="checkbox"] {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+
+    width: 18px;
+    height: 18px;
+
+    margin: 0;
+
+    cursor: pointer;
+
+    accent-color: #e4cc98;
+}
+
+
+/* SELECTED */
+
+.admin-barber-service-card:has(
+    input[type="checkbox"]:checked
+) {
+    border-color: rgba(228, 204, 152, 0.42);
+    background: rgba(228, 204, 152, 0.025);
+}
+
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 1050px) {
+    .admin-barber-services {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 600px) {
+    .admin-barber-services {
+        gap: 8px;
+    }
+
+    .admin-barber-service-card {
+        min-height: 72px;
+
+        gap: 14px;
+
+        padding: 14px;
+    }
+
+    .admin-barber-service-card > div:first-child strong {
+        font-size: 12px;
+    }
+
+    .admin-barber-service-card > div:first-child span {
+        font-size: 8px;
+    }
+
+    .admin-barber-service-card__meta {
+        min-width: 90px;
+
+        grid-template-columns: auto 18px;
+
+        column-gap: 8px;
+    }
+
+    .admin-barber-service-card__meta strong {
+        font-size: 10px;
+    }
+
+    .admin-barber-service-card__meta span {
+        font-size: 7px;
+    }
+
+    .admin-barber-service-card__meta input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+    }
+}

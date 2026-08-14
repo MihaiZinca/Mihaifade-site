@@ -38,7 +38,7 @@ function BookingPage() {
         null
     );
 
-    const [services, setServices] = useState<BarbershopService[]>([]);
+    const [, setServices] = useState<BarbershopService[]>([]);
     const [barberOfferings, setBarberOfferings] =
         useState<BarberServiceOfferingResponse[]>([]);
     const [selectedServiceId, setSelectedServiceId] = useState<number | null>(

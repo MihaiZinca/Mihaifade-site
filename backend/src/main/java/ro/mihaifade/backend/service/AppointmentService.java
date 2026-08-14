@@ -4,16 +4,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import ro.mihaifade.backend.dto.AppointmentRequest;
 import ro.mihaifade.backend.dto.AppointmentResponse;
-import ro.mihaifade.backend.entity.Appointment;
-import ro.mihaifade.backend.entity.AppointmentStatus;
-import ro.mihaifade.backend.entity.Barber;
-import ro.mihaifade.backend.entity.BarberServiceOffering;
-import ro.mihaifade.backend.entity.User;
-import ro.mihaifade.backend.repository.AppointmentRepository;
-import ro.mihaifade.backend.repository.BarberRepository;
-import ro.mihaifade.backend.repository.BarberServiceOfferingRepository;
-import ro.mihaifade.backend.repository.ServiceRepository;
-import ro.mihaifade.backend.repository.UserRepository;
+import ro.mihaifade.backend.entity.*;
+import ro.mihaifade.backend.repository.*;
 
 import java.text.Normalizer;
 import java.time.LocalTime;

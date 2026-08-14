@@ -1,7 +1,10 @@
 package ro.mihaifade.backend.controller;
 
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ro.mihaifade.backend.dto.BarberStatsResponse;
 import ro.mihaifade.backend.service.BarberStatsService;
 

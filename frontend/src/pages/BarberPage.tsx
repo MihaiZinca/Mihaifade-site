@@ -230,9 +230,7 @@ function BarberPage() {
         }
     };
 
-    const loadProgram = async (
-        barberId: number
-    ) => {
+    const loadProgram = async () => {
         setProgramLoading(true);
         setError("");
 
@@ -363,9 +361,7 @@ function BarberPage() {
             return;
         }
 
-        loadProgram(
-            barber.id
-        );
+        loadProgram();
     }, [barber?.id]);
 
     useEffect(() => {

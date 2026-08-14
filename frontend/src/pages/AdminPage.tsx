@@ -3708,7 +3708,7 @@ function AdminPage() {
                                 Nu există niciun barber configurat.
                             </p>
                         ) : (
-                            <div className="admin-program-layout">
+                            <div className="admin-program-layout admin-barber-layout">
                                 <section className="admin-program-card">
                                     <div className="admin-program-card__header">
                                         <div>
