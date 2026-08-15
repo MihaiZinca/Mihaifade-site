@@ -499,6 +499,24 @@ public class SecurityConfig {
                                         "OWNER"
                                 )
 
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/push-subscriptions/me"
+                                )
+                                .hasRole(
+                                        "CLIENT"
+                                )
+
+                                .requestMatchers(
+                                        HttpMethod.DELETE,
+                                        "/api/push-subscriptions/me",
+                                        "/api/push-subscriptions/me/all"
+                                )
+                                .hasRole(
+                                        "CLIENT"
+                                )
+
+
                                 .anyRequest()
                                 .authenticated()
                 )
