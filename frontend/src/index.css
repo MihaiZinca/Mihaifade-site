@@ -6425,3 +6425,120 @@ input::-webkit-calendar-picker-indicator {
         height: 16px;
     }
 }
+/* notifications */
+.account-notifications {
+    overflow: hidden;
+}
+
+.account-notifications__content {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.account-notifications__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.account-notifications__copy p {
+    margin: 0;
+    max-width: 720px;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.account-notifications__copy small {
+    color: rgba(255, 255, 255, 0.38);
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.account-notifications__error,
+.account-notifications__success {
+    margin: 0;
+    padding: 13px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.account-notifications__error {
+    color: #f2a6a6;
+    background: rgba(180, 45, 45, 0.08);
+    border-color: rgba(242, 166, 166, 0.18);
+}
+
+.account-notifications__success {
+    color: #e4cc98;
+    background: rgba(228, 204, 152, 0.06);
+    border-color: rgba(228, 204, 152, 0.18);
+}
+
+.account-notifications__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.account-notifications__enable,
+.account-notifications__disable {
+    min-height: 46px;
+    padding: 0 22px;
+
+    border: 1px solid transparent;
+    cursor: pointer;
+
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.account-notifications__enable {
+    background: #e4cc98;
+    border-color: #e4cc98;
+    color: #111;
+}
+
+.account-notifications__enable:hover:not(:disabled) {
+    background: #f0e0bb;
+    border-color: #f0e0bb;
+}
+
+.account-notifications__disable {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.16);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.account-notifications__disable:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.32);
+    color: #fff;
+}
+
+.account-notifications__enable:disabled,
+.account-notifications__disable:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+@media (max-width: 700px) {
+    .account-notifications__actions {
+        align-items: stretch;
+    }
+
+    .account-notifications__enable,
+    .account-notifications__disable {
+        width: 100%;
+    }
+}

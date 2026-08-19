@@ -2,6 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { getRole, logout } from "../services/auth";
+import {
+    arePushNotificationsEnabled,
+    disablePushNotifications,
+    enablePushNotifications,
+} from "../services/pushSubscriptions";
 import type { AppointmentResponse } from "../types";
 
 interface ReviewResponse {
@@ -33,6 +38,25 @@ function AccountPage() {
 
     const [deletingAccount, setDeletingAccount] =
         useState(false);
+
+    /*
+     * PUSH NOTIFICATIONS
+     */
+
+    const [notificationsEnabled, setNotificationsEnabled] =
+        useState(
+            role === "CLIENT" &&
+            arePushNotificationsEnabled()
+        );
+
+    const [notificationLoading, setNotificationLoading] =
+        useState(false);
+
+    const [notificationError, setNotificationError] =
+        useState("");
+
+    const [notificationSuccess, setNotificationSuccess] =
+        useState("");
 
     /*
      * REVIEW
@@ -398,6 +422,80 @@ function AccountPage() {
         }
     };
 
+    /*
+     * PUSH NOTIFICATIONS
+     */
+
+    const handleEnableNotifications = async () => {
+        if (role !== "CLIENT") {
+            return;
+        }
+
+        setNotificationLoading(true);
+        setNotificationError("");
+        setNotificationSuccess("");
+
+        try {
+            const result =
+                await enablePushNotifications();
+
+            if (!result.success) {
+                if (
+                    "Notification" in window &&
+                    Notification.permission === "denied"
+                ) {
+                    setNotificationError(
+                        "Notificările sunt blocate în browser. Activează-le din setările site-ului și încearcă din nou."
+                    );
+                } else {
+                    setNotificationError(
+                        "Notificările nu au putut fi activate pe acest dispozitiv."
+                    );
+                }
+
+                return;
+            }
+
+            setNotificationsEnabled(true);
+
+            setNotificationSuccess(
+                "Notificările au fost activate pe acest dispozitiv."
+            );
+        } catch {
+            setNotificationError(
+                "Notificările nu au putut fi activate. Încearcă din nou."
+            );
+        } finally {
+            setNotificationLoading(false);
+        }
+    };
+
+    const handleDisableNotifications = async () => {
+        if (role !== "CLIENT") {
+            return;
+        }
+
+        setNotificationLoading(true);
+        setNotificationError("");
+        setNotificationSuccess("");
+
+        try {
+            await disablePushNotifications();
+
+            setNotificationsEnabled(false);
+
+            setNotificationSuccess(
+                "Notificările au fost dezactivate pe acest dispozitiv."
+            );
+        } catch {
+            setNotificationError(
+                "Notificările nu au putut fi dezactivate. Încearcă din nou."
+            );
+        } finally {
+            setNotificationLoading(false);
+        }
+    };
+
     const handleBack = () => {
         navigate("/");
     };
@@ -696,6 +794,89 @@ function AccountPage() {
                                 </div>
                             )}
                         </section>
+
+                        {role === "CLIENT" && (
+                            <section className="account-section account-notifications">
+                                <div className="account-section__header">
+                                    <div>
+                                        <p className="section-eyebrow">
+                                            NOTIFICĂRI
+                                        </p>
+
+                                        <h2>
+                                            Remindere pentru programări
+                                        </h2>
+                                    </div>
+
+                                    <span>
+                                        {notificationsEnabled
+                                            ? "ACTIVE"
+                                            : "OFF"}
+                                    </span>
+                                </div>
+
+                                <div className="account-notifications__content">
+                                    <div className="account-notifications__copy">
+                                        <p>
+                                            Activează notificările pentru a primi
+                                            remindere și actualizări importante
+                                            despre programările tale.
+                                        </p>
+
+                                        <small>
+                                            Permisiunea se aplică doar acestui
+                                            browser și acestui dispozitiv.
+                                        </small>
+                                    </div>
+
+                                    {notificationError && (
+                                        <p className="account-notifications__error">
+                                            {notificationError}
+                                        </p>
+                                    )}
+
+                                    {notificationSuccess && (
+                                        <p className="account-notifications__success">
+                                            {notificationSuccess}
+                                        </p>
+                                    )}
+
+                                    <div className="account-notifications__actions">
+                                        {notificationsEnabled ? (
+                                            <button
+                                                type="button"
+                                                className="account-notifications__disable"
+                                                onClick={
+                                                    handleDisableNotifications
+                                                }
+                                                disabled={
+                                                    notificationLoading
+                                                }
+                                            >
+                                                {notificationLoading
+                                                    ? "Se dezactivează..."
+                                                    : "Dezactivează notificările"}
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                className="account-notifications__enable"
+                                                onClick={
+                                                    handleEnableNotifications
+                                                }
+                                                disabled={
+                                                    notificationLoading
+                                                }
+                                            >
+                                                {notificationLoading
+                                                    ? "Se activează..."
+                                                    : "Activează notificările"}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </section>
+                        )}
 
                         <section className="account-section">
                             <div className="account-section__header">
