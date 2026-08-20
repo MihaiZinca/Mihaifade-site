@@ -18,16 +18,23 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-    const notification = payload.notification;
+    console.log(
+        "[PUSH SW] Mesaj primit în background:",
+        payload
+    );
 
-    if (!notification) {
-        return;
-    }
+    const title =
+        payload.data?.title ||
+        "MIHAIFADE";
+
+    const body =
+        payload.data?.body ||
+        "";
 
     self.registration.showNotification(
-        notification.title || "MIHAIFADE",
+        title,
         {
-            body: notification.body || "",
+            body,
             icon: "/favicon.png",
             badge: "/favicon.png",
         }

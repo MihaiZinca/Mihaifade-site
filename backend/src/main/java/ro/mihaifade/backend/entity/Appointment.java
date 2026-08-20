@@ -51,7 +51,22 @@ public class Appointment {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private AppointmentStatus status = AppointmentStatus.PENDING;
+    private AppointmentStatus status =
+            AppointmentStatus.PENDING;
+
+    @Column(
+            name = "reminder_24h_sent",
+            nullable = false,
+            columnDefinition = "boolean default false"
+    )
+    private boolean reminder24hSent = false;
+
+    @Column(
+            name = "reminder_2h_sent",
+            nullable = false,
+            columnDefinition = "boolean default false"
+    )
+    private boolean reminder2hSent = false;
 
     private String notes;
 }

@@ -517,6 +517,9 @@ public class SecurityConfig {
                                 )
 
 
+
+
+
                                 .anyRequest()
                                 .authenticated()
                 )

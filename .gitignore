@@ -21,3 +21,4 @@ frontend/.next/
 # Operating system files
 .DS_Store
 Thumbs.db
+backend/firebase-service-account.json

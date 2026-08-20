@@ -1,4 +1,9 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
+import {
+    BrowserRouter,
+    Route,
+    Routes,
+} from "react-router-dom";
 import BarberRoute from "./components/BarberRoute.tsx";
 import OwnerRoute from "./components/OwnerRoute";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -12,8 +17,57 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import WelcomeRewardPage from "./pages/WelcomeRewardPage";
+import {
+    listenForForegroundNotifications,
+} from "./services/pushNotifications";
 
 function App() {
+    useEffect(() => {
+        let unsubscribe:
+            | (() => void)
+            | undefined;
+
+        let active = true;
+
+        const startForegroundPushListener =
+            async () => {
+                try {
+                    const stopListening =
+                        await listenForForegroundNotifications(
+                            (payload) => {
+                                console.log(
+                                    "[PUSH] Notificare procesată în App:",
+                                    payload
+                                );
+                            }
+                        );
+
+                    if (!active) {
+                        stopListening();
+                        return;
+                    }
+
+                    unsubscribe =
+                        stopListening;
+                } catch (error) {
+                    console.error(
+                        "[PUSH] Nu s-a putut porni listener-ul foreground:",
+                        error
+                    );
+                }
+            };
+
+        void startForegroundPushListener();
+
+        return () => {
+            active = false;
+
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
+    }, []);
+
     return (
         <BrowserRouter>
             <Routes>

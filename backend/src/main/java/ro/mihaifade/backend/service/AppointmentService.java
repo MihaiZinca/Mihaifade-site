@@ -1,7 +1,6 @@
 package ro.mihaifade.backend.service;
 
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.stereotype.Service;
 import ro.mihaifade.backend.dto.AppointmentRequest;
 import ro.mihaifade.backend.dto.AppointmentResponse;
 import ro.mihaifade.backend.entity.*;
@@ -9,10 +8,11 @@ import ro.mihaifade.backend.repository.*;
 
 import java.text.Normalizer;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Set;
 
-@Service
+@org.springframework.stereotype.Service
 public class AppointmentService {
 
     private static final LocalTime COLORING_SLOT_TIME =
@@ -31,18 +31,30 @@ public class AppointmentService {
                     "vopsit total+tuns+barba"
             );
 
+    private static final DateTimeFormatter APPOINTMENT_DATE_FORMATTER =
+            DateTimeFormatter.ofPattern(
+                    "dd.MM.yyyy"
+            );
+
+    private static final DateTimeFormatter APPOINTMENT_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern(
+                    "HH:mm"
+            );
+
     private final AppointmentRepository appointmentRepository;
     private final BarberRepository barberRepository;
     private final ServiceRepository serviceRepository;
     private final UserRepository userRepository;
     private final BarberServiceOfferingRepository barberServiceOfferingRepository;
+    private final PushNotificationService pushNotificationService;
 
     public AppointmentService(
             AppointmentRepository appointmentRepository,
             BarberRepository barberRepository,
             ServiceRepository serviceRepository,
             UserRepository userRepository,
-            BarberServiceOfferingRepository barberServiceOfferingRepository
+            BarberServiceOfferingRepository barberServiceOfferingRepository,
+            PushNotificationService pushNotificationService
     ) {
         this.appointmentRepository =
                 appointmentRepository;
@@ -58,6 +70,9 @@ public class AppointmentService {
 
         this.barberServiceOfferingRepository =
                 barberServiceOfferingRepository;
+
+        this.pushNotificationService =
+                pushNotificationService;
     }
 
     public List<AppointmentResponse> getAllAppointments() {
@@ -286,11 +301,19 @@ public class AppointmentService {
                 request.notes()
         );
 
-        return toResponse(
+        Appointment savedAppointment =
                 appointmentRepository
                         .save(
                                 appointment
-                        )
+                        );
+
+        sendAppointmentCreatedNotification(
+                user,
+                savedAppointment
+        );
+
+        return toResponse(
+                savedAppointment
         );
     }
 
@@ -455,6 +478,56 @@ public class AppointmentService {
                                         + email
                         )
                 );
+    }
+
+    private void sendAppointmentCreatedNotification(
+            User user,
+            Appointment appointment
+    ) {
+        try {
+            String formattedDate =
+                    appointment
+                            .getDate()
+                            .format(
+                                    APPOINTMENT_DATE_FORMATTER
+                            );
+
+            String formattedTime =
+                    appointment
+                            .getStartTime()
+                            .format(
+                                    APPOINTMENT_TIME_FORMATTER
+                            );
+
+            String body =
+                    "Programarea pentru "
+                            + appointment
+                            .getService()
+                            .getName()
+                            + ", pe "
+                            + formattedDate
+                            + " la "
+                            + formattedTime
+                            + ", cu "
+                            + appointment
+                            .getBarber()
+                            .getDisplayName()
+                            + ", a fost confirmată.";
+
+
+            pushNotificationService.sendToUser(
+                    user.getEmail(),
+                    "Programare confirmată",
+                    body
+            );
+        } catch (Exception exception) {
+            System.err.println(
+                    "Could not send appointment confirmation notification for appointment "
+                            + appointment.getId()
+                            + ": "
+                            + exception.getMessage()
+            );
+        }
     }
 
     private boolean isColoringService(

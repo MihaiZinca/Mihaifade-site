@@ -35,4 +35,26 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByBarberIdOrderByDateDescStartTimeDesc(
             Long barberId
     );
+
+    List<Appointment> findByDateAndReminder24hSentFalseAndStatusNot(
+            LocalDate date,
+            AppointmentStatus status
+    );
+
+    List<Appointment> findByDateAndReminder2hSentFalseAndStatusNot(
+            LocalDate date,
+            AppointmentStatus status
+    );
+
+    List<Appointment> findByDateBetweenAndReminder24hSentFalseAndStatusNot(
+            LocalDate startDate,
+            LocalDate endDate,
+            AppointmentStatus status
+    );
+
+    List<Appointment> findByDateBetweenAndReminder2hSentFalseAndStatusNot(
+            LocalDate startDate,
+            LocalDate endDate,
+            AppointmentStatus status
+    );
 }

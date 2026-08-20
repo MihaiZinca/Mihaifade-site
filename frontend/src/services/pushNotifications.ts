@@ -169,6 +169,43 @@ export async function requestPushNotificationToken() {
     }
 }
 
+async function showForegroundNotification(
+    payload: MessagePayload
+) {
+    if (
+        !("Notification" in window) ||
+        Notification.permission !== "granted"
+    ) {
+        return;
+    }
+
+    if (!("serviceWorker" in navigator)) {
+        return;
+    }
+
+    const registration =
+        await navigator.serviceWorker.ready;
+
+    const title =
+        payload.data?.title ??
+        payload.notification?.title ??
+        "MIHAIFADE";
+
+    const body =
+        payload.data?.body ??
+        payload.notification?.body ??
+        "";
+
+    await registration.showNotification(
+        title,
+        {
+            body,
+            icon: "/favicon.png",
+            badge: "/favicon.png",
+        }
+    );
+}
+
 export async function listenForForegroundNotifications(
     callback: (payload: MessagePayload) => void
 ) {
@@ -181,6 +218,19 @@ export async function listenForForegroundNotifications(
 
     return onMessage(
         messaging,
-        callback
+        (payload) => {
+            console.log(
+                "[PUSH] Mesaj primit în foreground:",
+                payload
+            );
+
+            void showForegroundNotification(
+                payload
+            );
+
+            callback(
+                payload
+            );
+        }
     );
 }

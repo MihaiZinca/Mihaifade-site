@@ -1,6 +1,5 @@
 package ro.mihaifade.backend.service;
 
-import org.springframework.stereotype.Service;
 import ro.mihaifade.backend.dto.AvailabilityResponse;
 import ro.mihaifade.backend.entity.*;
 import ro.mihaifade.backend.repository.*;
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-@Service
+@org.springframework.stereotype.Service
 public class AvailabilityService {
 
     private static final int SLOT_INTERVAL_MINUTES = 30;
