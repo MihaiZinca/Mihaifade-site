@@ -140,28 +140,35 @@ function AccountPage() {
 
         try {
             const response =
-                await api.get<ReviewResponse>(
+                await api.get<ReviewResponse | null>(
                     "/reviews/me"
                 );
 
-            setReview(response.data);
+            const reviewData =
+                response.data;
+
+            if (
+                response.status === 204 ||
+                !reviewData
+            ) {
+                setReview(null);
+                setReviewRating(5);
+                setReviewComment("");
+                return;
+            }
+
+            setReview(
+                reviewData
+            );
 
             setReviewRating(
-                response.data.rating
+                reviewData.rating
             );
 
             setReviewComment(
-                response.data.comment
+                reviewData.comment
             );
         } catch {
-            /*
-             * Dacă utilizatorul nu are încă o recenzie,
-             * endpoint-ul poate răspunde cu eroare.
-             *
-             * Nu afișăm eroare generală deoarece acest caz
-             * înseamnă pur și simplu că trebuie afișat
-             * formularul pentru prima recenzie.
-             */
             setReview(null);
             setReviewRating(5);
             setReviewComment("");

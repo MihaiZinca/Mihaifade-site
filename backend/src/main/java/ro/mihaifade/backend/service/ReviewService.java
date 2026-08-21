@@ -11,6 +11,7 @@ import ro.mihaifade.backend.repository.ReviewRepository;
 import ro.mihaifade.backend.repository.UserRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ReviewService {
@@ -52,7 +53,7 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public ReviewResponse getMyReview(
+    public Optional<ReviewResponse> getMyReview(
             String email
     ) {
         User user =
@@ -60,20 +61,13 @@ public class ReviewService {
                         email
                 );
 
-        Review review =
-                reviewRepository
-                        .findByUserId(
-                                user.getId()
-                        )
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "You have not created a review yet"
-                                )
-                        );
-
-        return toResponse(
-                review
-        );
+        return reviewRepository
+                .findByUserId(
+                        user.getId()
+                )
+                .map(
+                        this::toResponse
+                );
     }
 
     @Transactional

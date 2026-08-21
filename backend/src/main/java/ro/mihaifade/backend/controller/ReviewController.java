@@ -2,6 +2,7 @@ package ro.mihaifade.backend.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ro.mihaifade.backend.dto.ReviewRequest;
@@ -9,6 +10,7 @@ import ro.mihaifade.backend.dto.ReviewResponse;
 import ro.mihaifade.backend.service.ReviewService;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -30,12 +32,23 @@ public class ReviewController {
     }
 
     @GetMapping("/me")
-    public ReviewResponse getMyReview(
+    public ResponseEntity<ReviewResponse> getMyReview(
             Authentication authentication
     ) {
-        return reviewService
-                .getMyReview(
-                        authentication.getName()
+        Optional<ReviewResponse> review =
+                reviewService
+                        .getMyReview(
+                                authentication.getName()
+                        );
+
+        return review
+                .map(
+                        ResponseEntity::ok
+                )
+                .orElseGet(() ->
+                        ResponseEntity
+                                .noContent()
+                                .build()
                 );
     }
 
