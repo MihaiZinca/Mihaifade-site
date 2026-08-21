@@ -366,11 +366,18 @@ public class AppointmentService {
                 AppointmentStatus.CANCELLED
         );
 
-        return toResponse(
+        Appointment savedAppointment =
                 appointmentRepository
                         .save(
                                 appointment
-                        )
+                        );
+
+        sendAppointmentCancelledNotification(
+                savedAppointment
+        );
+
+        return toResponse(
+                savedAppointment
         );
     }
 
@@ -383,15 +390,31 @@ public class AppointmentService {
                         id
                 );
 
+        AppointmentStatus previousStatus =
+                appointment.getStatus();
+
         appointment.setStatus(
                 status
         );
 
-        return toResponse(
+        Appointment savedAppointment =
                 appointmentRepository
                         .save(
                                 appointment
-                        )
+                        );
+
+        if (
+                status == AppointmentStatus.CANCELLED
+                        &&
+                        previousStatus != AppointmentStatus.CANCELLED
+        ) {
+            sendAppointmentCancelledNotification(
+                    savedAppointment
+            );
+        }
+
+        return toResponse(
+                savedAppointment
         );
     }
 
@@ -423,15 +446,31 @@ public class AppointmentService {
             );
         }
 
+        AppointmentStatus previousStatus =
+                appointment.getStatus();
+
         appointment.setStatus(
                 status
         );
 
-        return toResponse(
+        Appointment savedAppointment =
                 appointmentRepository
                         .save(
                                 appointment
-                        )
+                        );
+
+        if (
+                status == AppointmentStatus.CANCELLED
+                        &&
+                        previousStatus != AppointmentStatus.CANCELLED
+        ) {
+            sendAppointmentCancelledNotification(
+                    savedAppointment
+            );
+        }
+
+        return toResponse(
+                savedAppointment
         );
     }
 
@@ -514,7 +553,6 @@ public class AppointmentService {
                             .getDisplayName()
                             + ", a fost confirmată.";
 
-
             pushNotificationService.sendToUser(
                     user.getEmail(),
                     "Programare confirmată",
@@ -523,6 +561,56 @@ public class AppointmentService {
         } catch (Exception exception) {
             System.err.println(
                     "Could not send appointment confirmation notification for appointment "
+                            + appointment.getId()
+                            + ": "
+                            + exception.getMessage()
+            );
+        }
+    }
+
+    private void sendAppointmentCancelledNotification(
+            Appointment appointment
+    ) {
+        try {
+            String formattedDate =
+                    appointment
+                            .getDate()
+                            .format(
+                                    APPOINTMENT_DATE_FORMATTER
+                            );
+
+            String formattedTime =
+                    appointment
+                            .getStartTime()
+                            .format(
+                                    APPOINTMENT_TIME_FORMATTER
+                            );
+
+            String body =
+                    "Programarea pentru "
+                            + appointment
+                            .getService()
+                            .getName()
+                            + ", din "
+                            + formattedDate
+                            + " la "
+                            + formattedTime
+                            + ", cu "
+                            + appointment
+                            .getBarber()
+                            .getDisplayName()
+                            + ", a fost anulată.";
+
+            pushNotificationService.sendToUser(
+                    appointment
+                            .getUser()
+                            .getEmail(),
+                    "Programare anulată",
+                    body
+            );
+        } catch (Exception exception) {
+            System.err.println(
+                    "Could not send appointment cancellation notification for appointment "
                             + appointment.getId()
                             + ": "
                             + exception.getMessage()
