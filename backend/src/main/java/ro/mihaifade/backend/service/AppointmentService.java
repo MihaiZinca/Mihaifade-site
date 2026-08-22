@@ -7,6 +7,7 @@ import ro.mihaifade.backend.entity.*;
 import ro.mihaifade.backend.repository.*;
 
 import java.text.Normalizer;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -225,6 +226,26 @@ public class AppointmentService {
         ) {
             throw new RuntimeException(
                     "Coloring services can only be booked at 08:00"
+            );
+        }
+
+        /*
+         * Nu permitem crearea unei programări
+         * pentru o dată/oră care a trecut deja.
+         */
+        LocalDateTime requestedStartDateTime =
+                LocalDateTime.of(
+                        request.date(),
+                        request.startTime()
+                );
+
+        if (
+                !requestedStartDateTime.isAfter(
+                        LocalDateTime.now()
+                )
+        ) {
+            throw new RuntimeException(
+                    "Cannot create an appointment in the past"
             );
         }
 

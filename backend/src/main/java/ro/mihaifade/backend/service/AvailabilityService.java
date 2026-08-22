@@ -6,6 +6,7 @@ import ro.mihaifade.backend.repository.*;
 
 import java.text.Normalizer;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -268,8 +269,15 @@ public class AvailabilityService {
                             timeOffOptional
                     );
 
+            boolean slotInPast =
+                    isSlotInPast(
+                            date,
+                            slotStart
+                    );
+
             if (
-                    !overlapsAppointment
+                    !slotInPast
+                            && !overlapsAppointment
                             && !overlapsTimeOff
             ) {
                 availableSlots.add(
@@ -335,6 +343,20 @@ public class AvailabilityService {
             );
         }
 
+        if (
+                isSlotInPast(
+                        date,
+                        slotStart
+                )
+        ) {
+            return emptyAvailability(
+                    date,
+                    barberId,
+                    serviceId,
+                    durationMinutes
+            );
+        }
+
         boolean overlapsAppointment =
                 overlapsAppointment(
                         slotStart,
@@ -369,6 +391,21 @@ public class AvailabilityService {
                 List.of(
                         COLORING_SLOT_TIME
                 )
+        );
+    }
+
+    private boolean isSlotInPast(
+            LocalDate date,
+            LocalTime slotStart
+    ) {
+        LocalDateTime slotDateTime =
+                LocalDateTime.of(
+                        date,
+                        slotStart
+                );
+
+        return !slotDateTime.isAfter(
+                LocalDateTime.now()
         );
     }
 
