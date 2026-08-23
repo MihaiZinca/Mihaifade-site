@@ -7,7 +7,10 @@ import {
     disablePushNotifications,
     enablePushNotifications,
 } from "../services/pushSubscriptions";
-import type { AppointmentResponse } from "../types";
+import type {
+    AppointmentResponse,
+    AvailabilityResponse,
+} from "../types";
 
 interface ReviewResponse {
     id: number;
@@ -38,6 +41,34 @@ function AccountPage() {
 
     const [deletingAccount, setDeletingAccount] =
         useState(false);
+
+    /*
+     * RESCHEDULE
+     */
+
+    const [reschedulingAppointment, setReschedulingAppointment] =
+        useState<AppointmentResponse | null>(null);
+
+    const [rescheduleDate, setRescheduleDate] =
+        useState("");
+
+    const [rescheduleSlots, setRescheduleSlots] =
+        useState<string[]>([]);
+
+    const [rescheduleTime, setRescheduleTime] =
+        useState("");
+
+    const [rescheduleLoadingSlots, setRescheduleLoadingSlots] =
+        useState(false);
+
+    const [rescheduleSaving, setRescheduleSaving] =
+        useState(false);
+
+    const [rescheduleError, setRescheduleError] =
+        useState("");
+
+    const [rescheduleSuccess, setRescheduleSuccess] =
+        useState("");
 
     /*
      * PUSH NOTIFICATIONS
@@ -246,6 +277,170 @@ function AccountPage() {
             );
         } finally {
             setCancellingId(null);
+        }
+    };
+
+    const handleOpenReschedule = async (
+        appointment: AppointmentResponse
+    ) => {
+        if (role !== "CLIENT") {
+            return;
+        }
+
+        setReschedulingAppointment(
+            appointment
+        );
+
+        setRescheduleDate(
+            appointment.date
+        );
+
+        setRescheduleSlots([]);
+        setRescheduleTime("");
+        setRescheduleError("");
+        setRescheduleSuccess("");
+
+        setRescheduleLoadingSlots(true);
+
+        try {
+            const response =
+                await api.get<AvailabilityResponse>(
+                    "/availability",
+                    {
+                        params: {
+                            barberId:
+                                appointment.barberId,
+                            serviceId:
+                                appointment.serviceId,
+                            date:
+                                appointment.date,
+                            excludeAppointmentId:
+                                appointment.id,
+                        },
+                    }
+                );
+
+            setRescheduleSlots(
+                response.data.availableSlots
+            );
+        } catch {
+            setRescheduleSlots([]);
+
+            setRescheduleError(
+                "Orele disponibile nu au putut fi încărcate."
+            );
+        } finally {
+            setRescheduleLoadingSlots(false);
+        }
+    };
+
+    const handleCloseReschedule = () => {
+        if (rescheduleSaving) {
+            return;
+        }
+
+        setReschedulingAppointment(null);
+        setRescheduleDate("");
+        setRescheduleSlots([]);
+        setRescheduleTime("");
+        setRescheduleError("");
+        setRescheduleSuccess("");
+    };
+
+    const handleRescheduleDateChange = async (
+        appointment: AppointmentResponse,
+        date: string
+    ) => {
+        setRescheduleDate(date);
+        setRescheduleTime("");
+        setRescheduleSlots([]);
+        setRescheduleError("");
+        setRescheduleSuccess("");
+
+        if (!date) {
+            return;
+        }
+
+        setRescheduleLoadingSlots(true);
+
+        try {
+            const response =
+                await api.get<AvailabilityResponse>(
+                    "/availability",
+                    {
+                        params: {
+                            barberId: appointment.barberId,
+                            serviceId: appointment.serviceId,
+                            date,
+                            excludeAppointmentId: appointment.id,
+                        },
+                    }
+                );
+
+            setRescheduleSlots(
+                response.data.availableSlots
+            );
+        } catch {
+            setRescheduleSlots([]);
+            setRescheduleError(
+                "Orele disponibile nu au putut fi încărcate."
+            );
+        } finally {
+            setRescheduleLoadingSlots(false);
+        }
+    };
+
+    const handleReschedule = async () => {
+        if (
+            role !== "CLIENT" ||
+            !reschedulingAppointment
+        ) {
+            return;
+        }
+
+        if (!rescheduleDate || !rescheduleTime) {
+            setRescheduleError(
+                "Alege noua dată și noua oră."
+            );
+            return;
+        }
+
+        setRescheduleSaving(true);
+        setRescheduleError("");
+        setRescheduleSuccess("");
+
+        try {
+            const response =
+                await api.put<AppointmentResponse>(
+                    `/appointments/${reschedulingAppointment.id}/reschedule`,
+                    {
+                        date: rescheduleDate,
+                        startTime: rescheduleTime,
+                    }
+                );
+
+            setAppointments((current) =>
+                current.map((appointment) =>
+                    appointment.id ===
+                    reschedulingAppointment.id
+                        ? response.data
+                        : appointment
+                )
+            );
+
+            setReschedulingAppointment(response.data);
+            setRescheduleDate(response.data.date);
+            setRescheduleSlots([]);
+            setRescheduleTime("");
+            setRescheduleSuccess(
+                "Programarea a fost modificată."
+            );
+        } catch {
+            setRescheduleError(
+                "Programarea nu a putut fi modificată. Este posibil ca ora să fi fost ocupată între timp."
+            );
+        } finally {
+            setRescheduleSaving(false);
         }
     };
 
@@ -741,23 +936,43 @@ function AccountPage() {
                                                 <div className="account-appointment__actions">
                                                     {role ===
                                                     "CLIENT" ? (
-                                                        <button
-                                                            type="button"
-                                                            disabled={
-                                                                cancellingId ===
+                                                        <>
+                                                            <button
+                                                                type="button"
+                                                                className="account-appointment__reschedule"
+                                                                disabled={
+                                                                    cancellingId ===
+                                                                        appointment.id ||
+                                                                    rescheduleSaving
+                                                                }
+                                                                onClick={() =>
+                                                                    handleOpenReschedule(
+                                                                        appointment
+                                                                    )
+                                                                }
+                                                            >
+                                                                Modifică programarea
+                                                            </button>
+
+                                                            <button
+                                                                type="button"
+                                                                disabled={
+                                                                    cancellingId ===
+                                                                        appointment.id ||
+                                                                    rescheduleSaving
+                                                                }
+                                                                onClick={() =>
+                                                                    handleCancel(
+                                                                        appointment.id
+                                                                    )
+                                                                }
+                                                            >
+                                                                {cancellingId ===
                                                                 appointment.id
-                                                            }
-                                                            onClick={() =>
-                                                                handleCancel(
-                                                                    appointment.id
-                                                                )
-                                                            }
-                                                        >
-                                                            {cancellingId ===
-                                                            appointment.id
-                                                                ? "Se anulează..."
-                                                                : "Anulează programarea"}
-                                                        </button>
+                                                                    ? "Se anulează..."
+                                                                    : "Anulează programarea"}
+                                                            </button>
+                                                        </>
                                                     ) : (
                                                         <>
                                                             <button
@@ -795,6 +1010,137 @@ function AccountPage() {
                                                         </>
                                                     )}
                                                 </div>
+
+                                                {role === "CLIENT" &&
+                                                    reschedulingAppointment?.id ===
+                                                        appointment.id && (
+                                                        <div className="account-reschedule">
+                                                            <div className="account-reschedule__header">
+                                                                <div>
+                                                                    <span>MODIFICĂ PROGRAMAREA</span>
+                                                                    <strong>{appointment.serviceName}</strong>
+                                                                    <p>Barber: {appointment.barberName}</p>
+                                                                </div>
+
+                                                                <button
+                                                                    type="button"
+                                                                    className="account-reschedule__close"
+                                                                    onClick={handleCloseReschedule}
+                                                                    disabled={rescheduleSaving}
+                                                                >
+                                                                    Închide
+                                                                </button>
+                                                            </div>
+
+                                                            <div className="account-reschedule__current">
+                                                                <span>Programarea actuală</span>
+                                                                <strong>
+                                                                    {appointment.date} ·{" "}
+                                                                    {appointment.startTime.slice(0, 5)}
+                                                                </strong>
+                                                            </div>
+
+                                                            <label className="account-reschedule__field">
+                                                                <span>Noua dată</span>
+                                                                <input
+                                                                    type="date"
+                                                                    value={rescheduleDate}
+                                                                    min={new Date().toISOString().split("T")[0]}
+                                                                    disabled={rescheduleSaving}
+                                                                    onChange={(event) =>
+                                                                        handleRescheduleDateChange(
+                                                                            appointment,
+                                                                            event.target.value
+                                                                        )
+                                                                    }
+                                                                />
+                                                            </label>
+
+                                                            <div className="account-reschedule__times">
+                                                                <span className="account-reschedule__label">
+                                                                    Noua oră
+                                                                </span>
+
+                                                                {rescheduleLoadingSlots && (
+                                                                    <p className="account-message">
+                                                                        Verificăm orele disponibile...
+                                                                    </p>
+                                                                )}
+
+                                                                {!rescheduleLoadingSlots &&
+                                                                    rescheduleDate &&
+                                                                    rescheduleSlots.length === 0 &&
+                                                                    !rescheduleError && (
+                                                                        <p className="account-message">
+                                                                            Nu există ore disponibile pentru această zi.
+                                                                        </p>
+                                                                    )}
+
+                                                                {!rescheduleLoadingSlots &&
+                                                                    rescheduleSlots.length > 0 && (
+                                                                        <div className="account-reschedule__slots">
+                                                                            {rescheduleSlots.map((slot) => (
+                                                                                <button
+                                                                                    type="button"
+                                                                                    key={slot}
+                                                                                    className={
+                                                                                        rescheduleTime === slot
+                                                                                            ? "account-reschedule__slot account-reschedule__slot--selected"
+                                                                                            : "account-reschedule__slot"
+                                                                                    }
+                                                                                    onClick={() => {
+                                                                                        setRescheduleTime(slot);
+                                                                                        setRescheduleError("");
+                                                                                        setRescheduleSuccess("");
+                                                                                    }}
+                                                                                    disabled={rescheduleSaving}
+                                                                                >
+                                                                                    {slot.slice(0, 5)}
+                                                                                </button>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                            </div>
+
+                                                            {rescheduleError && (
+                                                                <p className="account-reschedule__error">
+                                                                    {rescheduleError}
+                                                                </p>
+                                                            )}
+
+                                                            {rescheduleSuccess && (
+                                                                <p className="account-reschedule__success">
+                                                                    {rescheduleSuccess}
+                                                                </p>
+                                                            )}
+
+                                                            <div className="account-reschedule__actions">
+                                                                <button
+                                                                    type="button"
+                                                                    className="account-reschedule__save"
+                                                                    onClick={handleReschedule}
+                                                                    disabled={
+                                                                        !rescheduleDate ||
+                                                                        !rescheduleTime ||
+                                                                        rescheduleSaving
+                                                                    }
+                                                                >
+                                                                    {rescheduleSaving
+                                                                        ? "Se modifică..."
+                                                                        : "Confirmă modificarea"}
+                                                                </button>
+
+                                                                <button
+                                                                    type="button"
+                                                                    className="account-reschedule__cancel"
+                                                                    onClick={handleCloseReschedule}
+                                                                    disabled={rescheduleSaving}
+                                                                >
+                                                                    Renunță
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                             </article>
                                         )
                                     )}

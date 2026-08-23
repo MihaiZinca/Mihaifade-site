@@ -6542,3 +6542,1146 @@ input::-webkit-calendar-picker-indicator {
         width: 100%;
     }
 }
+/* =========================================================
+   ACCOUNT - RESCHEDULE APPOINTMENT
+   ========================================================= */
+
+.account-appointment__actions {
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.account-appointment__actions
+.account-appointment__reschedule {
+    border-color: rgba(228, 204, 152, 0.42);
+
+    color: #e4cc98;
+}
+
+.account-appointment__actions
+.account-appointment__reschedule:hover:not(:disabled) {
+    border-color: #e4cc98;
+
+    background: rgba(228, 204, 152, 0.1);
+    color: #f0e0bb;
+}
+
+
+/* RESCHEDULE CONTAINER */
+
+.account-reschedule {
+    margin-top: 22px;
+    padding: 24px;
+
+    border: 1px solid rgba(228, 204, 152, 0.22);
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(228, 204, 152, 0.055),
+            rgba(255, 255, 255, 0.018)
+        );
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+
+/* HEADER */
+
+.account-reschedule__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+
+    padding-bottom: 20px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.account-reschedule__header > div {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.account-reschedule__header span {
+    margin-bottom: 8px;
+
+    color: #e4cc98;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.account-reschedule__header strong {
+    color: #ffffff;
+
+    font-size: 21px;
+    line-height: 1.25;
+}
+
+.account-reschedule__header p {
+    margin: 7px 0 0;
+
+    color: rgba(255, 255, 255, 0.45);
+
+    font-size: 12px;
+}
+
+
+/* CLOSE */
+
+.account-reschedule__close {
+    flex-shrink: 0;
+
+    padding: 9px 13px;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    background: transparent;
+    color: rgba(255, 255, 255, 0.55);
+
+    font-size: 11px;
+    font-weight: 700;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.account-reschedule__close:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.32);
+
+    background: rgba(255, 255, 255, 0.04);
+    color: #ffffff;
+}
+
+.account-reschedule__close:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+
+/* CURRENT APPOINTMENT */
+
+.account-reschedule__current {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+
+    margin: 20px 0;
+    padding: 14px 16px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.account-reschedule__current span {
+    color: rgba(255, 255, 255, 0.42);
+
+    font-size: 12px;
+}
+
+.account-reschedule__current strong {
+    color: rgba(255, 255, 255, 0.86);
+
+    font-size: 13px;
+}
+
+
+/* DATE */
+
+.account-reschedule__field {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+
+    margin-top: 20px;
+}
+
+.account-reschedule__field > span,
+.account-reschedule__label {
+    color: rgba(255, 255, 255, 0.58);
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.account-reschedule__field input {
+    width: min(340px, 100%);
+
+    padding: 13px 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 7px;
+    outline: none;
+
+    background: rgba(5, 5, 5, 0.7);
+    color: #ffffff;
+
+    color-scheme: dark;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.account-reschedule__field input:hover:not(:disabled) {
+    border-color: rgba(228, 204, 152, 0.35);
+}
+
+.account-reschedule__field input:focus {
+    border-color: #e4cc98;
+
+    background: rgba(5, 5, 5, 0.9);
+
+    box-shadow:
+        0 0 0 3px rgba(228, 204, 152, 0.06);
+}
+
+.account-reschedule__field input:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+
+/* TIMES */
+
+.account-reschedule__times {
+    margin-top: 24px;
+}
+
+.account-reschedule__times
+.account-message {
+    margin-top: 12px;
+
+    font-size: 13px;
+}
+
+.account-reschedule__slots {
+    display: grid;
+    grid-template-columns: repeat(
+        6,
+        minmax(0, 1fr)
+    );
+    gap: 9px;
+
+    margin-top: 12px;
+}
+
+.account-reschedule__slot {
+    min-height: 42px;
+    padding: 10px;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 7px;
+
+    cursor: pointer;
+
+    background: rgba(255, 255, 255, 0.018);
+    color: rgba(255, 255, 255, 0.72);
+
+    font-size: 12px;
+    font-weight: 700;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.account-reschedule__slot:hover:not(:disabled) {
+    border-color: rgba(228, 204, 152, 0.58);
+
+    background: rgba(228, 204, 152, 0.07);
+    color: #f0e0bb;
+
+    transform: translateY(-1px);
+}
+
+.account-reschedule__slot--selected {
+    border-color: #e4cc98;
+
+    background: #e4cc98;
+    color: #111111;
+}
+
+.account-reschedule__slot--selected:hover:not(:disabled) {
+    border-color: #f0e0bb;
+
+    background: #f0e0bb;
+    color: #111111;
+}
+
+.account-reschedule__slot:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+
+/* FEEDBACK */
+
+.account-reschedule__error,
+.account-reschedule__success {
+    margin: 20px 0 0;
+    padding: 12px 14px;
+
+    border-radius: 7px;
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.account-reschedule__error {
+    border: 1px solid rgba(226, 122, 122, 0.25);
+
+    background: rgba(226, 122, 122, 0.07);
+    color: #e79b9b;
+}
+
+.account-reschedule__success {
+    border: 1px solid rgba(228, 204, 152, 0.25);
+
+    background: rgba(228, 204, 152, 0.07);
+    color: #f0e0bb;
+}
+
+
+/* ACTIONS */
+
+.account-reschedule__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+
+    margin-top: 24px;
+    padding-top: 20px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.account-reschedule__actions button {
+    min-height: 42px;
+    padding: 0 17px;
+
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.account-reschedule__save {
+    border: 1px solid #e4cc98;
+
+    background: #e4cc98;
+    color: #111111;
+}
+
+.account-reschedule__save:hover:not(:disabled) {
+    border-color: #f0e0bb;
+
+    background: #f0e0bb;
+
+    transform: translateY(-1px);
+}
+
+.account-reschedule__cancel {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+
+    background: transparent;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.account-reschedule__cancel:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.35);
+
+    background: rgba(255, 255, 255, 0.04);
+    color: #ffffff;
+}
+
+.account-reschedule__actions button:disabled {
+    cursor: not-allowed;
+
+    opacity: 0.38;
+
+    transform: none;
+}
+
+
+/* =========================================================
+   ACCOUNT - RESCHEDULE RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 800px) {
+    .account-reschedule__slots {
+        grid-template-columns: repeat(
+            4,
+            minmax(0, 1fr)
+        );
+    }
+}
+
+@media (max-width: 600px) {
+    .account-appointment__actions {
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    .account-appointment__actions button {
+        width: 100%;
+    }
+
+    .account-reschedule {
+        margin-top: 18px;
+        padding: 18px;
+    }
+
+    .account-reschedule__header {
+        gap: 16px;
+    }
+
+    .account-reschedule__header strong {
+        font-size: 18px;
+    }
+
+    .account-reschedule__current {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .account-reschedule__field input {
+        width: 100%;
+    }
+
+    .account-reschedule__slots {
+        grid-template-columns: repeat(
+            3,
+            minmax(0, 1fr)
+        );
+    }
+
+    .account-reschedule__actions {
+        flex-direction: column;
+    }
+
+    .account-reschedule__actions button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 400px) {
+    .account-reschedule__slots {
+        grid-template-columns: repeat(
+            2,
+            minmax(0, 1fr)
+        );
+    }
+}
+/* =========================================================
+   NAVBAR - KEEP FULL MENU VISIBLE LONGER
+   ========================================================= */
+
+@media (max-width: 1100px) {
+    .navbar {
+        padding: 18px 24px;
+    }
+
+    .navbar__links {
+        display: flex;
+        gap: 18px;
+    }
+
+    .navbar__links a,
+    .navbar__login {
+        display: inline-flex;
+        font-size: 13px;
+    }
+
+    .navbar__actions {
+        gap: 14px;
+    }
+
+    .navbar__booking {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 760px) {
+    .navbar__links {
+        display: none;
+    }
+
+    .navbar__login {
+        display: none;
+    }
+
+    .navbar {
+        padding: 18px 20px;
+    }
+
+    .navbar__booking {
+        padding: 10px 14px;
+        font-size: 12px;
+    }
+}
+/* =========================================================
+   NAVBAR - MOBILE MENU
+   ========================================================= */
+
+/* Hamburger ascuns pe desktop */
+.navbar__menu-button {
+    display: none;
+
+    width: 42px;
+    height: 42px;
+    padding: 0;
+
+    border: 1px solid rgba(228, 204, 152, 0.28);
+    border-radius: 8px;
+
+    background: rgba(255, 255, 255, 0.02);
+
+    cursor: pointer;
+
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.navbar__menu-button span {
+    display: block;
+
+    width: 18px;
+    height: 1px;
+
+    background: #e4cc98;
+
+    transition:
+        transform 0.25s ease,
+        opacity 0.2s ease;
+}
+
+.navbar__menu-button:hover {
+    border-color: rgba(228, 204, 152, 0.65);
+
+    background: rgba(228, 204, 152, 0.06);
+}
+
+
+/* Hamburger -> X */
+
+.navbar__menu-button--open span:nth-child(1) {
+    transform:
+        translateY(6px)
+        rotate(45deg);
+}
+
+.navbar__menu-button--open span:nth-child(2) {
+    opacity: 0;
+}
+
+.navbar__menu-button--open span:nth-child(3) {
+    transform:
+        translateY(-6px)
+        rotate(-45deg);
+}
+
+
+/* Meniul mobil este ascuns implicit */
+
+.navbar__mobile {
+    display: none;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 760px) {
+
+    .navbar {
+        position: relative;
+
+        padding: 16px 18px;
+    }
+
+    .navbar__brand {
+        flex-shrink: 0;
+    }
+
+    /* Linkurile centrale intră în hamburger */
+    .navbar__links {
+        display: none;
+    }
+
+    .navbar__actions {
+        gap: 9px;
+    }
+
+    /* Cont rămâne vizibil lângă Programează-te */
+    .navbar__login {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 9px 11px;
+
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .navbar__booking {
+        padding: 10px 13px;
+
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .navbar__menu-button {
+        display: inline-flex;
+        flex-shrink: 0;
+    }
+
+
+    /* DROPDOWN */
+
+    .navbar__mobile {
+        position: absolute;
+        top: calc(100% + 1px);
+        left: 0;
+        right: 0;
+
+        z-index: 1000;
+
+        display: block;
+
+        padding: 0 18px;
+
+        border-top:
+            1px solid rgba(255, 255, 255, 0.06);
+        border-bottom:
+            1px solid rgba(228, 204, 152, 0.14);
+
+        background:
+            rgba(8, 8, 8, 0.98);
+
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+
+        opacity: 0;
+        visibility: hidden;
+
+        transform: translateY(-8px);
+
+        pointer-events: none;
+
+        transition:
+            opacity 0.2s ease,
+            transform 0.2s ease,
+            visibility 0.2s ease;
+    }
+
+    .navbar__mobile--open {
+        padding-top: 10px;
+        padding-bottom: 10px;
+
+        opacity: 1;
+        visibility: visible;
+
+        transform: translateY(0);
+
+        pointer-events: auto;
+    }
+
+
+    /* LINKS DIN HAMBURGER */
+
+    .navbar__mobile-links {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .navbar__mobile-links a,
+    .navbar__mobile-links button {
+        width: 100%;
+
+        display: flex;
+        align-items: center;
+
+        min-height: 49px;
+        padding: 0 4px;
+
+        border: 0;
+        border-bottom:
+            1px solid rgba(255, 255, 255, 0.065);
+
+        background: transparent;
+        color: rgba(255, 255, 255, 0.72);
+
+        text-decoration: none;
+        text-align: left;
+
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.7px;
+
+        cursor: pointer;
+
+        transition:
+            color 0.2s ease,
+            padding-left 0.2s ease,
+            background 0.2s ease;
+    }
+
+    .navbar__mobile-links a:hover,
+    .navbar__mobile-links button:hover {
+        padding-left: 10px;
+
+        background:
+            rgba(228, 204, 152, 0.035);
+
+        color: #e4cc98;
+    }
+
+    .navbar__mobile-links > :last-child {
+        border-bottom: 0;
+    }
+}
+
+
+/* =========================================================
+   VERY SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 420px) {
+
+    .navbar {
+        padding: 14px 12px;
+    }
+
+    .navbar__brand {
+        font-size: 15px;
+        letter-spacing: 2px;
+    }
+
+    .navbar__actions {
+        gap: 5px;
+    }
+
+    .navbar__login {
+        padding: 8px 7px;
+
+        font-size: 10px;
+    }
+
+    .navbar__booking {
+        padding: 9px 8px;
+
+        font-size: 9px;
+    }
+
+    .navbar__menu-button {
+        width: 36px;
+        height: 36px;
+    }
+
+    .navbar__menu-button span {
+        width: 16px;
+    }
+
+    .navbar__mobile {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
+
+
+/* =========================================================
+   EXTRA SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 360px) {
+
+    .navbar {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .navbar__brand {
+        font-size: 14px;
+        letter-spacing: 1.5px;
+    }
+
+    .navbar__actions {
+        gap: 4px;
+    }
+
+    .navbar__login {
+        padding: 7px 5px;
+
+        font-size: 9px;
+    }
+
+    .navbar__booking {
+        padding: 8px 6px;
+
+        font-size: 8px;
+    }
+
+    .navbar__menu-button {
+        width: 34px;
+        height: 34px;
+    }
+}
+/* =========================================================
+   ACCOUNT HEADER - RESPONSIVE COMPACT
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .account-header {
+        gap: 18px;
+        padding: 22px 28px;
+    }
+
+    .account-header__brand {
+        flex-shrink: 0;
+
+        font-size: 19px;
+        letter-spacing: 3px;
+    }
+
+    .account-header__actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+
+        gap: 10px;
+    }
+
+    .account-header__back,
+    .account-header__booking,
+    .account-header__logout {
+        width: auto;
+        min-width: 0;
+
+        white-space: nowrap;
+    }
+}
+
+
+/* =========================================================
+   ACCOUNT HEADER - MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .account-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 14px;
+
+        padding: 18px 16px;
+    }
+
+    .account-header__brand {
+        flex-shrink: 0;
+
+        font-size: 17px;
+        letter-spacing: 2.5px;
+    }
+
+    .account-header__actions {
+        flex: 0 1 auto;
+
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+
+        gap: 14px;
+    }
+
+
+    /* ÎNAPOI - simplu și discret */
+
+    .account-header__back {
+        width: auto;
+        min-width: 0;
+        min-height: 0;
+
+        padding: 8px 0;
+
+        border: 0;
+        border-radius: 0;
+
+        background: transparent;
+        color: rgba(255, 255, 255, 0.7);
+
+        font-size: 11px;
+        font-weight: 600;
+
+        white-space: nowrap;
+
+        box-shadow: none;
+    }
+
+    .account-header__back::before {
+        content: "←";
+
+        margin-right: 5px;
+
+        color: #e4cc98;
+    }
+
+    .account-header__back:hover {
+        border: 0;
+
+        background: transparent;
+        color: #e4cc98;
+
+        transform: none;
+    }
+
+
+    /* PROGRAMARE NOUĂ - CTA principal */
+
+    .account-header__booking {
+        width: auto;
+        min-width: 0;
+        min-height: 40px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 10px 15px;
+
+        border:
+            1px solid rgba(228, 204, 152, 0.38);
+        border-radius: 999px;
+
+        background:
+            rgba(228, 204, 152, 0.035);
+
+        color: #f0e0bb;
+
+        font-size: 10px;
+        font-weight: 700;
+
+        white-space: nowrap;
+
+        text-decoration: none;
+    }
+
+    .account-header__booking:hover {
+        border-color:
+            rgba(228, 204, 152, 0.7);
+
+        background:
+            rgba(228, 204, 152, 0.08);
+
+        color: #f0e0bb;
+    }
+
+
+    /* IEȘI DIN CONT - text roșu, fără dreptunghi */
+
+    .account-header__logout {
+        width: auto;
+        min-width: 0;
+        min-height: 0;
+
+        padding: 8px 0;
+
+        border: 0;
+        border-radius: 0;
+
+        background: transparent;
+
+        color: #ef8585;
+
+        font-size: 10px;
+        font-weight: 700;
+
+        white-space: nowrap;
+
+        box-shadow: none;
+    }
+
+    .account-header__logout:hover {
+        border: 0;
+
+        background: transparent;
+
+        color: #ff9b9b;
+
+        transform: none;
+    }
+}
+
+
+/* =========================================================
+   ACCOUNT HEADER - SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 520px) {
+
+    .account-header {
+        gap: 10px;
+
+        padding: 16px 12px;
+    }
+
+    .account-header__brand {
+        font-size: 15px;
+        letter-spacing: 2px;
+    }
+
+    .account-header__actions {
+        flex: 1 1 auto;
+
+        gap: 9px;
+    }
+
+    .account-header__back {
+        padding: 7px 0;
+
+        font-size: 9px;
+    }
+
+    .account-header__back::before {
+        margin-right: 3px;
+    }
+
+    .account-header__booking {
+        min-height: 36px;
+
+        padding: 8px 10px;
+
+        font-size: 9px;
+    }
+
+    .account-header__logout {
+        padding: 7px 0;
+
+        font-size: 9px;
+    }
+}
+
+
+/* =========================================================
+   ACCOUNT HEADER - EXTRA SMALL
+   ========================================================= */
+
+@media (max-width: 420px) {
+
+    .account-header {
+        gap: 7px;
+
+        padding: 14px 9px;
+    }
+
+    .account-header__brand {
+        font-size: 13px;
+        letter-spacing: 1.5px;
+    }
+
+    .account-header__actions {
+        gap: 7px;
+    }
+
+    .account-header__back {
+        font-size: 8px;
+    }
+
+    .account-header__booking {
+        min-height: 34px;
+
+        padding: 7px 8px;
+
+        font-size: 8px;
+    }
+
+    .account-header__logout {
+        font-size: 8px;
+    }
+}
+
+
+/* =========================================================
+   ACCOUNT HEADER - VERY NARROW
+   ========================================================= */
+
+@media (max-width: 360px) {
+
+    .account-header {
+        gap: 5px;
+
+        padding-left: 7px;
+        padding-right: 7px;
+    }
+
+    .account-header__brand {
+        font-size: 12px;
+        letter-spacing: 1px;
+    }
+
+    .account-header__actions {
+        gap: 5px;
+    }
+
+    .account-header__back {
+        font-size: 7.5px;
+    }
+
+    .account-header__booking {
+        min-height: 32px;
+
+        padding: 6px 7px;
+
+        font-size: 7.5px;
+    }
+
+    .account-header__logout {
+        font-size: 7.5px;
+    }
+}

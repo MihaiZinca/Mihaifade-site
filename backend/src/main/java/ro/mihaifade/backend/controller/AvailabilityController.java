@@ -19,7 +19,8 @@ public class AvailabilityController {
     public AvailabilityController(
             AvailabilityService availabilityService
     ) {
-        this.availabilityService = availabilityService;
+        this.availabilityService =
+                availabilityService;
     }
 
     @GetMapping
@@ -27,13 +28,21 @@ public class AvailabilityController {
             @RequestParam Long barberId,
             @RequestParam Long serviceId,
             @RequestParam
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate date
+            @DateTimeFormat(
+                    iso = DateTimeFormat.ISO.DATE
+            )
+            LocalDate date,
+            @RequestParam(
+                    required = false
+            )
+            Long excludeAppointmentId
     ) {
-        return availabilityService.getAvailability(
-                barberId,
-                serviceId,
-                date
-        );
+        return availabilityService
+                .getAvailability(
+                        barberId,
+                        serviceId,
+                        date,
+                        excludeAppointmentId
+                );
     }
 }

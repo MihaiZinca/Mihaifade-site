@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ro.mihaifade.backend.dto.AppointmentRequest;
+import ro.mihaifade.backend.dto.AppointmentRescheduleRequest;
 import ro.mihaifade.backend.dto.AppointmentResponse;
 import ro.mihaifade.backend.entity.AppointmentStatus;
 import ro.mihaifade.backend.service.AppointmentService;
@@ -59,6 +60,21 @@ public class AppointmentController {
     ) {
         return appointmentService
                 .createAppointment(
+                        request,
+                        authentication.getName()
+                );
+    }
+
+    @PutMapping("/{id}/reschedule")
+    public AppointmentResponse rescheduleMyAppointment(
+            @PathVariable Long id,
+            @Valid
+            @RequestBody AppointmentRescheduleRequest request,
+            Authentication authentication
+    ) {
+        return appointmentService
+                .rescheduleMyAppointment(
+                        id,
                         request,
                         authentication.getName()
                 );

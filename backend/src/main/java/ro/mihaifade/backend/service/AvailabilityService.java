@@ -71,7 +71,8 @@ public class AvailabilityService {
     public AvailabilityResponse getAvailability(
             Long barberId,
             Long serviceId,
-            LocalDate date
+            LocalDate date,
+            Long excludeAppointmentId
     ) {
         Barber barber =
                 barberRepository
@@ -215,6 +216,20 @@ public class AvailabilityService {
                                 date,
                                 AppointmentStatus.CANCELLED
                         );
+
+        if (excludeAppointmentId != null) {
+            appointments =
+                    appointments
+                            .stream()
+                            .filter(appointment ->
+                                    !appointment
+                                            .getId()
+                                            .equals(
+                                                    excludeAppointmentId
+                                            )
+                            )
+                            .toList();
+        }
 
         if (
                 isColoringService(

@@ -2,6 +2,7 @@ package ro.mihaifade.backend.service;
 
 import org.springframework.security.access.AccessDeniedException;
 import ro.mihaifade.backend.dto.AppointmentRequest;
+import ro.mihaifade.backend.dto.AppointmentRescheduleRequest;
 import ro.mihaifade.backend.dto.AppointmentResponse;
 import ro.mihaifade.backend.entity.*;
 import ro.mihaifade.backend.repository.*;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @org.springframework.stereotype.Service
@@ -47,6 +49,8 @@ public class AppointmentService {
     private final ServiceRepository serviceRepository;
     private final UserRepository userRepository;
     private final BarberServiceOfferingRepository barberServiceOfferingRepository;
+    private final WorkingHoursRepository workingHoursRepository;
+    private final TimeOffRepository timeOffRepository;
     private final PushNotificationService pushNotificationService;
 
     public AppointmentService(
@@ -55,6 +59,8 @@ public class AppointmentService {
             ServiceRepository serviceRepository,
             UserRepository userRepository,
             BarberServiceOfferingRepository barberServiceOfferingRepository,
+            WorkingHoursRepository workingHoursRepository,
+            TimeOffRepository timeOffRepository,
             PushNotificationService pushNotificationService
     ) {
         this.appointmentRepository =
@@ -71,6 +77,12 @@ public class AppointmentService {
 
         this.barberServiceOfferingRepository =
                 barberServiceOfferingRepository;
+
+        this.workingHoursRepository =
+                workingHoursRepository;
+
+        this.timeOffRepository =
+                timeOffRepository;
 
         this.pushNotificationService =
                 pushNotificationService;
@@ -229,10 +241,6 @@ public class AppointmentService {
             );
         }
 
-        /*
-         * Nu permitem crearea unei programări
-         * pentru o dată/oră care a trecut deja.
-         */
         LocalDateTime requestedStartDateTime =
                 LocalDateTime.of(
                         request.date(),
@@ -330,6 +338,291 @@ public class AppointmentService {
 
         sendAppointmentCreatedNotification(
                 user,
+                savedAppointment
+        );
+
+        return toResponse(
+                savedAppointment
+        );
+    }
+
+    public AppointmentResponse rescheduleMyAppointment(
+            Long id,
+            AppointmentRescheduleRequest request,
+            String email
+    ) {
+        User user =
+                getUserByEmail(
+                        email
+                );
+
+        Appointment appointment =
+                getAppointmentById(
+                        id
+                );
+
+        if (
+                !appointment
+                        .getUser()
+                        .getId()
+                        .equals(
+                                user.getId()
+                        )
+        ) {
+            throw new AccessDeniedException(
+                    "You cannot reschedule another user's appointment"
+            );
+        }
+
+        if (
+                appointment.getStatus()
+                        == AppointmentStatus.COMPLETED
+        ) {
+            throw new RuntimeException(
+                    "Completed appointment cannot be rescheduled"
+            );
+        }
+
+        if (
+                appointment.getStatus()
+                        == AppointmentStatus.CANCELLED
+        ) {
+            throw new RuntimeException(
+                    "Cancelled appointment cannot be rescheduled"
+            );
+        }
+
+        LocalDateTime requestedStartDateTime =
+                LocalDateTime.of(
+                        request.date(),
+                        request.startTime()
+                );
+
+        if (
+                !requestedStartDateTime.isAfter(
+                        LocalDateTime.now()
+                )
+        ) {
+            throw new RuntimeException(
+                    "Cannot reschedule an appointment in the past"
+            );
+        }
+
+        Barber barber =
+                appointment.getBarber();
+
+        ro.mihaifade.backend.entity.Service service =
+                appointment.getService();
+
+        if (
+                !Boolean.TRUE.equals(
+                        barber.getActive()
+                )
+        ) {
+            throw new RuntimeException(
+                    "Barber is not active"
+            );
+        }
+
+        if (
+                !Boolean.TRUE.equals(
+                        service.getActive()
+                )
+        ) {
+            throw new RuntimeException(
+                    "Service is not active"
+            );
+        }
+
+        BarberServiceOffering offering =
+                barberServiceOfferingRepository
+                        .findByBarberIdAndServiceId(
+                                barber.getId(),
+                                service.getId()
+                        )
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Selected barber does not have pricing configured for this service"
+                                )
+                        );
+
+        if (
+                !Boolean.TRUE.equals(
+                        offering.getActive()
+                )
+        ) {
+            throw new RuntimeException(
+                    "Selected service is not active for this barber"
+            );
+        }
+
+        if (
+                isColoringService(
+                        service.getName()
+                )
+                        && !COLORING_SLOT_TIME.equals(
+                        request.startTime()
+                )
+        ) {
+            throw new RuntimeException(
+                    "Coloring services can only be booked at 08:00"
+            );
+        }
+
+        LocalTime endTime =
+                request.startTime()
+                        .plusMinutes(
+                                offering.getDurationMinutes()
+                        );
+
+        Optional<WorkingHours> workingHoursOptional =
+                workingHoursRepository
+                        .findByBarberIdAndDayOfWeek(
+                                barber.getId(),
+                                request.date().getDayOfWeek()
+                        );
+
+        if (
+                workingHoursOptional.isEmpty()
+                        || !Boolean.TRUE.equals(
+                        workingHoursOptional
+                                .get()
+                                .getActive()
+                )
+        ) {
+            throw new RuntimeException(
+                    "Barber is not working on the selected day"
+            );
+        }
+
+        WorkingHours workingHours =
+                workingHoursOptional.get();
+
+        if (
+                request.startTime()
+                        .isBefore(
+                                workingHours.getStartTime()
+                        )
+                        ||
+                        endTime.isAfter(
+                                workingHours.getEndTime()
+                        )
+        ) {
+            throw new RuntimeException(
+                    "Selected time is outside the barber's working hours"
+            );
+        }
+
+        Optional<TimeOff> timeOffOptional =
+                timeOffRepository
+                        .findByBarberIdAndDate(
+                                barber.getId(),
+                                request.date()
+                        );
+
+        if (
+                timeOffOptional.isPresent()
+                        && Boolean.TRUE.equals(
+                        timeOffOptional
+                                .get()
+                                .getFullDay()
+                )
+        ) {
+            throw new RuntimeException(
+                    "Barber is unavailable on the selected day"
+            );
+        }
+
+        if (
+                timeOffOptional.isPresent()
+        ) {
+            TimeOff timeOff =
+                    timeOffOptional.get();
+
+            if (
+                    timeOff.getStartTime() != null
+                            && timeOff.getEndTime() != null
+            ) {
+                boolean overlapsTimeOff =
+                        request.startTime()
+                                .isBefore(
+                                        timeOff.getEndTime()
+                                )
+                                &&
+                                endTime.isAfter(
+                                        timeOff.getStartTime()
+                                );
+
+                if (overlapsTimeOff) {
+                    throw new RuntimeException(
+                            "Selected time overlaps with the barber's time off"
+                    );
+                }
+            }
+        }
+
+        List<Appointment> existingAppointments =
+                appointmentRepository
+                        .findByBarberIdAndDateAndStatusNot(
+                                barber.getId(),
+                                request.date(),
+                                AppointmentStatus.CANCELLED
+                        );
+
+        boolean overlaps =
+                existingAppointments
+                        .stream()
+                        .filter(existing ->
+                                !existing
+                                        .getId()
+                                        .equals(
+                                                appointment.getId()
+                                        )
+                        )
+                        .anyMatch(existing ->
+                                request.startTime()
+                                        .isBefore(
+                                                existing.getEndTime()
+                                        )
+                                        &&
+                                        endTime.isAfter(
+                                                existing.getStartTime()
+                                        )
+                        );
+
+        if (overlaps) {
+            throw new RuntimeException(
+                    "Selected time interval is already booked"
+            );
+        }
+
+        appointment.setDate(
+                request.date()
+        );
+
+        appointment.setStartTime(
+                request.startTime()
+        );
+
+        appointment.setEndTime(
+                endTime
+        );
+
+        appointment.setReminder24hSent(
+                false
+        );
+
+        appointment.setReminder2hSent(
+                false
+        );
+
+        Appointment savedAppointment =
+                appointmentRepository
+                        .save(
+                                appointment
+                        );
+
+        sendAppointmentRescheduledNotification(
                 savedAppointment
         );
 
@@ -582,6 +875,56 @@ public class AppointmentService {
         } catch (Exception exception) {
             System.err.println(
                     "Could not send appointment confirmation notification for appointment "
+                            + appointment.getId()
+                            + ": "
+                            + exception.getMessage()
+            );
+        }
+    }
+
+    private void sendAppointmentRescheduledNotification(
+            Appointment appointment
+    ) {
+        try {
+            String formattedDate =
+                    appointment
+                            .getDate()
+                            .format(
+                                    APPOINTMENT_DATE_FORMATTER
+                            );
+
+            String formattedTime =
+                    appointment
+                            .getStartTime()
+                            .format(
+                                    APPOINTMENT_TIME_FORMATTER
+                            );
+
+            String body =
+                    "Programarea pentru "
+                            + appointment
+                            .getService()
+                            .getName()
+                            + " a fost mutată pe "
+                            + formattedDate
+                            + " la "
+                            + formattedTime
+                            + ", cu "
+                            + appointment
+                            .getBarber()
+                            .getDisplayName()
+                            + ".";
+
+            pushNotificationService.sendToUser(
+                    appointment
+                            .getUser()
+                            .getEmail(),
+                    "Programare modificată",
+                    body
+            );
+        } catch (Exception exception) {
+            System.err.println(
+                    "Could not send appointment reschedule notification for appointment "
                             + appointment.getId()
                             + ": "
                             + exception.getMessage()

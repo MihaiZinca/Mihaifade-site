@@ -1,10 +1,20 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { isAuthenticated } from "../services/auth";
 
 function Navbar() {
     const navigate = useNavigate();
 
+    const [mobileMenuOpen, setMobileMenuOpen] =
+        useState(false);
+
+    const closeMobileMenu = () => {
+        setMobileMenuOpen(false);
+    };
+
     const handleBooking = () => {
+        closeMobileMenu();
+
         if (isAuthenticated()) {
             navigate("/programare");
             return;
@@ -14,6 +24,8 @@ function Navbar() {
     };
 
     const handleAccount = () => {
+        closeMobileMenu();
+
         if (isAuthenticated()) {
             navigate("/cont");
             return;
@@ -24,15 +36,30 @@ function Navbar() {
 
     return (
         <header className="navbar">
-            <Link to="/" className="navbar__brand">
+            <Link
+                to="/"
+                className="navbar__brand"
+                onClick={closeMobileMenu}
+            >
                 MIHAIFADE
             </Link>
 
             <nav className="navbar__links">
-                <a href="#servicii">Servicii</a>
-                <a href="#galerie">Galerie</a>
-                <a href="#recenzii">Recenzii</a>
-                <a href="#contact">Contact</a>
+                <a href="#servicii">
+                    Servicii
+                </a>
+
+                <a href="#galerie">
+                    Galerie
+                </a>
+
+                <a href="#recenzii">
+                    Recenzii
+                </a>
+
+                <a href="#contact">
+                    Contact
+                </a>
             </nav>
 
             <div className="navbar__actions">
@@ -51,6 +78,70 @@ function Navbar() {
                 >
                     Programează-te
                 </button>
+
+                <button
+                    type="button"
+                    className={
+                        mobileMenuOpen
+                            ? "navbar__menu-button navbar__menu-button--open"
+                            : "navbar__menu-button"
+                    }
+                    onClick={() =>
+                        setMobileMenuOpen(
+                            (current) => !current
+                        )
+                    }
+                    aria-label={
+                        mobileMenuOpen
+                            ? "Închide meniul"
+                            : "Deschide meniul"
+                    }
+                    aria-expanded={
+                        mobileMenuOpen
+                    }
+                >
+                    <span />
+                    <span />
+                    <span />
+                </button>
+            </div>
+
+            <div
+                className={
+                    mobileMenuOpen
+                        ? "navbar__mobile navbar__mobile--open"
+                        : "navbar__mobile"
+                }
+            >
+                <nav className="navbar__mobile-links">
+                    <a
+                        href="#servicii"
+                        onClick={closeMobileMenu}
+                    >
+                        Servicii
+                    </a>
+
+                    <a
+                        href="#galerie"
+                        onClick={closeMobileMenu}
+                    >
+                        Galerie
+                    </a>
+
+                    <a
+                        href="#recenzii"
+                        onClick={closeMobileMenu}
+                    >
+                        Recenzii
+                    </a>
+
+                    <a
+                        href="#contact"
+                        onClick={closeMobileMenu}
+                    >
+                        Contact
+                    </a>
+                </nav>
             </div>
         </header>
     );
