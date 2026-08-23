@@ -3973,22 +3973,57 @@ function AdminPage() {
                                                 />
                                             </label>
 
-                                            <label className="admin-program-day__toggle">
+                                            <label
+                                                className="admin-barber-active-toggle"
+                                                style={{
+                                                    width: "fit-content",
+                                                    display: "inline-flex",
+                                                    flexDirection: "row",
+                                                    alignItems: "center",
+                                                    justifyContent: "flex-start",
+                                                    gap: "10px",
+                                                    marginTop: "4px",
+                                                    cursor: "pointer",
+                                                }}
+                                            >
+                                                <span
+                                                    className="admin-barber-active-toggle__label"
+                                                    style={{
+                                                        color: "rgba(255, 255, 255, 0.62)",
+                                                        fontSize: "10px",
+                                                        fontWeight: 700,
+                                                        letterSpacing: "1.8px",
+                                                        lineHeight: 1,
+                                                        textTransform: "uppercase",
+                                                        whiteSpace: "nowrap",
+                                                    }}
+                                                >
+                                                    Barber activ
+                                                </span>
+
                                                 <input
                                                     type="checkbox"
-                                                    checked={
-                                                        barberActive
-                                                    }
+                                                    checked={barberActive}
                                                     onChange={(event) =>
                                                         setBarberActive(
                                                             event.target.checked
                                                         )
                                                     }
+                                                    style={{
+                                                        appearance: "auto",
+                                                        width: "18px",
+                                                        minWidth: "18px",
+                                                        maxWidth: "18px",
+                                                        height: "18px",
+                                                        minHeight: "18px",
+                                                        maxHeight: "18px",
+                                                        flex: "0 0 18px",
+                                                        margin: 0,
+                                                        padding: 0,
+                                                        cursor: "pointer",
+                                                        accentColor: "#e4cc98",
+                                                    }}
                                                 />
-
-                                                <span>
-                                                    Barber activ
-                                                </span>
                                             </label>
 
                                             <div className="admin-program-card__header">

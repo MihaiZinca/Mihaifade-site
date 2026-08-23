@@ -7685,3 +7685,290 @@ input::-webkit-calendar-picker-indicator {
         font-size: 7.5px;
     }
 }
+/* =========================================================
+   ADMIN - BARBER SELECT
+   ========================================================= */
+
+.admin-barber-select-field {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+
+    min-width: 240px;
+
+    color: rgba(255, 255, 255, 0.5);
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.admin-barber-select {
+    width: 100%;
+    min-height: 48px;
+
+    padding: 0 42px 0 15px;
+
+    border: 1px solid rgba(228, 204, 152, 0.22);
+    border-radius: 8px;
+
+    background-color: #111111;
+    color: #f3f0e9;
+
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    text-transform: none;
+
+    cursor: pointer;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.admin-barber-select:hover {
+    border-color: rgba(228, 204, 152, 0.5);
+
+    background-color: #151515;
+}
+
+.admin-barber-select:focus {
+    border-color: #e4cc98;
+
+    box-shadow:
+        0 0 0 3px rgba(228, 204, 152, 0.08);
+}
+
+.admin-barber-select option {
+    background: #111111;
+    color: #f3f0e9;
+}
+
+
+/* =========================================================
+   ADMIN - BARBER SELECT RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .admin-barber-select-field {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .admin-barber-select {
+        min-height: 44px;
+
+        padding-left: 13px;
+        padding-right: 36px;
+
+        font-size: 12px;
+    }
+}
+/* =========================================================
+   ADMIN BARBER - ACTIVE TOGGLE
+   ========================================================= */
+
+.admin-barber-active-toggle {
+    width: fit-content;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    gap: 10px;
+
+    margin-top: 4px;
+
+    cursor: pointer;
+}
+
+.admin-barber-active-toggle__label {
+    color: rgba(255, 255, 255, 0.62);
+
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    line-height: 1;
+
+    text-transform: uppercase;
+
+    user-select: none;
+}
+
+.admin-barber-active-toggle input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 18px;
+    height: 18px;
+
+    flex: 0 0 18px;
+
+    margin: 0;
+
+    display: grid;
+    place-content: center;
+
+    border: 1px solid rgba(228, 204, 152, 0.45);
+    border-radius: 4px;
+
+    background: #111111;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.admin-barber-active-toggle input[type="checkbox"]::before {
+    content: "";
+
+    width: 8px;
+    height: 4px;
+
+    border-left: 2px solid #111111;
+    border-bottom: 2px solid #111111;
+
+    transform:
+        rotate(-45deg)
+        scale(0);
+
+    transition: transform 0.15s ease;
+}
+
+.admin-barber-active-toggle input[type="checkbox"]:checked {
+    border-color: #e4cc98;
+
+    background: #e4cc98;
+}
+
+.admin-barber-active-toggle input[type="checkbox"]:checked::before {
+    transform:
+        rotate(-45deg)
+        scale(1);
+}
+
+.admin-barber-active-toggle input[type="checkbox"]:hover {
+    border-color: #e4cc98;
+}
+
+.admin-barber-active-toggle input[type="checkbox"]:focus-visible {
+    outline: none;
+
+    box-shadow:
+        0 0 0 3px rgba(228, 204, 152, 0.12);
+}
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+    .admin-barber-active-toggle {
+        gap: 8px;
+    }
+
+    .admin-barber-active-toggle__label {
+        font-size: 9px;
+        letter-spacing: 1.5px;
+    }
+
+    .admin-barber-active-toggle input[type="checkbox"] {
+        width: 17px;
+        height: 17px;
+
+        flex-basis: 17px;
+    }
+}
+/* =========================================================
+   FIX - ADMIN BARBER ACTIVE CHECKBOX
+   ========================================================= */
+
+.admin-program-card
+.admin-time-off-form
+.admin-barber-active-toggle {
+    width: fit-content;
+
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+
+    gap: 10px;
+}
+
+.admin-program-card
+.admin-time-off-form
+.admin-barber-active-toggle
+input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 18px;
+    min-width: 18px;
+    max-width: 18px;
+
+    height: 18px;
+    min-height: 18px;
+    max-height: 18px;
+
+    flex: 0 0 18px;
+
+    margin: 0;
+    padding: 0;
+
+    display: grid;
+    place-content: center;
+
+    border: 1px solid rgba(228, 204, 152, 0.45);
+    border-radius: 4px;
+
+    background: #111111;
+
+    cursor: pointer;
+}
+
+.admin-program-card
+.admin-time-off-form
+.admin-barber-active-toggle
+input[type="checkbox"]:checked {
+    border-color: #e4cc98;
+    background: #e4cc98;
+}
+
+.admin-program-card
+.admin-time-off-form
+.admin-barber-active-toggle
+input[type="checkbox"]::before {
+    content: "";
+
+    width: 8px;
+    height: 4px;
+
+    border-left: 2px solid #111111;
+    border-bottom: 2px solid #111111;
+
+    transform:
+        rotate(-45deg)
+        scale(0);
+
+    transition: transform 0.15s ease;
+}
+
+.admin-program-card
+.admin-time-off-form
+.admin-barber-active-toggle
+input[type="checkbox"]:checked::before {
+    transform:
+        rotate(-45deg)
+        scale(1);
+}
