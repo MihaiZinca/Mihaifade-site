@@ -84,6 +84,23 @@ interface BarberServiceDraft {
     durationMinutes: string;
 }
 
+type WelcomeRewardType =
+    | "NOTHING"
+    | "POWDER"
+    | "DISCOUNT_10"
+    | "DISCOUNT_25"
+    | "DISCOUNT_50"
+    | "CASH_50"
+    | "CASH_100"
+    | "FREE_HAIRCUT";
+
+interface WelcomeRewardStatusResponse {
+    canSpin: boolean;
+    reward: WelcomeRewardType | null;
+    rewardLabel: string | null;
+    rewardUsed: boolean;
+}
+
 type BarberTab = "DASHBOARD" | "CALENDAR" | "PROGRAM" | "SERVICES";
 
 const WEEK_DAYS = [
@@ -140,6 +157,18 @@ function BarberPage() {
 
     const [selectedAppointment, setSelectedAppointment] =
         useState<AppointmentResponse | null>(null);
+
+    const [welcomeReward, setWelcomeReward] =
+        useState<WelcomeRewardStatusResponse | null>(null);
+
+    const [welcomeRewardLoading, setWelcomeRewardLoading] =
+        useState(false);
+
+    const [welcomeRewardUsing, setWelcomeRewardUsing] =
+        useState(false);
+
+    const [welcomeRewardError, setWelcomeRewardError] =
+        useState("");
 
     const [workingHours, setWorkingHours] =
         useState<WorkingHoursResponse[]>([]);
@@ -377,6 +406,55 @@ function BarberPage() {
             )
         );
     }, [barber]);
+
+    useEffect(() => {
+        if (!selectedAppointment) {
+            setWelcomeReward(null);
+            setWelcomeRewardLoading(false);
+            setWelcomeRewardUsing(false);
+            setWelcomeRewardError("");
+            return;
+        }
+
+        let cancelled = false;
+
+        const loadWelcomeReward = async () => {
+            setWelcomeReward(null);
+            setWelcomeRewardLoading(true);
+            setWelcomeRewardUsing(false);
+            setWelcomeRewardError("");
+
+            try {
+                const response =
+                    await api.get<WelcomeRewardStatusResponse>(
+                        `/rewards/barber/appointments/${selectedAppointment.id}`
+                    );
+
+                if (!cancelled) {
+                    setWelcomeReward(
+                        response.data
+                    );
+                }
+            } catch {
+                if (!cancelled) {
+                    setWelcomeReward(null);
+                    setWelcomeRewardError(
+                        "Premiul clientului nu a putut fi încărcat."
+                    );
+                }
+            } finally {
+                if (!cancelled) {
+                    setWelcomeRewardLoading(false);
+                }
+            }
+        };
+
+        loadWelcomeReward();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [selectedAppointment?.id]);
 
     const upcomingAppointments =
         useMemo(() => {
@@ -1079,6 +1157,37 @@ function BarberPage() {
     )} - ${formatShortDate(
         weekDays[6]
     )}`;
+
+    const handleMarkWelcomeRewardAsUsed = async () => {
+        if (
+            !selectedAppointment ||
+            !welcomeReward?.reward ||
+            welcomeReward.reward === "NOTHING" ||
+            welcomeReward.rewardUsed
+        ) {
+            return;
+        }
+
+        setWelcomeRewardUsing(true);
+        setWelcomeRewardError("");
+
+        try {
+            const response =
+                await api.put<WelcomeRewardStatusResponse>(
+                    `/rewards/barber/appointments/${selectedAppointment.id}/use`
+                );
+
+            setWelcomeReward(
+                response.data
+            );
+        } catch {
+            setWelcomeRewardError(
+                "Premiul nu a putut fi marcat ca folosit."
+            );
+        } finally {
+            setWelcomeRewardUsing(false);
+        }
+    };
 
     const handleStatusChange = async (
         appointmentId: number,
@@ -1996,9 +2105,46 @@ function BarberPage() {
                                                     "Fără note"}
                                             </strong>
                                         </div>
+
+                                        <div>
+                                            <span>
+                                                Premiu roată
+                                            </span>
+
+                                            <strong>
+                                                {welcomeRewardLoading
+                                                    ? "Se încarcă..."
+                                                    : welcomeRewardError
+                                                      ? welcomeRewardError
+                                                      : welcomeReward?.reward
+                                                        ? `${welcomeReward.rewardLabel ?? welcomeReward.reward} · ${welcomeReward.rewardUsed ? "FOLOSIT" : welcomeReward.reward === "NOTHING" ? "FĂRĂ PREMIU" : "DISPONIBIL"}`
+                                                        : "Fără premiu"}
+                                            </strong>
+                                        </div>
                                     </div>
 
                                     <div className="barber-calendar-panel__actions">
+                                        {welcomeReward?.reward &&
+                                            welcomeReward.reward !==
+                                                "NOTHING" &&
+                                            !welcomeReward.rewardUsed && (
+                                                <button
+                                                    type="button"
+                                                    className="barber-calendar-panel__complete"
+                                                    disabled={
+                                                        welcomeRewardUsing ||
+                                                        welcomeRewardLoading
+                                                    }
+                                                    onClick={
+                                                        handleMarkWelcomeRewardAsUsed
+                                                    }
+                                                >
+                                                    {welcomeRewardUsing
+                                                        ? "Se marchează..."
+                                                        : "Marchează premiul ca folosit"}
+                                                </button>
+                                            )}
+
                                         <button
                                             type="button"
                                             className="barber-calendar-panel__complete"

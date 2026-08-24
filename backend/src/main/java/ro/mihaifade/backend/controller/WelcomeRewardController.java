@@ -47,6 +47,32 @@ public class WelcomeRewardController {
     public WelcomeRewardStatusResponse markRewardAsUsed(
             @PathVariable Long userId
     ) {
-        return welcomeRewardService.markRewardAsUsed(userId);
+        return welcomeRewardService.markRewardAsUsed(
+                userId
+        );
+    }
+
+    @GetMapping("/barber/appointments/{appointmentId}")
+    public WelcomeRewardStatusResponse getRewardForBarberAppointment(
+            @PathVariable Long appointmentId,
+            Authentication authentication
+    ) {
+        return welcomeRewardService
+                .getRewardForBarberAppointment(
+                        appointmentId,
+                        authentication.getName()
+                );
+    }
+
+    @PutMapping("/barber/appointments/{appointmentId}/use")
+    public WelcomeRewardStatusResponse markRewardAsUsedByBarber(
+            @PathVariable Long appointmentId,
+            Authentication authentication
+    ) {
+        return welcomeRewardService
+                .markRewardAsUsedByBarber(
+                        appointmentId,
+                        authentication.getName()
+                );
     }
 }

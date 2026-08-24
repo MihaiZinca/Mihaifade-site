@@ -484,6 +484,24 @@ public class SecurityConfig {
                                 )
 
                                 .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/rewards/barber/appointments/*"
+                                )
+                                .hasAnyRole(
+                                        "BARBER",
+                                        "OWNER"
+                                )
+
+                                .requestMatchers(
+                                        HttpMethod.PUT,
+                                        "/api/rewards/barber/appointments/*/use"
+                                )
+                                .hasAnyRole(
+                                        "BARBER",
+                                        "OWNER"
+                                )
+
+                                .requestMatchers(
                                         HttpMethod.PUT,
                                         "/api/rewards/users/*/use"
                                 )

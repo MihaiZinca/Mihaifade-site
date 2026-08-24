@@ -33,7 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String authorizationHeader = request.getHeader("Authorization");
+        String authorizationHeader =
+                request.getHeader("Authorization");
 
         if (
                 authorizationHeader == null
@@ -43,7 +44,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String token = authorizationHeader.substring(7);
+        String token =
+                authorizationHeader.substring(7);
+
         String email;
 
         try {
@@ -61,7 +64,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         ) {
             try {
                 UserDetails userDetails =
-                        userDetailsService.loadUserByUsername(email);
+                        userDetailsService
+                                .loadUserByUsername(email);
 
                 if (
                         userDetails.isEnabled()
@@ -81,11 +85,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             .getContext()
                             .setAuthentication(authentication);
                 }
+
             } catch (Exception exception) {
                 SecurityContextHolder.clearContext();
             }
         }
 
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(
+                request,
+                response
+        );
     }
 }

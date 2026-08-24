@@ -9,7 +9,7 @@ import type {
 
 type WelcomeRewardType =
     | "NOTHING"
-    | "ZERO_POINTS"
+    | "POWDER"
     | "DISCOUNT_10"
     | "DISCOUNT_25"
     | "DISCOUNT_50"
@@ -2251,9 +2251,9 @@ function AdminPage() {
                                                     )}
 
                                                     {selectedUser.welcomeReward ===
-                                                        "ZERO_POINTS" && (
+                                                        "POWDER" && (
                                                         <p className="admin-reward__message">
-                                                            Rezultatul roții a fost 0 puncte.
+                                                            Clientul a câștigat o pudră.
                                                         </p>
                                                     )}
 
@@ -2608,9 +2608,9 @@ function AdminPage() {
                                                     )}
 
                                                     {selectedClient.welcomeReward ===
-                                                        "ZERO_POINTS" && (
+                                                        "POWDER" && (
                                                         <p className="admin-reward__message">
-                                                            Rezultatul roții a fost 0 puncte.
+                                                            Clientul a câștigat o pudră.
                                                         </p>
                                                     )}
 
@@ -4328,8 +4328,7 @@ function isUsableReward(
 ) {
     return (
         reward !== null &&
-        reward !== "NOTHING" &&
-        reward !== "ZERO_POINTS"
+        reward !== "NOTHING"
     );
 }
 
@@ -4355,8 +4354,8 @@ function getRewardLabel(
     switch (reward) {
         case "NOTHING":
             return "Nimic";
-        case "ZERO_POINTS":
-            return "0 puncte";
+        case "POWDER":
+            return "O pudră";
         case "DISCOUNT_10":
             return "10% reducere";
         case "DISCOUNT_25":

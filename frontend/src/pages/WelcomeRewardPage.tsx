@@ -4,7 +4,7 @@ import api from "../services/api";
 
 type WelcomeRewardType =
     | "NOTHING"
-    | "ZERO_POINTS"
+    | "POWDER"
     | "DISCOUNT_10"
     | "DISCOUNT_25"
     | "DISCOUNT_50"
@@ -46,8 +46,8 @@ const segments: WheelSegment[] = [
         label: "25% reducere",
     },
     {
-        reward: "ZERO_POINTS",
-        label: "0 puncte",
+        reward: "POWDER",
+        label: "O pudră",
     },
     {
         reward: "FREE_HAIRCUT",
@@ -69,7 +69,8 @@ function WelcomeRewardPage() {
     const [loading, setLoading] = useState(true);
     const [spinning, setSpinning] = useState(false);
     const [rotation, setRotation] = useState(0);
-    const [result, setResult] = useState<WelcomeRewardResponse | null>(null);
+    const [result, setResult] =
+        useState<WelcomeRewardResponse | null>(null);
     const [error, setError] = useState("");
 
     useEffect(() => {
@@ -126,12 +127,15 @@ function WelcomeRewardPage() {
                 );
             }
 
-            const segmentAngle = 360 / segments.length;
+            const segmentAngle =
+                360 / segments.length;
+
             const segmentCenter =
                 segmentIndex * segmentAngle +
                 segmentAngle / 2;
 
             const fullRotations = 360 * 7;
+
             const targetRotation =
                 fullRotations +
                 (360 - segmentCenter);
