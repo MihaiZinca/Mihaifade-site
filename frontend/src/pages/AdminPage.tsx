@@ -6,6 +6,7 @@ import type {
     AppointmentStatus,
     BarbershopService,
 } from "../types";
+import "./AdminPage.css";
 
 type WelcomeRewardType =
     | "NOTHING"
@@ -17,7 +18,7 @@ type WelcomeRewardType =
     | "CASH_100"
     | "FREE_HAIRCUT";
 
-type AdminTab = "CALENDAR" | "CLIENTS" | "SERVICES" | "PROGRAM" | "BARBER" | "CONTACT";
+type AdminTab = "CALENDAR" | "CLIENTS" | "ASSISTANT" | "SERVICES" | "PROGRAM" | "BARBER" | "CONTACT";
 
 interface UserResponse {
     id: number;
@@ -38,6 +39,46 @@ interface WelcomeRewardStatusResponse {
     reward: WelcomeRewardType | null;
     label: string | null;
     rewardUsed: boolean;
+}
+
+interface AssistantClientResponse {
+    userId: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string | null;
+    lastVisitDate: string;
+    completedAppointments: number;
+}
+
+interface AssistantNotificationResponse {
+    selectedClients: number;
+    notifiedClients: number;
+    clientsWithoutNotifications: number;
+    sentNotifications: number;
+}
+
+interface AssistantDiscountResponse {
+    selectedClients: number;
+    offersCreated: number;
+    discountPercent: number;
+    expiresAt: string;
+}
+
+type AssistantCampaignType = "NOTIFICATION" | "DISCOUNT";
+
+interface AssistantCampaignResponse {
+    id: number;
+    type: AssistantCampaignType;
+    title: string | null;
+    message: string | null;
+    selectedClients: number;
+    notifiedClients: number | null;
+    sentNotifications: number | null;
+    createdOffers: number | null;
+    discountPercent: number | null;
+    validDays: number | null;
+    createdAt: string;
 }
 
 type DayOfWeek =
@@ -143,6 +184,22 @@ function AdminPage() {
         null
     );
     const [usingClientReward, setUsingClientReward] = useState(false);
+
+    const [assistantClients, setAssistantClients] = useState<AssistantClientResponse[]>([]);
+    const [assistantSelectedIds, setAssistantSelectedIds] = useState<number[]>([]);
+    const [assistantLoading, setAssistantLoading] = useState(false);
+    const [assistantSending, setAssistantSending] = useState(false);
+    const [assistantDiscountSaving, setAssistantDiscountSaving] = useState(false);
+    const [assistantInactiveDays, setAssistantInactiveDays] = useState("30");
+    const [assistantStartDate, setAssistantStartDate] = useState("");
+    const [assistantEndDate, setAssistantEndDate] = useState("");
+    const [assistantTitle, setAssistantTitle] = useState("");
+    const [assistantMessage, setAssistantMessage] = useState("");
+    const [assistantDiscountPercent, setAssistantDiscountPercent] = useState("10");
+    const [assistantDiscountValidDays, setAssistantDiscountValidDays] = useState("30");
+    const [assistantSuccess, setAssistantSuccess] = useState("");
+    const [assistantHistory, setAssistantHistory] = useState<AssistantCampaignResponse[]>([]);
+    const [assistantHistoryLoading, setAssistantHistoryLoading] = useState(false);
 
     const [services, setServices] = useState<BarbershopService[]>([]);
     const [servicesLoading, setServicesLoading] = useState(true);
@@ -1436,6 +1493,10 @@ function AdminPage() {
         setActiveTab(tab);
         setError("");
 
+        if (tab === "ASSISTANT") {
+            void loadAssistantHistory();
+        }
+
         if (tab !== "CALENDAR") {
             setSelectedAppointment(null);
             setSelectedUser(null);
@@ -1606,6 +1667,211 @@ function AdminPage() {
         }
     };
 
+    const loadAssistantHistory = async () => {
+        setAssistantHistoryLoading(true);
+
+        try {
+            const response = await api.get<AssistantCampaignResponse[]>(
+                "/owner/assistant/history"
+            );
+
+            setAssistantHistory(response.data);
+        } catch {
+            setError("Istoricul campaniilor nu a putut fi încărcat.");
+        } finally {
+            setAssistantHistoryLoading(false);
+        }
+    };
+
+    const loadAssistantInactiveClients = async () => {
+        const inactiveDays = Number(assistantInactiveDays);
+
+        if (!Number.isInteger(inactiveDays) || inactiveDays < 1) {
+            setError("Introdu o perioadă validă de inactivitate.");
+            return;
+        }
+
+        setAssistantLoading(true);
+        setAssistantSuccess("");
+        setError("");
+
+        try {
+            const response = await api.get<AssistantClientResponse[]>(
+                "/owner/assistant/inactive-clients",
+                { params: { days: inactiveDays } }
+            );
+
+            setAssistantClients(response.data);
+            setAssistantSelectedIds([]);
+        } catch {
+            setError("Clienții inactivi nu au putut fi încărcați.");
+        } finally {
+            setAssistantLoading(false);
+        }
+    };
+
+    const loadAssistantClientsByPeriod = async () => {
+        if (!assistantStartDate || !assistantEndDate) {
+            setError("Selectează data de început și data de sfârșit.");
+            return;
+        }
+
+        if (assistantStartDate > assistantEndDate) {
+            setError("Data de început nu poate fi după data de sfârșit.");
+            return;
+        }
+
+        setAssistantLoading(true);
+        setAssistantSuccess("");
+        setError("");
+
+        try {
+            const response = await api.get<AssistantClientResponse[]>(
+                "/owner/assistant/clients-by-visit-period",
+                {
+                    params: {
+                        startDate: assistantStartDate,
+                        endDate: assistantEndDate,
+                    },
+                }
+            );
+
+            setAssistantClients(response.data);
+            setAssistantSelectedIds([]);
+        } catch {
+            setError("Clienții din perioada selectată nu au putut fi încărcați.");
+        } finally {
+            setAssistantLoading(false);
+        }
+    };
+
+    const loadAssistantAllClients = () => {
+        const allClients: AssistantClientResponse[] = clients
+            .filter((client) => client.active)
+            .map((client) => ({
+                userId: client.id,
+                firstName: client.firstName,
+                lastName: client.lastName,
+                email: client.email,
+                phone: client.phone,
+                lastVisitDate: "",
+                completedAppointments: 0,
+            }));
+
+        setAssistantClients(allClients);
+        setAssistantSelectedIds([]);
+        setAssistantSuccess("");
+        setError("");
+    };
+
+    const toggleAssistantClient = (userId: number) => {
+        setAssistantSelectedIds((current) =>
+            current.includes(userId)
+                ? current.filter((id) => id !== userId)
+                : [...current, userId]
+        );
+    };
+
+    const toggleAllAssistantClients = () => {
+        const allIds = assistantClients.map((client) => client.userId);
+        const allSelected =
+            allIds.length > 0 &&
+            allIds.every((id) => assistantSelectedIds.includes(id));
+
+        setAssistantSelectedIds(allSelected ? [] : allIds);
+    };
+
+    const handleAssistantSendNotification = async () => {
+        const title = assistantTitle.trim();
+        const message = assistantMessage.trim();
+
+        if (assistantSelectedIds.length === 0) {
+            setError("Selectează cel puțin un client.");
+            return;
+        }
+
+        if (!title || !message) {
+            setError("Completează titlul și mesajul notificării.");
+            return;
+        }
+
+        if (!window.confirm(`Trimiți notificarea către ${assistantSelectedIds.length} clienți?`)) {
+            return;
+        }
+
+        setAssistantSending(true);
+        setAssistantSuccess("");
+        setError("");
+
+        try {
+            const response = await api.post<AssistantNotificationResponse>(
+                "/owner/assistant/notifications",
+                {
+                    userIds: assistantSelectedIds,
+                    title,
+                    message,
+                }
+            );
+
+            setAssistantSuccess(
+                `Notificare trimisă: ${response.data.notifiedClients} clienți notificați, ${response.data.clientsWithoutNotifications} fără notificări active.`
+            );
+            await loadAssistantHistory();
+        } catch {
+            setError("Notificarea nu a putut fi trimisă.");
+        } finally {
+            setAssistantSending(false);
+        }
+    };
+
+    const handleAssistantCreateDiscount = async () => {
+        const discountPercent = Number(assistantDiscountPercent);
+        const validDays = Number(assistantDiscountValidDays);
+
+        if (assistantSelectedIds.length === 0) {
+            setError("Selectează cel puțin un client.");
+            return;
+        }
+
+        if (!Number.isInteger(discountPercent) || discountPercent < 1 || discountPercent > 50) {
+            setError("Reducerea trebuie să fie între 1% și 50%.");
+            return;
+        }
+
+        if (!Number.isInteger(validDays) || validDays < 1) {
+            setError("Valabilitatea reducerii trebuie să fie de cel puțin o zi.");
+            return;
+        }
+
+        if (!window.confirm(`Acorzi ${discountPercent}% reducere pentru ${assistantSelectedIds.length} clienți?`)) {
+            return;
+        }
+
+        setAssistantDiscountSaving(true);
+        setAssistantSuccess("");
+        setError("");
+
+        try {
+            const response = await api.post<AssistantDiscountResponse>(
+                "/owner/assistant/discounts",
+                {
+                    userIds: assistantSelectedIds,
+                    discountPercent,
+                    validDays,
+                }
+            );
+
+            setAssistantSuccess(
+                `${response.data.offersCreated} reduceri de ${response.data.discountPercent}% au fost create.`
+            );
+            await loadAssistantHistory();
+        } catch {
+            setError("Reducerile nu au putut fi create.");
+        } finally {
+            setAssistantDiscountSaving(false);
+        }
+    };
+
     const dashboardStats = useMemo(() => {
         const now = new Date();
         const today = formatDateForApi(now);
@@ -1692,7 +1958,9 @@ function AdminPage() {
                             ? "Programări."
                             : activeTab === "CLIENTS"
                               ? "Clienți."
-                              : activeTab === "SERVICES"
+                              : activeTab === "ASSISTANT"
+                                ? "Asistent."
+                                : activeTab === "SERVICES"
                                 ? "Servicii."
                                 : activeTab === "PROGRAM"
                                   ? "Program."
@@ -1706,7 +1974,9 @@ function AdminPage() {
                             ? "Organizează săptămâna și gestionează programările direct din calendar."
                             : activeTab === "CLIENTS"
                               ? "Vezi clienții, datele de contact și premiile de bun venit într-un singur loc."
-                              : activeTab === "SERVICES"
+                              : activeTab === "ASSISTANT"
+                                ? "Filtrează clienții, trimite notificări și acordă reduceri controlate direct de OWNER."
+                                : activeTab === "SERVICES"
                                 ? "Adaugă, editează, dezactivează și reactivează serviciile afișate pe site."
                                 : activeTab === "PROGRAM"
                                   ? "Modifică orele de lucru, zilele închise și perioadele în care nu ești disponibil."
@@ -1793,6 +2063,20 @@ function AdminPage() {
                         }
                     >
                         Clienți
+                    </button>
+
+                    <button
+                        type="button"
+                        className={
+                            activeTab === "ASSISTANT"
+                                ? "admin-tab admin-tab--active"
+                                : "admin-tab"
+                        }
+                        onClick={() =>
+                            handleTabChange("ASSISTANT")
+                        }
+                    >
+                        Asistent
                     </button>
 
                     <button
@@ -4142,6 +4426,408 @@ function AdminPage() {
                     </>
                 )}
 
+                {activeTab === "ASSISTANT" && (
+                    <div
+                        className="admin-program-layou admin-assistant"
+                        style={{ alignItems: "start" }}
+                    >
+                        <section className="admin-program-card">
+                            <div className="admin-program-card__header">
+                                <div>
+                                    <p className="section-eyebrow">
+                                        SELECTARE CLIENȚI
+                                    </p>
+                                    <h2>Audiență</h2>
+                                    <p>
+                                        Alege toți clienții, clienții inactivi sau clienții care au fost în salon într-o anumită perioadă.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div
+                                style={{
+                                    display: "grid",
+                                    gap: "14px",
+                                }}
+                            >
+                                <button
+                                    type="button"
+                                    className="admin-service-form__submit"
+                                    onClick={loadAssistantAllClients}
+                                >
+                                    Toți clienții activi
+                                </button>
+
+                                <div
+                                    style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "minmax(0, 1fr) auto",
+                                        gap: "10px",
+                                        alignItems: "end",
+                                    }}
+                                >
+                                    <label>
+                                        Inactivi de cel puțin
+                                        <select
+                                            value={assistantInactiveDays}
+                                            onChange={(event) =>
+                                                setAssistantInactiveDays(event.target.value)
+                                            }
+                                        >
+                                            <option value="30">30 zile</option>
+                                            <option value="60">60 zile</option>
+                                            <option value="90">90 zile</option>
+                                            <option value="180">6 luni</option>
+                                            <option value="365">1 an</option>
+                                        </select>
+                                    </label>
+                                    <button
+                                        type="button"
+                                        className="admin-service-form__submit"
+                                        disabled={assistantLoading}
+                                        onClick={loadAssistantInactiveClients}
+                                    >
+                                        Filtrează
+                                    </button>
+                                </div>
+
+                                <div
+                                    style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                                        gap: "10px",
+                                    }}
+                                >
+                                    <label>
+                                        De la
+                                        <input
+                                            type="date"
+                                            value={assistantStartDate}
+                                            onChange={(event) =>
+                                                setAssistantStartDate(event.target.value)
+                                            }
+                                        />
+                                    </label>
+                                    <label>
+                                        Până la
+                                        <input
+                                            type="date"
+                                            value={assistantEndDate}
+                                            onChange={(event) =>
+                                                setAssistantEndDate(event.target.value)
+                                            }
+                                        />
+                                    </label>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className="admin-service-form__submit"
+                                    disabled={assistantLoading}
+                                    onClick={loadAssistantClientsByPeriod}
+                                >
+                                    Clienți din perioada selectată
+                                </button>
+                            </div>
+
+                            <div style={{ marginTop: "22px" }}>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        gap: "12px",
+                                        flexWrap: "wrap",
+                                        marginBottom: "12px",
+                                    }}
+                                >
+                                    <strong>
+                                        {assistantLoading
+                                            ? "Se încarcă..."
+                                            : `${assistantClients.length} clienți găsiți`}
+                                    </strong>
+
+                                    {assistantClients.length > 0 && (
+                                        <button
+                                            type="button"
+                                            className="admin-tab"
+                                            onClick={toggleAllAssistantClients}
+                                        >
+                                            {assistantClients.every((client) =>
+                                                assistantSelectedIds.includes(client.userId)
+                                            )
+                                                ? "Deselectează tot"
+                                                : "Selectează tot"}
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div
+                                    style={{
+                                        display: "grid",
+                                        gap: "8px",
+                                        maxHeight: "430px",
+                                        overflowY: "auto",
+                                    }}
+                                >
+                                    {assistantClients.map((client) => (
+                                        <label
+                                            key={client.userId}
+                                            className="admin-barber-service-card"
+                                            style={{ cursor: "pointer" }}
+                                        >
+                                            <div>
+                                                <strong>
+                                                    {client.firstName} {client.lastName}
+                                                </strong>
+                                                <span>{client.email}</span>
+                                                <span>
+                                                    {client.phone ?? "Fără telefon"}
+                                                </span>
+                                                {client.lastVisitDate && (
+                                                    <span>
+                                                        Ultima vizită: {formatLongDate(client.lastVisitDate)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <input
+                                                type="checkbox"
+                                                checked={assistantSelectedIds.includes(client.userId)}
+                                                onChange={() =>
+                                                    toggleAssistantClient(client.userId)
+                                                }
+                                            />
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+
+                        <aside
+                            style={{
+                                display: "grid",
+                                gap: "18px",
+                            }}
+                        >
+                            <section className="admin-program-card">
+                                <div className="admin-program-card__header">
+                                    <div>
+                                        <p className="section-eyebrow">
+                                            NOTIFICARE
+                                        </p>
+                                        <h2>Mesaj manual</h2>
+                                        <p>
+                                            Mesajul este scris de OWNER și ajunge doar la clienții selectați care au notificările active.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="admin-time-off-form">
+                                    <label>
+                                        Titlu
+                                        <input
+                                            type="text"
+                                            value={assistantTitle}
+                                            onChange={(event) =>
+                                                setAssistantTitle(event.target.value)
+                                            }
+                                            placeholder="Ex: Program aglomerat"
+                                        />
+                                    </label>
+
+                                    <label>
+                                        Mesaj
+                                        <textarea
+                                            rows={5}
+                                            value={assistantMessage}
+                                            onChange={(event) =>
+                                                setAssistantMessage(event.target.value)
+                                            }
+                                            placeholder="Scrie mesajul care va fi trimis clienților..."
+                                        />
+                                    </label>
+
+                                    <button
+                                        type="button"
+                                        className="admin-service-form__submit"
+                                        disabled={
+                                            assistantSending ||
+                                            assistantSelectedIds.length === 0
+                                        }
+                                        onClick={handleAssistantSendNotification}
+                                    >
+                                        {assistantSending
+                                            ? "Se trimite..."
+                                            : `Trimite către ${assistantSelectedIds.length} clienți`}
+                                    </button>
+                                </div>
+                            </section>
+
+                            <section className="admin-program-card">
+                                <div className="admin-program-card__header">
+                                    <div>
+                                        <p className="section-eyebrow">
+                                            OFERTĂ
+                                        </p>
+                                        <h2>Reducere</h2>
+                                        <p>
+                                            OWNER stabilește procentul și valabilitatea. Barberul o poate marca drept folosită la vizita clientului.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="admin-time-off-form">
+                                    <label>
+                                        Reducere (%)
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="50"
+                                            value={assistantDiscountPercent}
+                                            onChange={(event) =>
+                                                setAssistantDiscountPercent(event.target.value)
+                                            }
+                                        />
+                                    </label>
+
+                                    <label>
+                                        Valabilitate (zile)
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            value={assistantDiscountValidDays}
+                                            onChange={(event) =>
+                                                setAssistantDiscountValidDays(event.target.value)
+                                            }
+                                        />
+                                    </label>
+
+                                    <button
+                                        type="button"
+                                        className="admin-service-form__submit"
+                                        disabled={
+                                            assistantDiscountSaving ||
+                                            assistantSelectedIds.length === 0
+                                        }
+                                        onClick={handleAssistantCreateDiscount}
+                                    >
+                                        {assistantDiscountSaving
+                                            ? "Se salvează..."
+                                            : `Acordă reducerea (${assistantSelectedIds.length})`}
+                                    </button>
+                                </div>
+                            </section>
+
+                            {assistantSuccess && (
+                                <p
+                                    className="admin-message"
+                                    style={{ margin: 0 }}
+                                >
+                                    {assistantSuccess}
+                                </p>
+                            )}
+                        </aside>
+
+                        <section
+                            className="admin-program-card"
+                            style={{ gridColumn: "1 / -1" }}
+                        >
+                            <div className="admin-program-card__header">
+                                <div>
+                                    <p className="section-eyebrow">
+                                        ISTORIC
+                                    </p>
+                                    <h2>Campanii trimise</h2>
+                                    <p>
+                                        Vezi notificările și reducerile create de OWNER, în ordine cronologică.
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className="admin-tab"
+                                    disabled={assistantHistoryLoading}
+                                    onClick={loadAssistantHistory}
+                                >
+                                    {assistantHistoryLoading
+                                        ? "Se încarcă..."
+                                        : "Reîncarcă"}
+                                </button>
+                            </div>
+
+                            {assistantHistoryLoading && assistantHistory.length === 0 ? (
+                                <p className="admin-empty-state">
+                                    Se încarcă istoricul...
+                                </p>
+                            ) : assistantHistory.length === 0 ? (
+                                <p className="admin-empty-state">
+                                    Nu există încă nicio campanie în istoric.
+                                </p>
+                            ) : (
+                                <div
+                                    style={{
+                                        display: "grid",
+                                        gap: "10px",
+                                    }}
+                                >
+                                    {assistantHistory.map((campaign) => (
+                                        <article
+                                            key={campaign.id}
+                                            className="admin-barber-service-card"
+                                            style={{
+                                                alignItems: "flex-start",
+                                                cursor: "default",
+                                            }}
+                                        >
+                                            <div
+                                                style={{
+                                                    display: "grid",
+                                                    gap: "6px",
+                                                    minWidth: 0,
+                                                }}
+                                            >
+                                                <strong>
+                                                    {campaign.type === "NOTIFICATION"
+                                                        ? campaign.title || "Notificare"
+                                                        : `Reducere ${campaign.discountPercent ?? 0}%`}
+                                                </strong>
+
+                                                <span>
+                                                    {campaign.type === "NOTIFICATION"
+                                                        ? `${campaign.notifiedClients ?? 0} din ${campaign.selectedClients} clienți notificați · ${campaign.sentNotifications ?? 0} notificări trimise`
+                                                        : `${campaign.createdOffers ?? 0} din ${campaign.selectedClients} oferte create · valabilitate ${campaign.validDays ?? 0} zile`}
+                                                </span>
+
+                                                {campaign.type === "NOTIFICATION" &&
+                                                    campaign.message && (
+                                                        <span
+                                                            style={{
+                                                                whiteSpace: "pre-wrap",
+                                                                overflowWrap: "anywhere",
+                                                            }}
+                                                        >
+                                                            {campaign.message}
+                                                        </span>
+                                                    )}
+                                            </div>
+
+                                            <span
+                                                style={{
+                                                    whiteSpace: "nowrap",
+                                                }}
+                                            >
+                                                {formatAssistantCampaignDate(
+                                                    campaign.createdAt
+                                                )}
+                                            </span>
+                                        </article>
+                                    ))}
+                                </div>
+                            )}
+                        </section>
+                    </div>
+                )}
+
                 {activeTab === "CONTACT" && (
                     <>
                         {shopSettingsLoading ? (
@@ -4420,6 +5106,16 @@ function formatAccountDate(date: string) {
     ).format(
         new Date(date)
     );
+}
+
+function formatAssistantCampaignDate(date: string) {
+    return new Intl.DateTimeFormat("ro-RO", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    }).format(new Date(date));
 }
 
 function formatCurrency(value: number) {

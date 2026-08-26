@@ -1,0 +1,1104 @@
+.admin-assistant {
+    align-items: start !important;
+    gap: 24px;
+}
+
+.admin-assistant > .admin-program-card,
+.admin-assistant > aside > .admin-program-card {
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.022) 0%,
+            rgba(255, 255, 255, 0.008) 100%
+        ),
+        #0d0d0d;
+    box-shadow: 0 18px 55px rgba(0, 0, 0, 0.16);
+}
+
+.admin-assistant > .admin-program-card {
+    min-width: 0;
+}
+
+.admin-assistant > aside {
+    min-width: 0;
+    display: grid !important;
+    gap: 18px !important;
+}
+
+.admin-assistant .admin-program-card__header {
+    margin-bottom: 26px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.admin-assistant .admin-program-card__header .section-eyebrow {
+    margin-bottom: 12px;
+    color: rgba(228, 204, 152, 0.72);
+}
+
+.admin-assistant .admin-program-card__header h2 {
+    margin: 0;
+    color: #f5f5f5;
+    font-size: clamp(28px, 2.4vw, 38px);
+    line-height: 1;
+    letter-spacing: -1.4px;
+}
+
+.admin-assistant .admin-program-card__header p:last-child {
+    max-width: 680px;
+    margin: 14px 0 0;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* ---------- AUDIENȚĂ / FILTRE ---------- */
+
+.admin-assistant > .admin-program-card > div:nth-child(2) {
+    display: grid !important;
+    gap: 14px !important;
+}
+
+.admin-assistant > .admin-program-card > div:nth-child(2) > div {
+    min-width: 0;
+}
+
+.admin-assistant > .admin-program-card > div:nth-child(2) label {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.7px;
+    text-transform: uppercase;
+}
+
+.admin-assistant > .admin-program-card > div:nth-child(2) input,
+.admin-assistant > .admin-program-card > div:nth-child(2) select {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 0;
+    outline: none;
+    background: #111111;
+    color: rgba(255, 255, 255, 0.88);
+    color-scheme: dark;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.admin-assistant > .admin-program-card > div:nth-child(2) input:hover,
+.admin-assistant > .admin-program-card > div:nth-child(2) select:hover {
+    border-color: rgba(228, 204, 152, 0.32);
+}
+
+.admin-assistant > .admin-program-card > div:nth-child(2) input:focus,
+.admin-assistant > .admin-program-card > div:nth-child(2) select:focus {
+    border-color: rgba(228, 204, 152, 0.7);
+    background: #0f0f0f;
+    box-shadow: 0 0 0 3px rgba(228, 204, 152, 0.055);
+}
+
+.admin-assistant select option {
+    background: #111111;
+    color: #ffffff;
+}
+
+/* Butoanele de filtrare */
+.admin-assistant > .admin-program-card > div:nth-child(2) .admin-service-form__submit {
+    min-height: 48px;
+    margin: 0;
+}
+
+/* ---------- REZULTATE / SELECTARE ---------- */
+
+.admin-assistant > .admin-program-card > div:nth-child(3) {
+    margin-top: 28px !important;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.admin-assistant > .admin-program-card > div:nth-child(3) > div:first-child {
+    margin-bottom: 14px !important;
+}
+
+.admin-assistant > .admin-program-card > div:nth-child(3) > div:first-child > strong {
+    color: rgba(255, 255, 255, 0.84);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.admin-assistant > .admin-program-card > div:nth-child(3) .admin-tab {
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid rgba(228, 204, 152, 0.24);
+    background: rgba(228, 204, 152, 0.035);
+    color: #e4cc98;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.admin-assistant > .admin-program-card > div:nth-child(3) .admin-tab:hover {
+    border-color: rgba(228, 204, 152, 0.62);
+    background: rgba(228, 204, 152, 0.08);
+}
+
+/* Scroll lista clienți */
+.admin-assistant > .admin-program-card > div:nth-child(3) > div:last-child {
+    gap: 8px !important;
+    max-height: 430px !important;
+    padding-right: 5px;
+    overflow-y: auto !important;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(228, 204, 152, 0.35) rgba(255, 255, 255, 0.035);
+}
+
+.admin-assistant > .admin-program-card > div:nth-child(3) > div:last-child::-webkit-scrollbar {
+    width: 7px;
+}
+
+.admin-assistant > .admin-program-card > div:nth-child(3) > div:last-child::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.admin-assistant > .admin-program-card > div:nth-child(3) > div:last-child::-webkit-scrollbar-thumb {
+    background: rgba(228, 204, 152, 0.28);
+}
+
+.admin-assistant .admin-barber-service-card {
+    min-height: 78px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+    padding: 16px 17px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.014);
+    cursor: pointer !important;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.admin-assistant .admin-barber-service-card:hover {
+    border-color: rgba(228, 204, 152, 0.28);
+    background: rgba(228, 204, 152, 0.025);
+    transform: translateY(-1px);
+}
+
+.admin-assistant .admin-barber-service-card:has(input[type="checkbox"]:checked) {
+    border-color: rgba(228, 204, 152, 0.64);
+    background:
+        linear-gradient(
+            90deg,
+            rgba(228, 204, 152, 0.08),
+            rgba(228, 204, 152, 0.025)
+        );
+}
+
+.admin-assistant .admin-barber-service-card > div:first-child {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.admin-assistant .admin-barber-service-card > div:first-child strong {
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.94);
+    font-size: 14px;
+    font-weight: 750;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-assistant .admin-barber-service-card > div:first-child span {
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.42);
+    font-size: 11px;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-assistant .admin-barber-service-card > div:first-child span:last-child {
+    color: rgba(228, 204, 152, 0.62);
+}
+
+.admin-assistant .admin-barber-service-card > input[type="checkbox"] {
+    appearance: auto;
+    width: 18px !important;
+    min-width: 18px !important;
+    max-width: 18px !important;
+    height: 18px !important;
+    min-height: 18px !important;
+    max-height: 18px !important;
+    margin: 0;
+    padding: 0;
+    flex: 0 0 18px;
+    cursor: pointer;
+    accent-color: #e4cc98;
+}
+
+/* ---------- PANOURI DREAPTA ---------- */
+
+.admin-assistant > aside .admin-program-card {
+    min-width: 0;
+}
+
+.admin-assistant > aside .admin-time-off-form {
+    display: grid;
+    gap: 16px;
+}
+
+.admin-assistant > aside .admin-time-off-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.47);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.7px;
+    text-transform: uppercase;
+}
+
+.admin-assistant > aside .admin-time-off-form input,
+.admin-assistant > aside .admin-time-off-form textarea {
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 0;
+    outline: none;
+    background: #111111;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1.55;
+    text-transform: none;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.admin-assistant > aside .admin-time-off-form input {
+    min-height: 48px;
+    padding: 0 14px;
+}
+
+.admin-assistant > aside .admin-time-off-form textarea {
+    min-height: 118px;
+    padding: 14px;
+    resize: vertical;
+}
+
+.admin-assistant > aside .admin-time-off-form input::placeholder,
+.admin-assistant > aside .admin-time-off-form textarea::placeholder {
+    color: rgba(255, 255, 255, 0.23);
+}
+
+.admin-assistant > aside .admin-time-off-form input:hover,
+.admin-assistant > aside .admin-time-off-form textarea:hover {
+    border-color: rgba(228, 204, 152, 0.3);
+}
+
+.admin-assistant > aside .admin-time-off-form input:focus,
+.admin-assistant > aside .admin-time-off-form textarea:focus {
+    border-color: rgba(228, 204, 152, 0.7);
+    background: #0f0f0f;
+    box-shadow: 0 0 0 3px rgba(228, 204, 152, 0.055);
+}
+
+/* ---------- CTA ---------- */
+
+.admin-assistant .admin-service-form__submit {
+    width: 100%;
+    min-height: 52px;
+    padding: 14px 18px;
+    border: 1px solid #e4cc98;
+    border-radius: 0;
+    background: #e4cc98;
+    color: #0b0b0b;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2.1px;
+    text-align: center;
+    text-transform: uppercase;
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.admin-assistant .admin-service-form__submit:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: #f0e0bb;
+    background: #f0e0bb;
+    color: #070707;
+}
+
+.admin-assistant .admin-service-form__submit:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.admin-assistant .admin-service-form__submit:disabled {
+    border-color: rgba(228, 204, 152, 0.16);
+    background: rgba(228, 204, 152, 0.12);
+    color: rgba(228, 204, 152, 0.48);
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+/* ---------- MESAJ SUCCES ---------- */
+
+.admin-assistant > aside > .admin-message {
+    margin: 0 !important;
+    padding: 15px 17px;
+    border: 1px solid rgba(228, 204, 152, 0.24);
+    background: rgba(228, 204, 152, 0.055);
+    color: #e4cc98;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+
+@media (max-width: 1100px) {
+    .admin-assistant {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .admin-assistant > aside {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+    }
+
+    .admin-assistant > aside > .admin-message {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 760px) {
+    .admin-assistant {
+        gap: 16px;
+    }
+
+    .admin-assistant > aside {
+        grid-template-columns: 1fr;
+        gap: 16px !important;
+    }
+
+    .admin-assistant .admin-program-card__header {
+        margin-bottom: 20px;
+        padding-bottom: 18px;
+    }
+
+    .admin-assistant > .admin-program-card > div:nth-child(2) > div {
+        grid-template-columns: 1fr !important;
+    }
+
+    .admin-assistant > .admin-program-card > div:nth-child(2) > div > button {
+        width: 100%;
+    }
+
+    .admin-assistant > .admin-program-card > div:nth-child(3) > div:first-child {
+        align-items: stretch !important;
+        flex-direction: column;
+    }
+
+    .admin-assistant > .admin-program-card > div:nth-child(3) .admin-tab {
+        width: 100%;
+    }
+}
+
+@media (max-width: 520px) {
+    .admin-assistant .admin-program-card__header h2 {
+        font-size: 27px;
+    }
+
+    .admin-assistant .admin-program-card__header p:last-child {
+        font-size: 12px;
+    }
+
+    .admin-assistant .admin-barber-service-card {
+        min-height: 72px;
+        gap: 12px;
+        padding: 14px;
+    }
+
+    .admin-assistant .admin-barber-service-card > div:first-child strong {
+        font-size: 13px;
+    }
+
+    .admin-assistant .admin-barber-service-card > div:first-child span {
+        font-size: 10px;
+    }
+
+    .admin-assistant .admin-service-form__submit {
+        min-height: 48px;
+        padding: 12px 14px;
+        letter-spacing: 1.6px;
+    }
+}
+/* =========================================================
+   ADMIN PAGE - ASSISTANT
+   MIHAIFADE
+   ========================================================= */
+
+/* ---------- Assistant base layout ---------- */
+
+.admin-page .admin-program-layout {
+    align-items: start;
+}
+
+.admin-page .admin-program-card {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.025),
+            rgba(255, 255, 255, 0.01)
+        ),
+        #0b0b0b;
+}
+
+.admin-page .admin-program-card__header {
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-page .admin-program-card__header h2 {
+    margin: 0 0 10px;
+
+    color: #ffffff;
+
+    font-size: 30px;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+.admin-page .admin-program-card__header p:last-child {
+    max-width: 720px;
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.46);
+
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* ---------- Forms ---------- */
+
+.admin-page .admin-program-card label,
+.admin-page .admin-time-off-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+
+    color: rgba(255, 255, 255, 0.48);
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+}
+
+.admin-page .admin-program-card input,
+.admin-page .admin-program-card select,
+.admin-page .admin-program-card textarea,
+.admin-page .admin-time-off-form input,
+.admin-page .admin-time-off-form select,
+.admin-page .admin-time-off-form textarea {
+    width: 100%;
+    min-width: 0;
+
+    padding: 14px 16px;
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 0;
+    outline: none;
+
+    background: #111111;
+    color: #f5f5f5;
+
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+
+    color-scheme: dark;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.admin-page .admin-program-card select {
+    cursor: pointer;
+}
+
+.admin-page .admin-program-card textarea,
+.admin-page .admin-time-off-form textarea {
+    min-height: 120px;
+    resize: vertical;
+
+    line-height: 1.6;
+}
+
+.admin-page .admin-program-card input:hover,
+.admin-page .admin-program-card select:hover,
+.admin-page .admin-program-card textarea:hover,
+.admin-page .admin-time-off-form input:hover,
+.admin-page .admin-time-off-form select:hover,
+.admin-page .admin-time-off-form textarea:hover {
+    border-color: rgba(228, 204, 152, 0.38);
+}
+
+.admin-page .admin-program-card input:focus,
+.admin-page .admin-program-card select:focus,
+.admin-page .admin-program-card textarea:focus,
+.admin-page .admin-time-off-form input:focus,
+.admin-page .admin-time-off-form select:focus,
+.admin-page .admin-time-off-form textarea:focus {
+    border-color: #e4cc98;
+
+    background: #0d0d0d;
+
+    box-shadow: 0 0 0 2px rgba(228, 204, 152, 0.06);
+}
+
+.admin-page .admin-program-card input::placeholder,
+.admin-page .admin-program-card textarea::placeholder {
+    color: rgba(255, 255, 255, 0.22);
+}
+
+/* ---------- Date inputs ---------- */
+
+.admin-page .admin-program-card input[type="date"] {
+    min-height: 48px;
+
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.admin-page
+    .admin-program-card
+    input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(1);
+    opacity: 0.65;
+}
+
+/* ---------- Number inputs ---------- */
+
+.admin-page .admin-program-card input[type="number"] {
+    min-height: 48px;
+}
+
+/* ---------- Assistant select ---------- */
+
+.admin-page .admin-program-card select {
+    min-height: 48px;
+
+    padding-right: 42px;
+
+    background-color: #111111;
+    color: #f5f5f5;
+}
+
+/* ---------- Main assistant buttons ---------- */
+
+.admin-page .admin-service-form__submit {
+    min-height: 52px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 14px 20px;
+
+    border: 1px solid #e4cc98;
+
+    cursor: pointer;
+
+    background: #e4cc98;
+    color: #0b0b0b;
+
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2.3px;
+    text-align: center;
+    text-transform: uppercase;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.admin-page .admin-service-form__submit:hover:not(:disabled) {
+    border-color: #f0e0bb;
+
+    background: #f0e0bb;
+
+    transform: translateY(-1px);
+}
+
+.admin-page .admin-service-form__submit:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.admin-page .admin-service-form__submit:disabled {
+    cursor: not-allowed;
+
+    border-color: rgba(228, 204, 152, 0.18);
+
+    background: rgba(228, 204, 152, 0.18);
+    color: rgba(255, 255, 255, 0.26);
+
+    opacity: 1;
+}
+
+/* ---------- Select all button ---------- */
+
+.admin-page .admin-program-card .admin-tab {
+    min-height: 38px;
+
+    padding: 9px 14px;
+
+    border: 1px solid rgba(228, 204, 152, 0.38);
+
+    cursor: pointer;
+
+    background: transparent;
+    color: #e4cc98;
+
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.admin-page .admin-program-card .admin-tab:hover {
+    border-color: #e4cc98;
+
+    background: rgba(228, 204, 152, 0.08);
+    color: #f0e0bb;
+}
+
+/* ---------- Client cards ---------- */
+
+.admin-page .admin-barber-service-card {
+    min-height: 90px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    padding: 16px 18px;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    background: rgba(255, 255, 255, 0.018);
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.admin-page .admin-barber-service-card:hover {
+    border-color: rgba(228, 204, 152, 0.38);
+
+    background: rgba(228, 204, 152, 0.035);
+}
+
+.admin-page .admin-barber-service-card > div {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.admin-page .admin-barber-service-card strong {
+    overflow: hidden;
+
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-page .admin-barber-service-card span {
+    overflow: hidden;
+
+    color: rgba(255, 255, 255, 0.42);
+
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.45;
+    letter-spacing: 0;
+    text-overflow: ellipsis;
+    text-transform: none;
+    white-space: nowrap;
+}
+
+/* ---------- Client checkboxes ---------- */
+
+.admin-page
+    .admin-barber-service-card
+    input[type="checkbox"] {
+    appearance: auto;
+
+    width: 18px;
+    min-width: 18px;
+    max-width: 18px;
+
+    height: 18px;
+    min-height: 18px;
+    max-height: 18px;
+
+    flex: 0 0 18px;
+
+    margin: 0;
+    padding: 0;
+
+    cursor: pointer;
+
+    accent-color: #e4cc98;
+}
+
+/* ---------- Assistant right-side forms ---------- */
+
+.admin-page .admin-time-off-form {
+    display: grid;
+    gap: 18px;
+}
+
+.admin-page .admin-time-off-form button {
+    margin-top: 4px;
+}
+
+/* ---------- Success message ---------- */
+
+.admin-page .admin-message {
+    padding: 14px 16px;
+
+    border: 1px solid rgba(228, 204, 152, 0.22);
+
+    background: rgba(228, 204, 152, 0.05);
+    color: rgba(240, 224, 187, 0.82);
+
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* ---------- Scrollbar for client list ---------- */
+
+.admin-page .admin-program-card ::-webkit-scrollbar {
+    width: 8px;
+}
+
+.admin-page .admin-program-card ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.admin-page .admin-program-card ::-webkit-scrollbar-thumb {
+    background: rgba(228, 204, 152, 0.2);
+}
+
+.admin-page .admin-program-card ::-webkit-scrollbar-thumb:hover {
+    background: rgba(228, 204, 152, 0.32);
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1050px) {
+    .admin-page .admin-program-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-page .admin-program-card__header {
+        margin-bottom: 22px;
+        padding-bottom: 20px;
+    }
+
+    .admin-page .admin-program-card__header h2 {
+        font-size: 27px;
+    }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+    .admin-page .admin-program-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .admin-page .admin-program-card {
+        min-width: 0;
+
+        padding: 20px;
+    }
+
+    .admin-page .admin-program-card__header {
+        margin-bottom: 20px;
+        padding-bottom: 18px;
+    }
+
+    .admin-page .admin-program-card__header h2 {
+        font-size: 25px;
+    }
+
+    .admin-page .admin-program-card__header p:last-child {
+        font-size: 12px;
+    }
+
+    .admin-page .admin-service-form__submit {
+        width: 100%;
+
+        min-height: 48px;
+
+        padding: 13px 14px;
+
+        font-size: 9px;
+        letter-spacing: 1.7px;
+    }
+
+    .admin-page .admin-program-card input,
+    .admin-page .admin-program-card select,
+    .admin-page .admin-program-card textarea,
+    .admin-page .admin-time-off-form input,
+    .admin-page .admin-time-off-form select,
+    .admin-page .admin-time-off-form textarea {
+        font-size: 16px;
+    }
+
+    .admin-page .admin-barber-service-card {
+        min-height: 82px;
+
+        gap: 14px;
+
+        padding: 14px;
+    }
+
+    .admin-page .admin-barber-service-card strong {
+        font-size: 14px;
+    }
+
+    .admin-page .admin-barber-service-card span {
+        font-size: 10px;
+    }
+}
+
+/* =========================================================
+   VERY SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+    .admin-page .admin-program-card {
+        padding: 16px;
+    }
+
+    .admin-page .admin-program-card__header h2 {
+        font-size: 23px;
+    }
+
+    .admin-page .admin-program-card .admin-tab {
+        width: 100%;
+    }
+
+    .admin-page .admin-barber-service-card {
+        align-items: flex-start;
+    }
+
+    .admin-page
+        .admin-barber-service-card
+        input[type="checkbox"] {
+        margin-top: 2px;
+    }
+}.admin-assistant input[type="date"] {
+    width: 100%;
+    min-height: 48px;
+
+    padding: 0 46px 0 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 0;
+    outline: none;
+
+    background: #111111;
+    color: #f5f5f5;
+
+    font-size: 14px;
+
+    color-scheme: dark;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.admin-assistant input[type="date"]:hover {
+    border-color: rgba(228, 204, 152, 0.45);
+}
+
+.admin-assistant input[type="date"]:focus {
+    border-color: #e4cc98;
+    background: #141414;
+}
+
+.admin-assistant input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+
+    opacity: 0.85;
+
+    filter:
+        invert(86%)
+        sepia(18%)
+        saturate(640%)
+        hue-rotate(359deg)
+        brightness(95%)
+        contrast(91%);
+}
+
+.admin-assistant input[type="date"]::-webkit-datetime-edit {
+    color: #f5f5f5;
+}
+
+.admin-assistant input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    color: #f5f5f5;
+}
+
+.admin-assistant input[type="date"]::-webkit-datetime-edit-text {
+    color: rgba(255, 255, 255, 0.42);
+}
+
+.admin-assistant input[type="date"]::-webkit-datetime-edit-month-field,
+.admin-assistant input[type="date"]::-webkit-datetime-edit-day-field,
+.admin-assistant input[type="date"]::-webkit-datetime-edit-year-field {
+    color: #f5f5f5;
+}
+
+
+.admin-page input[type="date"] {
+    color-scheme: dark;
+    color: #ffffff;
+}
+
+.admin-page input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.9;
+    cursor: pointer;
+}
+
+.admin-page input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+/* =========================================================
+   ASISTENT - CALENDAR ICON ALB GARANTAT
+   ========================================================= */
+
+.admin-page .admin-assistant input[type="date"] {
+    position: relative;
+
+    padding-right: 48px !important;
+
+    color: #ffffff !important;
+    color-scheme: dark;
+
+    /* iconița noastră albă */
+    background-color: #111111 !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2' ry='2'/%3E%3Cline x1='16' y1='3' x2='16' y2='7'/%3E%3Cline x1='8' y1='3' x2='8' y2='7'/%3E%3Cline x1='3' y1='11' x2='21' y2='11'/%3E%3C/svg%3E") !important;
+
+    background-repeat: no-repeat !important;
+    background-position: right 15px center !important;
+    background-size: 18px 18px !important;
+}
+
+
+/* Ascundem DOAR desenul iconiței native,
+   dar zona rămâne acolo și deschide calendarul */
+.admin-page
+.admin-assistant
+input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute !important;
+
+    top: 0 !important;
+    right: 0 !important;
+
+    width: 46px !important;
+    height: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    cursor: pointer !important;
+
+    opacity: 0 !important;
+
+    filter: none !important;
+}
+
+
+/* textul datei */
+.admin-page
+.admin-assistant
+input[type="date"]::-webkit-datetime-edit {
+    color: #ffffff !important;
+}
+
+.admin-page
+.admin-assistant
+input[type="date"]::-webkit-datetime-edit-text {
+    color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.admin-page
+.admin-assistant
+input[type="date"]::-webkit-datetime-edit-month-field,
+.admin-page
+.admin-assistant
+input[type="date"]::-webkit-datetime-edit-day-field,
+.admin-page
+.admin-assistant
+input[type="date"]::-webkit-datetime-edit-year-field {
+    color: #ffffff !important;
+}

@@ -101,6 +101,15 @@ interface WelcomeRewardStatusResponse {
     rewardUsed: boolean;
 }
 
+interface ClientOfferResponse {
+    id: number;
+    discountPercent: number;
+    createdAt: string;
+    expiresAt: string;
+    used: boolean;
+    usedAt: string | null;
+}
+
 type BarberTab = "DASHBOARD" | "CALENDAR" | "PROGRAM" | "SERVICES";
 
 const WEEK_DAYS = [
@@ -168,6 +177,18 @@ function BarberPage() {
         useState(false);
 
     const [welcomeRewardError, setWelcomeRewardError] =
+        useState("");
+
+    const [clientOffers, setClientOffers] =
+        useState<ClientOfferResponse[]>([]);
+
+    const [clientOffersLoading, setClientOffersLoading] =
+        useState(false);
+
+    const [clientOfferUsingId, setClientOfferUsingId] =
+        useState<number | null>(null);
+
+    const [clientOffersError, setClientOffersError] =
         useState("");
 
     const [workingHours, setWorkingHours] =
@@ -450,6 +471,55 @@ function BarberPage() {
         };
 
         loadWelcomeReward();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [selectedAppointment?.id]);
+
+    useEffect(() => {
+        if (!selectedAppointment) {
+            setClientOffers([]);
+            setClientOffersLoading(false);
+            setClientOfferUsingId(null);
+            setClientOffersError("");
+            return;
+        }
+
+        let cancelled = false;
+
+        const loadClientOffers = async () => {
+            setClientOffers([]);
+            setClientOffersLoading(true);
+            setClientOfferUsingId(null);
+            setClientOffersError("");
+
+            try {
+                const response =
+                    await api.get<ClientOfferResponse[]>(
+                        `/client-offers/barber/appointments/${selectedAppointment.id}`
+                    );
+
+                if (!cancelled) {
+                    setClientOffers(
+                        response.data
+                    );
+                }
+            } catch {
+                if (!cancelled) {
+                    setClientOffers([]);
+                    setClientOffersError(
+                        "Reducerile clientului nu au putut fi încărcate."
+                    );
+                }
+            } finally {
+                if (!cancelled) {
+                    setClientOffersLoading(false);
+                }
+            }
+        };
+
+        loadClientOffers();
 
         return () => {
             cancelled = true;
@@ -1186,6 +1256,39 @@ function BarberPage() {
             );
         } finally {
             setWelcomeRewardUsing(false);
+        }
+    };
+
+    const handleMarkClientOfferAsUsed = async (
+        offerId: number
+    ) => {
+        if (
+            !selectedAppointment ||
+            clientOfferUsingId !== null
+        ) {
+            return;
+        }
+
+        setClientOfferUsingId(offerId);
+        setClientOffersError("");
+
+        try {
+            await api.put<ClientOfferResponse>(
+                `/client-offers/barber/appointments/${selectedAppointment.id}/offers/${offerId}/use`
+            );
+
+            setClientOffers((current) =>
+                current.filter(
+                    (offer) =>
+                        offer.id !== offerId
+                )
+            );
+        } catch {
+            setClientOffersError(
+                "Reducerea nu a putut fi marcată ca folosită."
+            );
+        } finally {
+            setClientOfferUsingId(null);
         }
     };
 
@@ -2121,9 +2224,54 @@ function BarberPage() {
                                                         : "Fără premiu"}
                                             </strong>
                                         </div>
+                                        <div>
+                                            <span>
+                                                Reduceri active
+                                            </span>
+
+                                            <strong>
+                                                {clientOffersLoading
+                                                    ? "Se încarcă..."
+                                                    : clientOffersError
+                                                      ? clientOffersError
+                                                      : clientOffers.length > 0
+                                                        ? clientOffers
+                                                              .map(
+                                                                  (offer) =>
+                                                                      `${offer.discountPercent}% până la ${formatDateTime(offer.expiresAt)}`
+                                                              )
+                                                              .join(" · ")
+                                                        : "Fără reduceri active"}
+                                            </strong>
+                                        </div>
                                     </div>
 
                                     <div className="barber-calendar-panel__actions">
+                                        {clientOffers.map(
+                                            (offer) => (
+                                                <button
+                                                    key={offer.id}
+                                                    type="button"
+                                                    className="barber-calendar-panel__complete"
+                                                    disabled={
+                                                        clientOfferUsingId !==
+                                                            null ||
+                                                        clientOffersLoading
+                                                    }
+                                                    onClick={() =>
+                                                        handleMarkClientOfferAsUsed(
+                                                            offer.id
+                                                        )
+                                                    }
+                                                >
+                                                    {clientOfferUsingId ===
+                                                    offer.id
+                                                        ? "Se marchează..."
+                                                        : `Marchează reducerea de ${offer.discountPercent}% ca folosită`}
+                                                </button>
+                                            )
+                                        )}
+
                                         {welcomeReward?.reward &&
                                             welcomeReward.reward !==
                                                 "NOTHING" &&
@@ -3018,6 +3166,21 @@ function formatDate(
         new Date(
             `${value}T00:00:00`
         )
+    );
+}
+
+function formatDateTime(
+    value: string
+) {
+    return new Intl.DateTimeFormat(
+        "ro-RO",
+        {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+        }
+    ).format(
+        new Date(value)
     );
 }
 

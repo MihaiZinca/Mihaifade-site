@@ -57,4 +57,15 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             LocalDate endDate,
             AppointmentStatus status
     );
+
+
+    List<Appointment> findByStatusOrderByDateDescStartTimeDesc(
+            AppointmentStatus status
+    );
+
+
+    List<Appointment> findByDateBetweenOrderByDateDescStartTimeDesc(
+            LocalDate startDate,
+            LocalDate endDate
+    );
 }
