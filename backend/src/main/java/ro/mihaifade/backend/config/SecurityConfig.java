@@ -503,6 +503,36 @@ public class SecurityConfig {
                         )
                         .hasRole("OWNER")
 
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/gallery"
+                        )
+                        .permitAll()
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/gallery/admin"
+                        )
+                        .hasRole("OWNER")
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/gallery"
+                        )
+                        .hasRole("OWNER")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/gallery/**"
+                        )
+                        .hasRole("OWNER")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/api/gallery/**"
+                        )
+                        .hasRole("OWNER")
+
                         .anyRequest()
                         .authenticated()
                 )
