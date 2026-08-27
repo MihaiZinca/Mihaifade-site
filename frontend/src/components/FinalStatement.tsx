@@ -1,9 +1,15 @@
 function FinalStatement() {
     return (
         <section className="final-statement">
-            <p>
-                PRECIZIE / STIL / ATITUDINE
-            </p>
+            <div className="final-statement__meta">
+                <span>
+                    EST. 2023 · PITEȘTI, ROMÂNIA
+                </span>
+
+                <p>
+                    PRECIZIE / STIL / ATITUDINE
+                </p>
+            </div>
 
             <h3>
                 Nu e doar un fade,{" "}
