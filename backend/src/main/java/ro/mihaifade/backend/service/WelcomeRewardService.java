@@ -198,42 +198,34 @@ public class WelcomeRewardService {
     private WelcomeRewardType drawReward() {
         int value = random.nextInt(100);
 
-        // 40%
-        if (value < 40) {
+        if (value < 65) {
             return WelcomeRewardType.NOTHING;
         }
 
-        // 20%
-        if (value < 60) {
-            return WelcomeRewardType.POWDER;
-        }
-
-        // 18%
-        if (value < 78) {
+        if (value < 79) {
             return WelcomeRewardType.DISCOUNT_10;
         }
 
-        // 10%
-        if (value < 88) {
+        if (value < 87) {
             return WelcomeRewardType.DISCOUNT_25;
         }
 
-        // 3%
-        if (value < 91) {
+        if (value < 92) {
             return WelcomeRewardType.DISCOUNT_50;
         }
 
-        // 4%
         if (value < 95) {
+            return WelcomeRewardType.POWDER;
+        }
+
+        if (value < 97) {
+            return WelcomeRewardType.FREE_HAIRCUT;
+        }
+
+        if (value < 99) {
             return WelcomeRewardType.CASH_50;
         }
 
-        // 1%
-        if (value < 96) {
-            return WelcomeRewardType.CASH_100;
-        }
-
-        // 4%
-        return WelcomeRewardType.FREE_HAIRCUT;
+        return WelcomeRewardType.CASH_100;
     }
 }
