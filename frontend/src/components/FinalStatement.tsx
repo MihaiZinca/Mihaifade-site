@@ -6,7 +6,7 @@ function FinalStatement() {
             </p>
 
             <h3>
-                Nu e doar un fade,
+                Nu e doar un fade,{" "}
                 <span>
                     e Mihai Fade.
                 </span>

@@ -51,47 +51,76 @@ public class GalleryService {
     public GalleryImageResponse upload(MultipartFile file) {
         validateFile(file);
 
-        Map<?, ?> uploadResult;
+        Map<?, ?> uploadResult = uploadCloudinaryImage(file);
 
-        try {
-            uploadResult = cloudinary.uploader().upload(
-                    file.getBytes(),
-                    ObjectUtils.asMap(
-                            "folder", "mihaifade/gallery",
-                            "resource_type", "image"
-                    )
-            );
-        } catch (IOException exception) {
-            throw new IllegalStateException(
-                    "Imaginea nu a putut fi încărcată.",
-                    exception
-            );
-        }
-
-        String imageUrl = String.valueOf(
-                uploadResult.get("secure_url")
+        String imageUrl = getUploadValue(
+                uploadResult,
+                "secure_url"
         );
 
-        String publicId = String.valueOf(
-                uploadResult.get("public_id")
+        String publicId = getUploadValue(
+                uploadResult,
+                "public_id"
         );
 
         GalleryImage image = new GalleryImage();
         image.setImageUrl(imageUrl);
         image.setPublicId(publicId);
         image.setDisplayOrder(
-                galleryImageRepository.findAllByOrderByDisplayOrderAsc().size() + 1
+                galleryImageRepository
+                        .findAllByOrderByDisplayOrderAsc()
+                        .size() + 1
         );
         image.setActive(true);
+
+        try {
+            GalleryImage savedImage =
+                    galleryImageRepository.save(image);
+
+            return toResponse(savedImage);
+        } catch (RuntimeException exception) {
+            destroyCloudinaryImageQuietly(publicId);
+            throw exception;
+        }
+    }
+
+    @Transactional
+    public GalleryImageResponse replaceImage(
+            Long imageId,
+            MultipartFile file
+    ) {
+        validateFile(file);
+
+        GalleryImage image = findImage(imageId);
+
+        String oldPublicId = image.getPublicId();
+
+        Map<?, ?> uploadResult = uploadCloudinaryImage(file);
+
+        String newImageUrl = getUploadValue(
+                uploadResult,
+                "secure_url"
+        );
+
+        String newPublicId = getUploadValue(
+                uploadResult,
+                "public_id"
+        );
+
+        image.setImageUrl(newImageUrl);
+        image.setPublicId(newPublicId);
 
         GalleryImage savedImage;
 
         try {
-            savedImage = galleryImageRepository.save(image);
+            savedImage =
+                    galleryImageRepository.saveAndFlush(image);
         } catch (RuntimeException exception) {
-            destroyCloudinaryImage(publicId);
+            destroyCloudinaryImageQuietly(newPublicId);
             throw exception;
         }
+
+        destroyCloudinaryImageQuietly(oldPublicId);
 
         return toResponse(savedImage);
     }
@@ -116,7 +145,8 @@ public class GalleryService {
             int newOrder
     ) {
         List<GalleryImage> images =
-                galleryImageRepository.findAllByOrderByDisplayOrderAsc();
+                galleryImageRepository
+                        .findAllByOrderByDisplayOrderAsc();
 
         if (images.isEmpty()) {
             throw new IllegalStateException(
@@ -126,7 +156,9 @@ public class GalleryService {
 
         GalleryImage selectedImage = images
                 .stream()
-                .filter(image -> image.getId().equals(imageId))
+                .filter(image ->
+                        image.getId().equals(imageId)
+                )
                 .findFirst()
                 .orElseThrow(() ->
                         new IllegalArgumentException(
@@ -136,14 +168,26 @@ public class GalleryService {
 
         int targetIndex = Math.max(
                 0,
-                Math.min(newOrder - 1, images.size() - 1)
+                Math.min(
+                        newOrder - 1,
+                        images.size() - 1
+                )
         );
 
         images.remove(selectedImage);
-        images.add(targetIndex, selectedImage);
+        images.add(
+                targetIndex,
+                selectedImage
+        );
 
-        for (int index = 0; index < images.size(); index++) {
-            images.get(index).setDisplayOrder(index + 1);
+        for (
+                int index = 0;
+                index < images.size();
+                index++
+        ) {
+            images
+                    .get(index)
+                    .setDisplayOrder(index + 1);
         }
 
         galleryImageRepository.saveAll(images);
@@ -155,7 +199,9 @@ public class GalleryService {
     public void delete(Long imageId) {
         GalleryImage image = findImage(imageId);
 
-        destroyCloudinaryImage(image.getPublicId());
+        destroyCloudinaryImage(
+                image.getPublicId()
+        );
 
         galleryImageRepository.delete(image);
 
@@ -172,8 +218,52 @@ public class GalleryService {
                 );
     }
 
+    private Map<?, ?> uploadCloudinaryImage(
+            MultipartFile file
+    ) {
+        try {
+            return cloudinary
+                    .uploader()
+                    .upload(
+                            file.getBytes(),
+                            ObjectUtils.asMap(
+                                    "folder",
+                                    "mihaifade/gallery",
+                                    "resource_type",
+                                    "image"
+                            )
+                    );
+        } catch (IOException exception) {
+            throw new IllegalStateException(
+                    "Imaginea nu a putut fi încărcată.",
+                    exception
+            );
+        }
+    }
+
+    private String getUploadValue(
+            Map<?, ?> uploadResult,
+            String key
+    ) {
+        Object value = uploadResult.get(key);
+
+        if (
+                value == null ||
+                        value.toString().isBlank()
+        ) {
+            throw new IllegalStateException(
+                    "Răspuns invalid primit de la Cloudinary."
+            );
+        }
+
+        return value.toString();
+    }
+
     private void validateFile(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
+        if (
+                file == null ||
+                        file.isEmpty()
+        ) {
             throw new IllegalArgumentException(
                     "Selectează o imagine."
             );
@@ -185,30 +275,45 @@ public class GalleryService {
             );
         }
 
-        String contentType = file.getContentType();
+        String contentType =
+                file.getContentType();
 
-        if (contentType == null ||
-                !contentType.startsWith("image/")) {
+        if (
+                contentType == null ||
+                        !contentType.startsWith("image/")
+        ) {
             throw new IllegalArgumentException(
                     "Fișierul trebuie să fie o imagine."
             );
         }
     }
 
-    private void destroyCloudinaryImage(String publicId) {
+    private void destroyCloudinaryImage(
+            String publicId
+    ) {
         try {
-            Map<?, ?> result = cloudinary
-                    .uploader()
-                    .destroy(
-                            publicId,
-                            ObjectUtils.emptyMap()
-                    );
+            Map<?, ?> result =
+                    cloudinary
+                            .uploader()
+                            .destroy(
+                                    publicId,
+                                    ObjectUtils.emptyMap()
+                            );
 
-            Object status = result.get("result");
+            Object status =
+                    result.get("result");
 
-            if (status == null ||
-                    (!"ok".equals(status.toString()) &&
-                            !"not found".equals(status.toString()))) {
+            if (
+                    status == null ||
+                            (
+                                    !"ok".equals(
+                                            status.toString()
+                                    ) &&
+                                            !"not found".equals(
+                                                    status.toString()
+                                            )
+                            )
+            ) {
                 throw new IllegalStateException(
                         "Imaginea nu a putut fi ștearsă din Cloudinary."
                 );
@@ -221,12 +326,40 @@ public class GalleryService {
         }
     }
 
+    private void destroyCloudinaryImageQuietly(
+            String publicId
+    ) {
+        if (
+                publicId == null ||
+                        publicId.isBlank()
+        ) {
+            return;
+        }
+
+        try {
+            cloudinary
+                    .uploader()
+                    .destroy(
+                            publicId,
+                            ObjectUtils.emptyMap()
+                    );
+        } catch (IOException ignored) {
+        }
+    }
+
     private void normalizeDisplayOrder() {
         List<GalleryImage> images =
-                galleryImageRepository.findAllByOrderByDisplayOrderAsc();
+                galleryImageRepository
+                        .findAllByOrderByDisplayOrderAsc();
 
-        for (int index = 0; index < images.size(); index++) {
-            images.get(index).setDisplayOrder(index + 1);
+        for (
+                int index = 0;
+                index < images.size();
+                index++
+        ) {
+            images
+                    .get(index)
+                    .setDisplayOrder(index + 1);
         }
 
         galleryImageRepository.saveAll(images);

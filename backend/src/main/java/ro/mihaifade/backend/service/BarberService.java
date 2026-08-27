@@ -1,17 +1,36 @@
 package ro.mihaifade.backend.service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import ro.mihaifade.backend.dto.CreateBarberAccountRequest;
-import ro.mihaifade.backend.entity.*;
-import ro.mihaifade.backend.repository.*;
+import ro.mihaifade.backend.entity.Appointment;
+import ro.mihaifade.backend.entity.AuthProvider;
+import ro.mihaifade.backend.entity.Barber;
+import ro.mihaifade.backend.entity.BarberServiceOffering;
+import ro.mihaifade.backend.entity.Role;
+import ro.mihaifade.backend.entity.User;
+import ro.mihaifade.backend.repository.AppointmentRepository;
+import ro.mihaifade.backend.repository.BarberRepository;
+import ro.mihaifade.backend.repository.BarberServiceOfferingRepository;
+import ro.mihaifade.backend.repository.ServiceRepository;
+import ro.mihaifade.backend.repository.TimeOffRepository;
+import ro.mihaifade.backend.repository.UserRepository;
+import ro.mihaifade.backend.repository.WorkingHoursRepository;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@org.springframework.stereotype.Service
+@Service
 public class BarberService {
+
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
 
     private final BarberRepository barberRepository;
     private final ServiceRepository serviceRepository;
@@ -21,6 +40,7 @@ public class BarberService {
     private final WorkingHoursRepository workingHoursRepository;
     private final TimeOffRepository timeOffRepository;
     private final BarberServiceOfferingRepository barberServiceOfferingRepository;
+    private final Cloudinary cloudinary;
 
     public BarberService(
             BarberRepository barberRepository,
@@ -30,73 +50,46 @@ public class BarberService {
             AppointmentRepository appointmentRepository,
             WorkingHoursRepository workingHoursRepository,
             TimeOffRepository timeOffRepository,
-            BarberServiceOfferingRepository barberServiceOfferingRepository
+            BarberServiceOfferingRepository barberServiceOfferingRepository,
+            Cloudinary cloudinary
     ) {
-        this.barberRepository =
-                barberRepository;
-
-        this.serviceRepository =
-                serviceRepository;
-
-        this.userRepository =
-                userRepository;
-
-        this.passwordEncoder =
-                passwordEncoder;
-
-        this.appointmentRepository =
-                appointmentRepository;
-
-        this.workingHoursRepository =
-                workingHoursRepository;
-
-        this.timeOffRepository =
-                timeOffRepository;
-
-        this.barberServiceOfferingRepository =
-                barberServiceOfferingRepository;
+        this.barberRepository = barberRepository;
+        this.serviceRepository = serviceRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.appointmentRepository = appointmentRepository;
+        this.workingHoursRepository = workingHoursRepository;
+        this.timeOffRepository = timeOffRepository;
+        this.barberServiceOfferingRepository = barberServiceOfferingRepository;
+        this.cloudinary = cloudinary;
     }
 
     public List<Barber> getAllBarbers() {
         return barberRepository.findAll();
     }
 
-    public Barber getBarberById(
-            Long id
-    ) {
+    public Barber getBarberById(Long id) {
         return barberRepository
-                .findById(
-                        id
-                )
+                .findById(id)
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "Barber not found with id: "
-                                        + id
+                                "Barber not found with id: " + id
                         )
                 );
     }
 
-    public Barber getBarberByUserEmail(
-            String email
-    ) {
+    public Barber getBarberByUserEmail(String email) {
         return barberRepository
-                .findByUserEmailIgnoreCase(
-                        email
-                )
+                .findByUserEmailIgnoreCase(email)
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "No barber profile is associated with user: "
-                                        + email
+                                "No barber profile is associated with user: " + email
                         )
                 );
     }
 
-    public Barber createBarber(
-            Barber barber
-    ) {
-        return barberRepository.save(
-                barber
-        );
+    public Barber createBarber(Barber barber) {
+        return barberRepository.save(barber);
     }
 
     @Transactional
@@ -114,19 +107,18 @@ public class BarberService {
         }
 
         if (
-                request.phone() != null
-                        && !request.phone().isBlank()
-                        && userRepository.existsByPhone(
-                        request.phone()
-                )
+                request.phone() != null &&
+                        !request.phone().isBlank() &&
+                        userRepository.existsByPhone(
+                                request.phone()
+                        )
         ) {
             throw new RuntimeException(
                     "Phone already exists"
             );
         }
 
-        User user =
-                new User();
+        User user = new User();
 
         user.setFirstName(
                 request.firstName()
@@ -141,8 +133,8 @@ public class BarberService {
         );
 
         user.setPhone(
-                request.phone() == null
-                        || request.phone().isBlank()
+                request.phone() == null ||
+                        request.phone().isBlank()
                         ? null
                         : request.phone()
         );
@@ -214,14 +206,13 @@ public class BarberService {
         );
     }
 
+    @Transactional
     public Barber updateBarber(
             Long id,
             Barber updatedBarber
     ) {
         Barber existingBarber =
-                getBarberById(
-                        id
-                );
+                getBarberById(id);
 
         existingBarber.setDisplayName(
                 updatedBarber.getDisplayName()
@@ -229,10 +220,6 @@ public class BarberService {
 
         existingBarber.setBio(
                 updatedBarber.getBio()
-        );
-
-        existingBarber.setImageUrl(
-                updatedBarber.getImageUrl()
         );
 
         existingBarber.setInstagramUrl(
@@ -268,6 +255,7 @@ public class BarberService {
         );
     }
 
+    @Transactional
     public Barber updateMyBarberProfile(
             String email,
             Barber updatedBarber
@@ -316,6 +304,69 @@ public class BarberService {
         return barberRepository.save(
                 existingBarber
         );
+    }
+
+    @Transactional
+    public Barber replaceBarberImage(
+            Long barberId,
+            MultipartFile file
+    ) {
+        validateImage(file);
+
+        Barber barber =
+                getBarberById(
+                        barberId
+                );
+
+        String oldImageUrl =
+                barber.getImageUrl();
+
+        Map<?, ?> uploadResult =
+                uploadBarberImage(
+                        file
+                );
+
+        String newImageUrl =
+                getUploadValue(
+                        uploadResult,
+                        "secure_url"
+                );
+
+        String newPublicId =
+                getUploadValue(
+                        uploadResult,
+                        "public_id"
+                );
+
+        barber.setImageUrl(
+                newImageUrl
+        );
+
+        Barber savedBarber;
+
+        try {
+            savedBarber =
+                    barberRepository.saveAndFlush(
+                            barber
+                    );
+        } catch (RuntimeException exception) {
+            destroyCloudinaryImageQuietly(
+                    newPublicId
+            );
+
+            throw exception;
+        }
+
+        String oldPublicId =
+                extractCloudinaryPublicId(
+                        oldImageUrl
+                );
+
+        destroyCloudinaryImageQuietly(
+                oldPublicId
+        );
+
+        return savedBarber;
     }
 
     @Transactional
@@ -483,8 +534,8 @@ public class BarberService {
                                 )
                                 .orElseThrow(() ->
                                         new RuntimeException(
-                                                "Service not found: "
-                                                        + serviceId
+                                                "Service not found: " +
+                                                        serviceId
                                         )
                                 )
                 )
@@ -493,12 +544,174 @@ public class BarberService {
                 );
     }
 
+    private Map<?, ?> uploadBarberImage(
+            MultipartFile file
+    ) {
+        try {
+            return cloudinary
+                    .uploader()
+                    .upload(
+                            file.getBytes(),
+                            ObjectUtils.asMap(
+                                    "folder",
+                                    "mihaifade/barbers",
+                                    "resource_type",
+                                    "image"
+                            )
+                    );
+        } catch (IOException exception) {
+            throw new IllegalStateException(
+                    "Imaginea barberului nu a putut fi încărcată.",
+                    exception
+            );
+        }
+    }
+
+    private void validateImage(
+            MultipartFile file
+    ) {
+        if (
+                file == null ||
+                        file.isEmpty()
+        ) {
+            throw new IllegalArgumentException(
+                    "Selectează o imagine."
+            );
+        }
+
+        if (
+                file.getSize() >
+                        MAX_FILE_SIZE
+        ) {
+            throw new IllegalArgumentException(
+                    "Imaginea poate avea maximum 10 MB."
+            );
+        }
+
+        String contentType =
+                file.getContentType();
+
+        if (
+                contentType == null ||
+                        !contentType.startsWith(
+                                "image/"
+                        )
+        ) {
+            throw new IllegalArgumentException(
+                    "Fișierul trebuie să fie o imagine."
+            );
+        }
+    }
+
+    private String getUploadValue(
+            Map<?, ?> uploadResult,
+            String key
+    ) {
+        Object value =
+                uploadResult.get(
+                        key
+                );
+
+        if (
+                value == null ||
+                        value.toString().isBlank()
+        ) {
+            throw new IllegalStateException(
+                    "Răspuns invalid primit de la Cloudinary."
+            );
+        }
+
+        return value.toString();
+    }
+
+    private String extractCloudinaryPublicId(
+            String imageUrl
+    ) {
+        if (
+                imageUrl == null ||
+                        imageUrl.isBlank() ||
+                        !imageUrl.contains(
+                                "/upload/"
+                        )
+        ) {
+            return null;
+        }
+
+        int uploadIndex =
+                imageUrl.indexOf(
+                        "/upload/"
+                );
+
+        String value =
+                imageUrl.substring(
+                        uploadIndex +
+                                "/upload/".length()
+                );
+
+        value =
+                value.replaceFirst(
+                        "^v\\d+/",
+                        ""
+                );
+
+        int queryIndex =
+                value.indexOf("?");
+
+        if (
+                queryIndex >= 0
+        ) {
+            value =
+                    value.substring(
+                            0,
+                            queryIndex
+                    );
+        }
+
+        int lastDot =
+                value.lastIndexOf(".");
+
+        if (
+                lastDot > 0
+        ) {
+            value =
+                    value.substring(
+                            0,
+                            lastDot
+                    );
+        }
+
+        return value.isBlank()
+                ? null
+                : value;
+    }
+
+    private void destroyCloudinaryImageQuietly(
+            String publicId
+    ) {
+        if (
+                publicId == null ||
+                        publicId.isBlank()
+        ) {
+            return;
+        }
+
+        try {
+            cloudinary
+                    .uploader()
+                    .destroy(
+                            publicId,
+                            ObjectUtils.emptyMap()
+                    );
+        } catch (IOException ignored) {
+        }
+    }
+
     private String normalizeOptionalUrl(
             String value
     ) {
         if (
-                value == null
-                        || value.isBlank()
+                value == null ||
+                        value.isBlank()
         ) {
             return null;
         }
@@ -542,6 +755,11 @@ public class BarberService {
             );
         }
 
+        String imagePublicId =
+                extractCloudinaryPublicId(
+                        barber.getImageUrl()
+                );
+
         workingHoursRepository.deleteByBarberId(
                 id
         );
@@ -583,5 +801,9 @@ public class BarberService {
                     linkedUser
             );
         }
+
+        destroyCloudinaryImageQuietly(
+                imagePublicId
+        );
     }
 }

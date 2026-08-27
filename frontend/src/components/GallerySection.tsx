@@ -1,38 +1,38 @@
-import work01 from "../assets/images/gallery/work-01.jpg";
-import work02 from "../assets/images/gallery/work-02.jpg";
-import work03 from "../assets/images/gallery/work-03.jpg";
-import work04 from "../assets/images/gallery/work-04.jpg";
-import work05 from "../assets/images/gallery/work-05.jpg";
+import { useEffect, useState } from "react";
+import api from "../services/api";
 
-const galleryImages = [
-    {
-        src: work01,
-        alt: "Lucrare Mihai Fade",
-        className: "gallery__item--large",
-    },
-    {
-        src: work02,
-        alt: "Tunsoare realizată de Mihai Fade",
-        className: "",
-    },
-    {
-        src: work03,
-        alt: "Fade realizat de Mihai Fade",
-        className: "",
-    },
-    {
-        src: work04,
-        alt: "Lucrare barber Mihai Fade",
-        className: "",
-    },
-    {
-        src: work05,
-        alt: "Tunsoare Mihai Fade",
-        className: "gallery__item--wide",
-    },
-];
+interface GalleryImageResponse {
+    id: number;
+    imageUrl: string;
+    displayOrder: number;
+    active: boolean;
+    createdAt: string;
+}
 
 function GallerySection() {
+    const [galleryImages, setGalleryImages] = useState<GalleryImageResponse[]>(
+        []
+    );
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadGallery = async () => {
+            try {
+                const response = await api.get<GalleryImageResponse[]>(
+                    "/gallery"
+                );
+
+                setGalleryImages(response.data);
+            } catch {
+                setGalleryImages([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        void loadGallery();
+    }, []);
+
     return (
         <section
             id="galerie"
@@ -58,27 +58,22 @@ function GallerySection() {
                 </p>
             </div>
 
-            <div className="gallery__grid">
-                {galleryImages.map(
-                    (image, index) => (
+            {!loading && galleryImages.length > 0 && (
+                <div className="gallery__grid">
+                    {galleryImages.map((image, index) => (
                         <figure
-                            className={`gallery__item ${image.className}`}
-                            key={image.src}
+                            className="gallery__item"
+                            key={image.id}
                         >
                             <img
-                                src={image.src}
-                                alt={image.alt}
+                                src={image.imageUrl}
+                                alt={`Lucrare Mihai Fade ${index + 1}`}
                                 loading="lazy"
                             />
 
                             <figcaption>
                                 <span>
-                                    {String(
-                                        index + 1
-                                    ).padStart(
-                                        2,
-                                        "0"
-                                    )}
+                                    {String(index + 1).padStart(2, "0")}
                                 </span>
 
                                 <span>
@@ -86,9 +81,9 @@ function GallerySection() {
                                 </span>
                             </figcaption>
                         </figure>
-                    )
-                )}
-            </div>
+                    ))}
+                </div>
+            )}
         </section>
     );
 }

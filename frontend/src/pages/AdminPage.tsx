@@ -18,7 +18,7 @@ type WelcomeRewardType =
     | "CASH_100"
     | "FREE_HAIRCUT";
 
-type AdminTab = "CALENDAR" | "CLIENTS" | "ASSISTANT" | "SERVICES" | "PROGRAM" | "BARBER" | "CONTACT";
+type AdminTab = "CALENDAR" | "CLIENTS" | "ASSISTANT" | "SERVICES" | "PROGRAM" | "BARBER" | "GALLERY" | "CONTACT";
 
 interface UserResponse {
     id: number;
@@ -136,6 +136,14 @@ interface ShopSettingsResponse {
     mapsUrl: string | null;
 }
 
+interface GalleryImageResponse {
+    id: number;
+    imageUrl: string;
+    displayOrder: number;
+    active: boolean;
+    createdAt: string;
+}
+
 const WEEK_DAYS = [
     "Luni",
     "Marți",
@@ -234,6 +242,8 @@ function AdminPage() {
     const [timeOffReason, setTimeOffReason] = useState("");
 
     const [barberSaving, setBarberSaving] = useState(false);
+    const [barberImageUploading, setBarberImageUploading] = useState(false);
+    const [barberImageSuccess, setBarberImageSuccess] = useState("");
     const [barberDeletingId, setBarberDeletingId] =
         useState<number | null>(null);
     const [barberDisplayName, setBarberDisplayName] = useState("");
@@ -252,6 +262,14 @@ function AdminPage() {
     const [shopAddress, setShopAddress] = useState("");
     const [shopMapEmbedUrl, setShopMapEmbedUrl] = useState("");
     const [shopMapsUrl, setShopMapsUrl] = useState("");
+
+    const [galleryImages, setGalleryImages] = useState<GalleryImageResponse[]>([]);
+    const [galleryLoading, setGalleryLoading] = useState(false);
+    const [galleryUploading, setGalleryUploading] = useState(false);
+    const [galleryReplacingId, setGalleryReplacingId] = useState<number | null>(null);
+    const [galleryUpdatingId, setGalleryUpdatingId] = useState<number | null>(null);
+    const [galleryDeletingId, setGalleryDeletingId] = useState<number | null>(null);
+    const [gallerySuccess, setGallerySuccess] = useState("");
 
     const [barberCreateOpen, setBarberCreateOpen] = useState(false);
     const [barberCreating, setBarberCreating] = useState(false);
@@ -1402,6 +1420,71 @@ function AdminPage() {
         }
     };
 
+    const handleBarberImageUpload = async (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const file = event.target.files?.[0];
+
+        if (!barber || !file) {
+            return;
+        }
+
+        if (!file.type.startsWith("image/")) {
+            setError("Fișierul selectat trebuie să fie o imagine.");
+            event.target.value = "";
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+            setError("Imaginea poate avea maximum 10 MB.");
+            event.target.value = "";
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        setBarberImageUploading(true);
+        setBarberImageSuccess("");
+        setError("");
+
+        try {
+            const response = await api.put<BarberResponse>(
+                `/barbers/${barber.id}/image`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+
+            setBarber(response.data);
+
+            setBarbers((current) =>
+                current.map((item) =>
+                    item.id === response.data.id
+                        ? {
+                              ...item,
+                              ...response.data,
+                          }
+                        : item
+                )
+            );
+
+            setBarberImageSuccess(
+                "Imaginea barberului a fost actualizată."
+            );
+        } catch {
+            setError(
+                "Imaginea barberului nu a putut fi actualizată."
+            );
+        } finally {
+            setBarberImageUploading(false);
+            event.target.value = "";
+        }
+    };
+
     const handleSaveBarber = async (
         event: React.FormEvent<HTMLFormElement>
     ) => {
@@ -1489,12 +1572,241 @@ function AdminPage() {
         }
     };
 
+    const loadGallery = async () => {
+        setGalleryLoading(true);
+        setGallerySuccess("");
+
+        try {
+            const response = await api.get<GalleryImageResponse[]>(
+                "/gallery/admin"
+            );
+
+            setGalleryImages(response.data);
+        } catch {
+            setGalleryImages([]);
+            setError("Galeria nu a putut fi încărcată.");
+        } finally {
+            setGalleryLoading(false);
+        }
+    };
+
+    const handleGalleryUpload = async (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const file = event.target.files?.[0];
+
+        if (!file) {
+            return;
+        }
+
+        if (!file.type.startsWith("image/")) {
+            setError("Fișierul selectat trebuie să fie o imagine.");
+            event.target.value = "";
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+            setError("Imaginea poate avea maximum 10 MB.");
+            event.target.value = "";
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        setGalleryUploading(true);
+        setGallerySuccess("");
+        setError("");
+
+        try {
+            await api.post<GalleryImageResponse>(
+                "/gallery",
+                formData,
+                {
+                    headers: {
+                    "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+            
+
+            await loadGallery();
+            setGallerySuccess("Imaginea a fost adăugată în galerie.");
+        } catch {
+            setError("Imaginea nu a putut fi încărcată.");
+        } finally {
+            setGalleryUploading(false);
+            event.target.value = "";
+        }
+    };
+
+    const handleGalleryReplace = async (
+        image: GalleryImageResponse,
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const file = event.target.files?.[0];
+
+        if (!file) {
+            return;
+        }
+
+        if (!file.type.startsWith("image/")) {
+            setError("Fișierul selectat trebuie să fie o imagine.");
+            event.target.value = "";
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+            setError("Imaginea poate avea maximum 10 MB.");
+            event.target.value = "";
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        setGalleryReplacingId(image.id);
+        setGallerySuccess("");
+        setError("");
+
+        try {
+            const response = await api.put<GalleryImageResponse>(
+                `/gallery/${image.id}/image`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+
+            setGalleryImages((current) =>
+                current.map((item) =>
+                    item.id === response.data.id
+                        ? response.data
+                        : item
+                )
+            );
+
+            setGallerySuccess("Imaginea a fost înlocuită cu succes.");
+        } catch {
+            setError("Imaginea nu a putut fi înlocuită.");
+        } finally {
+            setGalleryReplacingId(null);
+            event.target.value = "";
+        }
+    };
+
+    const handleGalleryToggleActive = async (
+        image: GalleryImageResponse
+    ) => {
+        setGalleryUpdatingId(image.id);
+        setGallerySuccess("");
+        setError("");
+
+        try {
+            const response = await api.put<GalleryImageResponse>(
+                `/gallery/${image.id}/active`,
+                null,
+                {
+                    params: {
+                        active: !image.active,
+                    },
+                }
+            );
+
+            setGalleryImages((current) =>
+                current.map((item) =>
+                    item.id === response.data.id
+                        ? response.data
+                        : item
+                )
+            );
+
+            setGallerySuccess(
+                response.data.active
+                    ? "Imaginea este acum vizibilă în galeria publică."
+                    : "Imaginea a fost ascunsă din galeria publică."
+            );
+        } catch {
+            setError("Vizibilitatea imaginii nu a putut fi modificată.");
+        } finally {
+            setGalleryUpdatingId(null);
+        }
+    };
+
+    const handleGalleryChangeOrder = async (
+        image: GalleryImageResponse,
+        newOrder: number
+    ) => {
+        if (
+            newOrder < 1 ||
+            newOrder > galleryImages.length ||
+            newOrder === image.displayOrder
+        ) {
+            return;
+        }
+
+        setGalleryUpdatingId(image.id);
+        setGallerySuccess("");
+        setError("");
+
+        try {
+            await api.put<GalleryImageResponse>(
+                `/gallery/${image.id}/order`,
+                null,
+                {
+                    params: {
+                        order: newOrder,
+                    },
+                }
+            );
+
+            await loadGallery();
+            setGallerySuccess("Ordinea galeriei a fost actualizată.");
+        } catch {
+            setError("Ordinea imaginii nu a putut fi modificată.");
+        } finally {
+            setGalleryUpdatingId(null);
+        }
+    };
+
+    const handleGalleryDelete = async (
+        image: GalleryImageResponse
+    ) => {
+        if (
+            !window.confirm(
+                "Ștergi definitiv această imagine din galerie?"
+            )
+        ) {
+            return;
+        }
+
+        setGalleryDeletingId(image.id);
+        setGallerySuccess("");
+        setError("");
+
+        try {
+            await api.delete(`/gallery/${image.id}`);
+            await loadGallery();
+            setGallerySuccess("Imaginea a fost ștearsă definitiv.");
+        } catch {
+            setError("Imaginea nu a putut fi ștearsă.");
+        } finally {
+            setGalleryDeletingId(null);
+        }
+    };
+
     const handleTabChange = (tab: AdminTab) => {
         setActiveTab(tab);
         setError("");
 
         if (tab === "ASSISTANT") {
             void loadAssistantHistory();
+        }
+
+        if (tab === "GALLERY") {
+            void loadGallery();
         }
 
         if (tab !== "CALENDAR") {
@@ -1966,7 +2278,9 @@ function AdminPage() {
                                   ? "Program."
                                   : activeTab === "BARBER"
                                     ? "Barberi."
-                                    : "Contact."}
+                                    : activeTab === "GALLERY"
+                                      ? "Galerie."
+                                      : "Contact."}
                     </h1>
 
                     <p>
@@ -1982,7 +2296,9 @@ function AdminPage() {
                                   ? "Modifică orele de lucru, zilele închise și perioadele în care nu ești disponibil."
                                   : activeTab === "BARBER"
                                     ? "Administrează echipa, conturile, serviciile și rețelele sociale ale fiecărui barber."
-                                    : "Modifică adresa frizeriei și linkurile Google Maps afișate pe pagina de contact."}
+                                    : activeTab === "GALLERY"
+                                      ? "Adaugă, ordonează, ascunde și șterge imaginile afișate în galeria publică."
+                                      : "Modifică adresa frizeriei și linkurile Google Maps afișate pe pagina de contact."}
                     </p>
                 </div>
 
@@ -2119,6 +2435,20 @@ function AdminPage() {
                         }
                     >
                         Barber
+                    </button>
+
+                    <button
+                        type="button"
+                        className={
+                            activeTab === "GALLERY"
+                                ? "admin-tab admin-tab--active"
+                                : "admin-tab"
+                        }
+                        onClick={() =>
+                            handleTabChange("GALLERY")
+                        }
+                    >
+                        Galerie
                     </button>
 
                     <button
@@ -4140,6 +4470,96 @@ function AdminPage() {
                                                 </div>
                                             )}
 
+                                            <div
+                                                style={{
+                                                    display: "grid",
+                                                    gap: "14px",
+                                                }}
+                                            >
+                                                <div
+                                                    style={{
+                                                        position: "relative",
+                                                        overflow: "hidden",
+                                                        width: "100%",
+                                                        aspectRatio: "16 / 10",
+                                                        background: "rgba(255, 255, 255, 0.04)",
+                                                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                                                    }}
+                                                >
+                                                    {barber.imageUrl ? (
+                                                        <img
+                                                            src={
+                                                                barber.imageUrl
+                                                            }
+                                                            alt={
+                                                                barber.displayName
+                                                            }
+                                                            style={{
+                                                                display: "block",
+                                                                width: "100%",
+                                                                height: "100%",
+                                                                objectFit: "cover",
+                                                                objectPosition: "center",
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <div
+                                                            style={{
+                                                                width: "100%",
+                                                                height: "100%",
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                justifyContent: "center",
+                                                                color: "rgba(255, 255, 255, 0.55)",
+                                                                fontSize: "12px",
+                                                                letterSpacing: "1px",
+                                                                textTransform: "uppercase",
+                                                            }}
+                                                        >
+                                                            Fără imagine
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div>
+                                                    <input
+                                                        id={`admin-barber-image-${barber.id}`}
+                                                        className="admin-gallery__file-input"
+                                                        type="file"
+                                                        accept="image/*"
+                                                        disabled={
+                                                            barberImageUploading
+                                                        }
+                                                        onChange={
+                                                            handleBarberImageUpload
+                                                        }
+                                                    />
+
+                                                    <label
+                                                        htmlFor={`admin-barber-image-${barber.id}`}
+                                                        className={
+                                                            barberImageUploading
+                                                                ? "admin-gallery__upload-button admin-gallery__upload-button--disabled"
+                                                                : "admin-gallery__upload-button"
+                                                        }
+                                                    >
+                                                        {barberImageUploading
+                                                            ? "Se încarcă..."
+                                                            : barber.imageUrl
+                                                              ? "Schimbă poza"
+                                                              : "Adaugă poza"}
+                                                    </label>
+                                                </div>
+
+                                                {barberImageSuccess && (
+                                                    <p className="admin-gallery__message admin-gallery__message--success">
+                                                        {
+                                                            barberImageSuccess
+                                                        }
+                                                    </p>
+                                                )}
+                                            </div>
+
                                             <label>
                                                 Nume afișat
 
@@ -4825,6 +5245,235 @@ function AdminPage() {
                                 </div>
                             )}
                         </section>
+                    </div>
+                )}
+
+                {activeTab === "GALLERY" && (
+                    <div className="admin-gallery">
+                        <section className="admin-gallery__upload">
+                            <div className="admin-gallery__upload-info">
+                                <p className="section-eyebrow">
+                                    GALERIE
+                                </p>
+
+                                <h2>
+                                    Imagini publice
+                                </h2>
+
+                                <p>
+                                    Încarcă imagini noi, stabilește ordinea lor și controlează ce apare pe site.
+                                </p>
+                            </div>
+
+                            <div className="admin-gallery__upload-actions">
+                                <input
+                                    id="admin-gallery-file"
+                                    className="admin-gallery__file-input"
+                                    type="file"
+                                    accept="image/*"
+                                    disabled={
+                                        galleryUploading ||
+                                        galleryReplacingId !== null
+                                    }
+                                    onChange={handleGalleryUpload}
+                                />
+
+                                <label
+                                    htmlFor="admin-gallery-file"
+                                    className={
+                                        galleryUploading || galleryReplacingId !== null
+                                            ? "admin-gallery__upload-button admin-gallery__upload-button--disabled"
+                                            : "admin-gallery__upload-button"
+                                    }
+                                >
+                                    {galleryUploading
+                                        ? "Se încarcă..."
+                                        : "Adaugă imagine"}
+                                </label>
+                            </div>
+                        </section>
+
+                        {gallerySuccess && (
+                            <p className="admin-gallery__message admin-gallery__message--success">
+                                {gallerySuccess}
+                            </p>
+                        )}
+
+                        {galleryLoading ? (
+                            <p className="admin-gallery__message">
+                                Se încarcă galeria...
+                            </p>
+                        ) : galleryImages.length === 0 ? (
+                            <div className="admin-gallery__empty">
+                                <strong>
+                                    Galeria este goală.
+                                </strong>
+
+                                <p>
+                                    Adaugă prima imagine pentru a începe.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="admin-gallery__grid">
+                                {galleryImages.map((image) => (
+                                    <article
+                                        key={image.id}
+                                        className={
+                                            image.active
+                                                ? "admin-gallery-card"
+                                                : "admin-gallery-card admin-gallery-card--inactive"
+                                        }
+                                    >
+                                        <div className="admin-gallery-card__image">
+                                            <img
+                                                src={image.imageUrl}
+                                                alt={`Imagine galerie ${image.displayOrder}`}
+                                                loading="lazy"
+                                            />
+
+                                            <span
+                                                className={
+                                                    image.active
+                                                        ? "admin-gallery-card__status admin-gallery-card__status--active"
+                                                        : "admin-gallery-card__status"
+                                                }
+                                            >
+                                                {image.active
+                                                    ? "Vizibilă"
+                                                    : "Ascunsă"}
+                                            </span>
+                                        </div>
+
+                                        <div className="admin-gallery-card__content">
+                                            <div className="admin-gallery-card__meta">
+                                                <strong>
+                                                    Imagine #{image.id}
+                                                </strong>
+
+                                                <span>
+                                                    {formatAccountDate(
+                                                        image.createdAt
+                                                    )}
+                                                </span>
+                                            </div>
+
+                                            <div className="admin-gallery-card__order">
+                                                <button
+                                                    type="button"
+                                                    disabled={
+                                                        galleryUpdatingId !== null ||
+                                                        image.displayOrder <= 1
+                                                    }
+                                                    onClick={() =>
+                                                        void handleGalleryChangeOrder(
+                                                            image,
+                                                            image.displayOrder - 1
+                                                        )
+                                                    }
+                                                    aria-label="Mută imaginea mai sus"
+                                                >
+                                                    ↑
+                                                </button>
+
+                                                <span>
+                                                    Poziția {image.displayOrder}
+                                                </span>
+
+                                                <button
+                                                    type="button"
+                                                    disabled={
+                                                        galleryUpdatingId !== null ||
+                                                        image.displayOrder >= galleryImages.length
+                                                    }
+                                                    onClick={() =>
+                                                        void handleGalleryChangeOrder(
+                                                            image,
+                                                            image.displayOrder + 1
+                                                        )
+                                                    }
+                                                    aria-label="Mută imaginea mai jos"
+                                                >
+                                                    ↓
+                                                </button>
+                                            </div>
+
+                                            <div className="admin-gallery-card__actions">
+                                                <input
+                                                    id={`admin-gallery-replace-${image.id}`}
+                                                    className="admin-gallery__file-input"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    disabled={
+                                                        galleryReplacingId !== null ||
+                                                        galleryUpdatingId !== null ||
+                                                        galleryDeletingId !== null
+                                                    }
+                                                    onChange={(event) =>
+                                                        void handleGalleryReplace(
+                                                            image,
+                                                            event
+                                                        )
+                                                    }
+                                                />
+
+                                                <label
+                                                    htmlFor={`admin-gallery-replace-${image.id}`}
+                                                    className={
+                                                        galleryReplacingId !== null ||
+                                                        galleryUpdatingId !== null ||
+                                                        galleryDeletingId !== null
+                                                            ? "admin-gallery__upload-button admin-gallery__upload-button--disabled"
+                                                            : "admin-gallery__upload-button"
+                                                    }
+                                                >
+                                                    {galleryReplacingId === image.id
+                                                        ? "Se schimbă..."
+                                                        : "Schimbă poza"}
+                                                </label>
+
+                                                <button
+                                                    type="button"
+                                                    disabled={
+                                                        galleryUpdatingId !== null ||
+                                                        galleryDeletingId !== null ||
+                                                        galleryReplacingId !== null
+                                                    }
+                                                    onClick={() =>
+                                                        void handleGalleryToggleActive(
+                                                            image
+                                                        )
+                                                    }
+                                                >
+                                                    {galleryUpdatingId === image.id
+                                                        ? "Se salvează..."
+                                                        : image.active
+                                                          ? "Ascunde"
+                                                          : "Activează"}
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    disabled={
+                                                        galleryDeletingId !== null ||
+                                                        galleryUpdatingId !== null ||
+                                                        galleryReplacingId !== null
+                                                    }
+                                                    onClick={() =>
+                                                        void handleGalleryDelete(
+                                                            image
+                                                        )
+                                                    }
+                                                >
+                                                    {galleryDeletingId === image.id
+                                                        ? "Se șterge..."
+                                                        : "Șterge"}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
 

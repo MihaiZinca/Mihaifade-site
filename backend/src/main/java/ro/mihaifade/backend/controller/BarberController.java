@@ -3,7 +3,17 @@ package ro.mihaifade.backend.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import ro.mihaifade.backend.dto.CreateBarberAccountRequest;
 import ro.mihaifade.backend.entity.Barber;
 import ro.mihaifade.backend.service.BarberService;
@@ -41,7 +51,9 @@ public class BarberController {
     public Barber getBarberById(
             @PathVariable Long id
     ) {
-        return barberService.getBarberById(id);
+        return barberService.getBarberById(
+                id
+        );
     }
 
     @PostMapping
@@ -98,6 +110,17 @@ public class BarberController {
         return barberService.updateBarber(
                 id,
                 barber
+        );
+    }
+
+    @PutMapping("/{id}/image")
+    public Barber replaceBarberImage(
+            @PathVariable Long id,
+            @RequestPart("file") MultipartFile file
+    ) {
+        return barberService.replaceBarberImage(
+                id,
+                file
         );
     }
 

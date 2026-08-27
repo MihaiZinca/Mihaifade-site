@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import mihaiFadeImage from "../assets/images/barbers/mihai-fade.jpg";
 import api from "../services/api";
 import { isAuthenticated } from "../services/auth";
 
@@ -168,18 +167,7 @@ function ContactSection() {
                                         className="home-contact-barber"
                                     >
                                         <div className="home-contact-barber__image">
-                                            {barber.displayName ===
-                                            "Mihai Fade" ? (
-                                                <img
-                                                    src={
-                                                        mihaiFadeImage
-                                                    }
-                                                    alt={
-                                                        barber.displayName
-                                                    }
-                                                    loading="lazy"
-                                                />
-                                            ) : barber.imageUrl ? (
+                                            {barber.imageUrl ? (
                                                 <img
                                                     src={
                                                         barber.imageUrl
