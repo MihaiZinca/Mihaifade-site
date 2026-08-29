@@ -1,31 +1,16 @@
 package ro.mihaifade.backend.service;
 
 import org.springframework.stereotype.Service;
-import ro.mihaifade.backend.dto.AssistantClientResponse;
-import ro.mihaifade.backend.dto.AssistantDiscountRequest;
-import ro.mihaifade.backend.dto.AssistantDiscountResponse;
-import ro.mihaifade.backend.dto.AssistantNotificationRequest;
-import ro.mihaifade.backend.dto.AssistantNotificationResponse;
-import ro.mihaifade.backend.entity.Appointment;
-import ro.mihaifade.backend.entity.AppointmentStatus;
-import ro.mihaifade.backend.entity.AssistantCampaign;
-import ro.mihaifade.backend.entity.AssistantCampaignType;
-import ro.mihaifade.backend.entity.ClientOffer;
-import ro.mihaifade.backend.entity.Role;
-import ro.mihaifade.backend.entity.User;
+import ro.mihaifade.backend.dto.*;
+import ro.mihaifade.backend.entity.*;
 import ro.mihaifade.backend.repository.AppointmentRepository;
 import ro.mihaifade.backend.repository.AssistantCampaignRepository;
 import ro.mihaifade.backend.repository.ClientOfferRepository;
 import ro.mihaifade.backend.repository.UserRepository;
-import ro.mihaifade.backend.dto.AssistantCampaignResponse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class OwnerAssistantService {

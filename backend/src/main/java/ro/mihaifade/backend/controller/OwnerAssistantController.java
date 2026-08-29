@@ -2,18 +2,8 @@ package ro.mihaifade.backend.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import ro.mihaifade.backend.dto.AssistantCampaignResponse;
-import ro.mihaifade.backend.dto.AssistantClientResponse;
-import ro.mihaifade.backend.dto.AssistantDiscountRequest;
-import ro.mihaifade.backend.dto.AssistantDiscountResponse;
-import ro.mihaifade.backend.dto.AssistantNotificationRequest;
-import ro.mihaifade.backend.dto.AssistantNotificationResponse;
+import org.springframework.web.bind.annotation.*;
+import ro.mihaifade.backend.dto.*;
 import ro.mihaifade.backend.service.OwnerAssistantService;
 
 import java.time.LocalDate;
