@@ -22,3 +22,6 @@ frontend/.next/
 .DS_Store
 Thumbs.db
 backend/firebase-service-account.json
+
+*.pem
+*.key

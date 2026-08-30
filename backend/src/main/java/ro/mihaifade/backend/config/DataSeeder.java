@@ -203,11 +203,8 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void seedOwner() {
-        if (userRepository.existsByEmailIgnoreCase(ownerEmail)) {
-            return;
-        }
-
-        User owner = new User();
+        User owner = userRepository.findByEmailIgnoreCase(ownerEmail)
+                .orElseGet(User::new);
 
         owner.setFirstName(ownerFirstName);
         owner.setLastName(ownerLastName);
