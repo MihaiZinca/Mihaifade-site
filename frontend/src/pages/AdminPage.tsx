@@ -113,6 +113,20 @@ interface BarberResponse {
     } | null;
 }
 
+interface BarberStatsResponse {
+    barberId: number;
+    barberName: string;
+    appointmentsToday: number;
+    upcomingAppointments: number;
+    completedAppointments: number;
+    cancelledAppointments: number;
+    noShowAppointments: number;
+    uniqueClients: number;
+    revenueToday: number;
+    revenueThisMonth: number;
+    totalRevenue: number;
+}
+
 interface WorkingHoursResponse {
     id: number | null;
     dayOfWeek: DayOfWeek;
@@ -254,6 +268,8 @@ function AdminPage() {
     const [timeOffReason, setTimeOffReason] = useState("");
 
     const [barberSaving, setBarberSaving] = useState(false);
+    const [barberStats, setBarberStats] = useState<BarberStatsResponse | null>(null);
+    const [barberStatsLoading, setBarberStatsLoading] = useState(false);
     const [barberImageUploading, setBarberImageUploading] = useState(false);
     const [barberImageSuccess, setBarberImageSuccess] = useState("");
     const [barberDeletingId, setBarberDeletingId] =
@@ -387,6 +403,27 @@ function AdminPage() {
         }
     };
 
+    const loadBarberStats = async (
+        barberId: number
+    ) => {
+        setBarberStatsLoading(true);
+
+        try {
+            const response = await api.get<BarberStatsResponse>(
+                `/barbers/${barberId}/stats`
+            );
+
+            setBarberStats(response.data);
+        } catch {
+            setBarberStats(null);
+            setError(
+                "Statisticile barberului nu au putut fi încărcate."
+            );
+        } finally {
+            setBarberStatsLoading(false);
+        }
+    };
+
     const loadBarberSchedule = async (
         selectedBarber: BarberResponse
     ) => {
@@ -496,8 +533,11 @@ function AdminPage() {
 
     useEffect(() => {
         if (!barber) {
+            setBarberStats(null);
             return;
         }
+
+        void loadBarberStats(barber.id);
 
         setBarberDisplayName(barber.displayName);
         setBarberBio(barber.bio ?? "");
@@ -1911,6 +1951,10 @@ function AdminPage() {
 
         if (tab === "ASSISTANT") {
             void loadAssistantHistory();
+        }
+
+        if (tab === "BARBER" && barber) {
+            void loadBarberStats(barber.id);
         }
 
         if (tab === "REVIEWS") {
@@ -4227,6 +4271,82 @@ function AdminPage() {
                                 + Adaugă barber
                             </button>
                         </div>
+
+                        {barber && (
+                            <section className="admin-program-card">
+                                <div className="admin-program-card__header">
+                                    <div>
+                                        <p className="section-eyebrow">
+                                            STATISTICI
+                                        </p>
+
+                                        <h2>
+                                            {barber.displayName}
+                                        </h2>
+                                    </div>
+                                </div>
+
+                                {barberStatsLoading ? (
+                                    <p className="admin-empty-state">
+                                        Se încarcă statisticile...
+                                    </p>
+                                ) : barberStats ? (
+                                    <div className="admin-dashboard">
+                                        <article className="admin-stat-card admin-stat-card--revenue">
+                                            <span className="admin-stat-card__label">
+                                                Venit total
+                                            </span>
+                                            <strong className="admin-stat-card__value">
+                                                {formatCurrency(
+                                                    barberStats.totalRevenue
+                                                )}
+                                            </strong>
+                                            <small className="admin-stat-card__meta">
+                                                Doar programări finalizate
+                                            </small>
+                                        </article>
+
+                                        <article className="admin-stat-card">
+                                            <span className="admin-stat-card__label">
+                                                Venit luna asta
+                                            </span>
+                                            <strong className="admin-stat-card__value">
+                                                {formatCurrency(
+                                                    barberStats.revenueThisMonth
+                                                )}
+                                            </strong>
+                                            <small className="admin-stat-card__meta">
+                                                Luna curentă
+                                            </small>
+                                        </article>
+
+                                        <article className="admin-stat-card">
+                                            <span className="admin-stat-card__label">
+                                                Programări finalizate
+                                            </span>
+                                            <strong className="admin-stat-card__value">
+                                                {barberStats.completedAppointments}
+                                            </strong>
+                                            <small className="admin-stat-card__meta">
+                                                Total istoric
+                                            </small>
+                                        </article>
+
+                                        <article className="admin-stat-card">
+                                            <span className="admin-stat-card__label">
+                                                Clienți unici
+                                            </span>
+                                            <strong className="admin-stat-card__value">
+                                                {barberStats.uniqueClients}
+                                            </strong>
+                                            <small className="admin-stat-card__meta">
+                                                Cu programări finalizate
+                                            </small>
+                                        </article>
+                                    </div>
+                                ) : null}
+                            </section>
+                        )}
 
                         {barberCreateOpen && (
                             <section className="admin-program-card">
