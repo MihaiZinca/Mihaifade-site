@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
+import "./booking-notifications.css";
+
 import type {
     AppointmentResponse,
     AvailabilityResponse,
@@ -357,6 +359,44 @@ function BookingPage() {
                             <span>Status</span>
                             <strong>{success.status}</strong>
                         </div>
+                    </div>
+
+                    <div className="booking-success__notifications">
+                        <p className="section-eyebrow">
+                            NOTIFICĂRI
+                        </p>
+
+                        <h2>
+                            Vrei notificări direct pe telefon?
+                        </h2>
+
+                        <p>
+                            Primește confirmări, remindere și actualizări despre programările tale.
+                        </p>
+
+                        <div className="booking-success__notification-guide">
+                            <div>
+                                <strong>Android</strong>
+
+                                <p>
+                                    Deschide meniul browserului și alege „Adaugă pe ecranul principal”.
+                                    Deschide apoi MIHAIFADE, intră în Cont → Notificări și apasă
+                                    „Activează notificările”.
+                                </p>
+                            </div>
+
+                            <div>
+                                <strong>iPhone / iOS</strong>
+
+                                <p>
+                                    Deschide site-ul în Safari, apasă Distribuire și alege
+                                    „Adăugați la ecranul principal”. Deschide apoi MIHAIFADE,
+                                    intră în Cont → Notificări și apasă „Activează notificările”.
+                                </p>
+                            </div>
+                        </div>
+
+                       
                     </div>
 
                     <div className="booking-success__actions">
