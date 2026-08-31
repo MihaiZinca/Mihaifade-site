@@ -2253,6 +2253,10 @@ function AdminPage() {
                         OWNER
                     </span>
 
+                    <Link to="/barber">
+                        Mod Barber
+                    </Link>
+
                     <Link to="/">
                         Vezi site-ul
                     </Link>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../services/api";
+import { getRole } from "../services/auth";
 import "./BarberPage.css";
 
 import type {
@@ -1378,6 +1379,12 @@ function BarberPage() {
                         {barber?.displayName ??
                             "Barber"}
                     </strong>
+
+                    {getRole() === "OWNER" && (
+                        <Link to="/admin">
+                            Admin
+                        </Link>
+                    )}
 
                     <Link to="/">
                         Vezi site-ul
