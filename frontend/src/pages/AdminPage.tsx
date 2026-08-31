@@ -7,6 +7,7 @@ import type {
     BarbershopService,
 } from "../types";
 import "./AdminPage.css";
+import "./AdminReviews.css";
 
 type WelcomeRewardType =
     | "NOTHING"
@@ -18,7 +19,7 @@ type WelcomeRewardType =
     | "CASH_100"
     | "FREE_HAIRCUT";
 
-type AdminTab = "CALENDAR" | "CLIENTS" | "ASSISTANT" | "SERVICES" | "PROGRAM" | "BARBER" | "GALLERY" | "CONTACT";
+type AdminTab = "CALENDAR" | "CLIENTS" | "ASSISTANT" | "SERVICES" | "PROGRAM" | "BARBER" | "REVIEWS" | "GALLERY" | "CONTACT";
 
 interface UserResponse {
     id: number;
@@ -142,6 +143,17 @@ interface GalleryImageResponse {
     displayOrder: number;
     active: boolean;
     createdAt: string;
+}
+
+interface ReviewResponse {
+    id: number;
+    userId: number;
+    clientName: string;
+    rating: number;
+    comment: string;
+    active: boolean;
+    createdAt: string;
+    updatedAt: string;
 }
 
 const WEEK_DAYS = [
@@ -270,6 +282,12 @@ function AdminPage() {
     const [galleryUpdatingId, setGalleryUpdatingId] = useState<number | null>(null);
     const [galleryDeletingId, setGalleryDeletingId] = useState<number | null>(null);
     const [gallerySuccess, setGallerySuccess] = useState("");
+
+    const [reviews, setReviews] = useState<ReviewResponse[]>([]);
+    const [reviewsLoading, setReviewsLoading] = useState(false);
+    const [reviewUpdatingId, setReviewUpdatingId] = useState<number | null>(null);
+    const [reviewDeletingId, setReviewDeletingId] = useState<number | null>(null);
+    const [reviewSuccess, setReviewSuccess] = useState("");
 
     const [barberCreateOpen, setBarberCreateOpen] = useState(false);
     const [barberCreating, setBarberCreating] = useState(false);
@@ -1797,12 +1815,106 @@ function AdminPage() {
         }
     };
 
+    const loadReviews = async () => {
+        setReviewsLoading(true);
+        setReviewSuccess("");
+
+        try {
+            const response = await api.get<ReviewResponse[]>(
+                "/reviews/admin"
+            );
+
+            setReviews(response.data);
+        } catch {
+            setReviews([]);
+            setError("Recenziile nu au putut fi încărcate.");
+        } finally {
+            setReviewsLoading(false);
+        }
+    };
+
+    const handleReviewToggleActive = async (
+        review: ReviewResponse
+    ) => {
+        setReviewUpdatingId(review.id);
+        setReviewSuccess("");
+        setError("");
+
+        try {
+            const response = await api.put<ReviewResponse>(
+                `/reviews/${review.id}/active`,
+                null,
+                {
+                    params: {
+                        active: !review.active,
+                    },
+                }
+            );
+
+            setReviews((current) =>
+                current.map((item) =>
+                    item.id === response.data.id
+                        ? response.data
+                        : item
+                )
+            );
+
+            setReviewSuccess(
+                response.data.active
+                    ? "Recenzia este din nou vizibilă pe site."
+                    : "Recenzia a fost ascunsă de pe site."
+            );
+        } catch {
+            setError("Vizibilitatea recenziei nu a putut fi modificată.");
+        } finally {
+            setReviewUpdatingId(null);
+        }
+    };
+
+    const handleReviewDelete = async (
+        review: ReviewResponse
+    ) => {
+        const confirmed = window.confirm(
+            `Ștergi definitiv recenzia lăsată de ${review.clientName}? Această acțiune nu poate fi anulată.`
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        setReviewDeletingId(review.id);
+        setReviewSuccess("");
+        setError("");
+
+        try {
+            await api.delete(
+                `/reviews/${review.id}/permanent`
+            );
+
+            setReviews((current) =>
+                current.filter(
+                    (item) => item.id !== review.id
+                )
+            );
+
+            setReviewSuccess("Recenzia a fost ștearsă definitiv.");
+        } catch {
+            setError("Recenzia nu a putut fi ștearsă.");
+        } finally {
+            setReviewDeletingId(null);
+        }
+    };
+
     const handleTabChange = (tab: AdminTab) => {
         setActiveTab(tab);
         setError("");
 
         if (tab === "ASSISTANT") {
             void loadAssistantHistory();
+        }
+
+        if (tab === "REVIEWS") {
+            void loadReviews();
         }
 
         if (tab === "GALLERY") {
@@ -2282,9 +2394,11 @@ function AdminPage() {
                                   ? "Program."
                                   : activeTab === "BARBER"
                                     ? "Barberi."
-                                    : activeTab === "GALLERY"
-                                      ? "Galerie."
-                                      : "Contact."}
+                                    : activeTab === "REVIEWS"
+                                      ? "Recenzii."
+                                      : activeTab === "GALLERY"
+                                        ? "Galerie."
+                                        : "Contact."}
                     </h1>
 
                     <p>
@@ -2300,9 +2414,11 @@ function AdminPage() {
                                   ? "Modifică orele de lucru, zilele închise și perioadele în care nu ești disponibil."
                                   : activeTab === "BARBER"
                                     ? "Administrează echipa, conturile, serviciile și rețelele sociale ale fiecărui barber."
-                                    : activeTab === "GALLERY"
-                                      ? "Adaugă, ordonează, ascunde și șterge imaginile afișate în galeria publică."
-                                      : "Modifică adresa frizeriei și linkurile Google Maps afișate pe pagina de contact."}
+                                    : activeTab === "REVIEWS"
+                                      ? "Gestionează recenziile clienților, controlează vizibilitatea lor și șterge definitiv conținutul nedorit."
+                                      : activeTab === "GALLERY"
+                                        ? "Adaugă, ordonează, ascunde și șterge imaginile afișate în galeria publică."
+                                        : "Modifică adresa frizeriei și linkurile Google Maps afișate pe pagina de contact."}
                     </p>
                 </div>
 
@@ -2439,6 +2555,20 @@ function AdminPage() {
                         }
                     >
                         Barber
+                    </button>
+
+                    <button
+                        type="button"
+                        className={
+                            activeTab === "REVIEWS"
+                                ? "admin-tab admin-tab--active"
+                                : "admin-tab"
+                        }
+                        onClick={() =>
+                            handleTabChange("REVIEWS")
+                        }
+                    >
+                        Recenzii
                     </button>
 
                     <button
@@ -5249,6 +5379,158 @@ function AdminPage() {
                                 </div>
                             )}
                         </section>
+                    </div>
+                )}
+
+                {activeTab === "REVIEWS" && (
+                    <div className="admin-reviews">
+                        <div className="admin-reviews__summary">
+                            <article className="admin-reviews__stat">
+                                <span>
+                                    Total recenzii
+                                </span>
+
+                                <strong>
+                                    {reviews.length}
+                                </strong>
+                            </article>
+
+                            <article className="admin-reviews__stat">
+                                <span>
+                                    Vizibile
+                                </span>
+
+                                <strong>
+                                    {reviews.filter((review) => review.active).length}
+                                </strong>
+                            </article>
+
+                            <article className="admin-reviews__stat">
+                                <span>
+                                    Ascunse
+                                </span>
+
+                                <strong>
+                                    {reviews.filter((review) => !review.active).length}
+                                </strong>
+                            </article>
+                        </div>
+
+                        {reviewSuccess && (
+                            <p className="admin-reviews__message admin-reviews__message--success">
+                                {reviewSuccess}
+                            </p>
+                        )}
+
+                        {reviewsLoading ? (
+                            <p className="admin-reviews__message">
+                                Se încarcă recenziile...
+                            </p>
+                        ) : reviews.length === 0 ? (
+                            <div className="admin-reviews__empty">
+                                <strong>
+                                    Nu există recenzii.
+                                </strong>
+
+                                <p>
+                                    Recenziile trimise de clienți vor apărea aici.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="admin-reviews__list">
+                                {reviews.map((review) => (
+                                    <article
+                                        key={review.id}
+                                        className="admin-review-card"
+                                    >
+                                        <div className="admin-review-card__main">
+                                            <div className="admin-review-card__top">
+                                                <div className="admin-review-card__identity">
+                                                    <strong>
+                                                        {review.clientName}
+                                                    </strong>
+
+                                                    <span>
+                                                        Client #{review.userId}
+                                                    </span>
+                                                </div>
+
+                                                <div
+                                                    className="admin-review-card__rating"
+                                                    aria-label={`${review.rating} din 5 stele`}
+                                                >
+                                                    {"★".repeat(review.rating)}
+                                                    {"☆".repeat(5 - review.rating)}
+                                                </div>
+                                            </div>
+
+                                            <p className="admin-review-card__comment">
+                                                {review.comment}
+                                            </p>
+
+                                            <div className="admin-review-card__meta">
+                                                <span
+                                                    className={
+                                                        review.active
+                                                            ? "admin-review-card__status admin-review-card__status--active"
+                                                            : "admin-review-card__status admin-review-card__status--inactive"
+                                                    }
+                                                >
+                                                    {review.active
+                                                        ? "Vizibilă"
+                                                        : "Ascunsă"}
+                                                </span>
+
+                                                <span>
+                                                    Publicată {formatAccountDate(review.createdAt)}
+                                                </span>
+
+                                                {review.updatedAt !== review.createdAt && (
+                                                    <span>
+                                                        Actualizată {formatAccountDate(review.updatedAt)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="admin-review-card__actions">
+                                            <button
+                                                type="button"
+                                                disabled={
+                                                    reviewUpdatingId !== null ||
+                                                    reviewDeletingId !== null
+                                                }
+                                                onClick={() =>
+                                                    void handleReviewToggleActive(review)
+                                                }
+                                            >
+                                                {reviewUpdatingId === review.id
+                                                    ? "Se salvează..."
+                                                    : review.active
+                                                      ? "Ascunde"
+                                                      : "Publică"}
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="admin-review-card__delete"
+                                                disabled={
+                                                    reviewUpdatingId !== null ||
+                                                    reviewDeletingId !== null
+                                                }
+                                                onClick={() =>
+                                                    void handleReviewDelete(review)
+                                                }
+                                            >
+                                                {reviewDeletingId === review.id
+                                                    ? "Se șterge..."
+                                                    : "Șterge definitiv"}
+                                            </button>
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
 
