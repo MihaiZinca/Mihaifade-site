@@ -132,7 +132,7 @@ public class BarberStatsService {
                         )
                         .count();
 
-        Set<Long> uniqueClientIds =
+        Set<String> uniqueClients =
                 new HashSet<>();
 
         appointments.stream()
@@ -140,13 +140,41 @@ public class BarberStatsService {
                         appointment.getStatus()
                                 == AppointmentStatus.COMPLETED
                 )
-                .forEach(appointment ->
-                        uniqueClientIds.add(
-                                appointment
+                .forEach(appointment -> {
+                    if (appointment.getUser() != null) {
+                        uniqueClients.add(
+                                "user:"
+                                        + appointment
                                         .getUser()
                                         .getId()
-                        )
-                );
+                        );
+                        return;
+                    }
+
+                    String guestPhone =
+                            appointment.getGuestPhone();
+
+                    if (
+                            guestPhone != null
+                                    && !guestPhone.isBlank()
+                    ) {
+                        uniqueClients.add(
+                                "guest:"
+                                        + guestPhone
+                                        .replaceAll(
+                                                "\\s+",
+                                                ""
+                                        )
+                                        .trim()
+                        );
+                        return;
+                    }
+
+                    uniqueClients.add(
+                            "appointment:"
+                                    + appointment.getId()
+                    );
+                });
 
         BigDecimal revenueToday =
                 appointments.stream()
@@ -206,7 +234,7 @@ public class BarberStatsService {
                 completedAppointments,
                 cancelledAppointments,
                 noShowAppointments,
-                uniqueClientIds.size(),
+                uniqueClients.size(),
                 revenueToday,
                 revenueThisMonth,
                 totalRevenue

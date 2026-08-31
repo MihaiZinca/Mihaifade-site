@@ -140,10 +140,55 @@ public class AppointmentService {
             AppointmentRequest request,
             String email
     ) {
-        User user =
+        User authenticatedUser =
                 getUserByEmail(
                         email
                 );
+
+        String role =
+                authenticatedUser
+                        .getRole()
+                        .name();
+
+        boolean staffBooking =
+                "BARBER".equals(role)
+                        || "OWNER".equals(role);
+
+        if (
+                !"CLIENT".equals(role)
+                        && !staffBooking
+        ) {
+            throw new AccessDeniedException(
+                    "This account cannot create appointments"
+            );
+        }
+
+        String guestName = null;
+        String guestPhone = null;
+
+        if (staffBooking) {
+            guestName =
+                    normalizeGuestField(
+                            request.guestName()
+                    );
+
+            guestPhone =
+                    normalizeGuestField(
+                            request.guestPhone()
+                    );
+
+            if (guestName == null) {
+                throw new RuntimeException(
+                        "Guest name is required"
+                );
+            }
+
+            if (guestPhone == null) {
+                throw new RuntimeException(
+                        "Guest phone is required"
+                );
+            }
+        }
 
         Barber barber =
                 barberRepository
@@ -295,7 +340,21 @@ public class AppointmentService {
                 new Appointment();
 
         appointment.setUser(
-                user
+                staffBooking
+                        ? null
+                        : authenticatedUser
+        );
+
+        appointment.setGuestName(
+                staffBooking
+                        ? guestName
+                        : null
+        );
+
+        appointment.setGuestPhone(
+                staffBooking
+                        ? guestPhone
+                        : null
         );
 
         appointment.setBarber(
@@ -336,10 +395,12 @@ public class AppointmentService {
                                 appointment
                         );
 
-        sendAppointmentCreatedNotification(
-                user,
-                savedAppointment
-        );
+        if (!staffBooking) {
+            sendAppointmentCreatedNotification(
+                    authenticatedUser,
+                    savedAppointment
+            );
+        }
 
         return toResponse(
                 savedAppointment
@@ -362,7 +423,8 @@ public class AppointmentService {
                 );
 
         if (
-                !appointment
+                appointment.getUser() == null
+                        || !appointment
                         .getUser()
                         .getId()
                         .equals(
@@ -646,7 +708,8 @@ public class AppointmentService {
                 );
 
         if (
-                !appointment
+                appointment.getUser() == null
+                        || !appointment
                         .getUser()
                         .getId()
                         .equals(
@@ -885,6 +948,10 @@ public class AppointmentService {
     private void sendAppointmentRescheduledNotification(
             Appointment appointment
     ) {
+        if (appointment.getUser() == null) {
+            return;
+        }
+
         try {
             String formattedDate =
                     appointment
@@ -935,6 +1002,10 @@ public class AppointmentService {
     private void sendAppointmentCancelledNotification(
             Appointment appointment
     ) {
+        if (appointment.getUser() == null) {
+            return;
+        }
+
         try {
             String formattedDate =
                     appointment
@@ -982,6 +1053,19 @@ public class AppointmentService {
         }
     }
 
+    private String normalizeGuestField(
+            String value
+    ) {
+        if (
+                value == null
+                        || value.isBlank()
+        ) {
+            return null;
+        }
+
+        return value.trim();
+    }
+
     private boolean isColoringService(
             String serviceName
     ) {
@@ -1022,20 +1106,28 @@ public class AppointmentService {
     private AppointmentResponse toResponse(
             Appointment appointment
     ) {
+        User user =
+                appointment.getUser();
+
         String clientName =
-                appointment
-                        .getUser()
-                        .getFirstName()
+                user != null
+                        ? user.getFirstName()
                         + " "
-                        + appointment
-                        .getUser()
-                        .getLastName();
+                        + user.getLastName()
+                        : appointment.getGuestName();
+
+        String clientPhone =
+                user != null
+                        ? user.getPhone()
+                        : appointment.getGuestPhone();
 
         return new AppointmentResponse(
                 appointment.getId(),
-                appointment.getUser().getId(),
+                user != null
+                        ? user.getId()
+                        : null,
                 clientName,
-                appointment.getUser().getPhone(),
+                clientPhone,
                 appointment.getBarber().getId(),
                 appointment.getBarber().getDisplayName(),
                 appointment.getService().getId(),

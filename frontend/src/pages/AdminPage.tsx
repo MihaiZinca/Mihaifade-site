@@ -1984,8 +1984,14 @@ function AdminPage() {
     ) => {
         setSelectedAppointment(appointment);
         setSelectedUser(null);
-        setLoadingUser(true);
         setError("");
+
+        if (appointment.userId == null) {
+            setLoadingUser(false);
+            return;
+        }
+
+        setLoadingUser(true);
 
         try {
             const response = await api.get<UserResponse>(

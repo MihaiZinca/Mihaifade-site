@@ -404,7 +404,11 @@ public class SecurityConfig {
                                 HttpMethod.POST,
                                 "/api/appointments"
                         )
-                        .hasRole("CLIENT")
+                        .hasAnyRole(
+                                "CLIENT",
+                                "BARBER",
+                                "OWNER"
+                        )
 
                         .requestMatchers(
                                 HttpMethod.GET,

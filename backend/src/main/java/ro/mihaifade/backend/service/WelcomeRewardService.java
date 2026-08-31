@@ -70,6 +70,16 @@ public class WelcomeRewardService {
                 );
 
         User user = appointment.getUser();
+
+        if (user == null) {
+            return new WelcomeRewardStatusResponse(
+                    false,
+                    null,
+                    null,
+                    false
+            );
+        }
+
         WelcomeRewardType reward = user.getWelcomeReward();
 
         return buildStatusResponse(user, reward);
@@ -94,8 +104,16 @@ public class WelcomeRewardService {
                         barberEmail
                 );
 
+        User user = appointment.getUser();
+
+        if (user == null) {
+            throw new RuntimeException(
+                    "Guest appointments do not have welcome rewards"
+            );
+        }
+
         return markUserRewardAsUsed(
-                appointment.getUser()
+                user
         );
     }
 

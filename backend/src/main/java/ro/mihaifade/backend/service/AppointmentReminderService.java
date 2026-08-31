@@ -169,6 +169,18 @@ public class AppointmentReminderService {
     private void send24HourReminder(
             Appointment appointment
     ) {
+        if (appointment.getUser() == null) {
+            appointment.setReminder24hSent(
+                    true
+            );
+
+            appointmentRepository.save(
+                    appointment
+            );
+
+            return;
+        }
+
         try {
             String formattedDate =
                     appointment
@@ -241,6 +253,18 @@ public class AppointmentReminderService {
     private void send2HourReminder(
             Appointment appointment
     ) {
+        if (appointment.getUser() == null) {
+            appointment.setReminder2hSent(
+                    true
+            );
+
+            appointmentRepository.save(
+                    appointment
+            );
+
+            return;
+        }
+
         try {
             String formattedDate =
                     appointment

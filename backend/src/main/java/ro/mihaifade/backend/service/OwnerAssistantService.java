@@ -70,6 +70,10 @@ public class OwnerAssistantService {
                 new LinkedHashMap<>();
 
         for (Appointment appointment : completedAppointments) {
+            if (appointment.getUser() == null) {
+                continue;
+            }
+
             Long userId =
                     appointment.getUser().getId();
 
@@ -157,6 +161,10 @@ public class OwnerAssistantService {
                 new LinkedHashMap<>();
 
         for (Appointment appointment : appointments) {
+            if (appointment.getUser() == null) {
+                continue;
+            }
+
             Long userId =
                     appointment.getUser().getId();
 

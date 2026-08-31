@@ -40,6 +40,10 @@ public class ClientOfferService {
                         barberEmail
                 );
 
+        if (appointment.getUser() == null) {
+            return List.of();
+        }
+
         return clientOfferRepository
                 .findByUserIdAndUsedFalseAndExpiresAtAfterOrderByCreatedAtDesc(
                         appointment.getUser().getId(),
@@ -61,6 +65,12 @@ public class ClientOfferService {
                         appointmentId,
                         barberEmail
                 );
+
+        if (appointment.getUser() == null) {
+            throw new RuntimeException(
+                    "Guest appointments do not have client offers"
+            );
+        }
 
         ClientOffer offer =
                 clientOfferRepository

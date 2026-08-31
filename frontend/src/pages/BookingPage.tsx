@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
+import { getRole } from "../services/auth";
 import "./booking-notifications.css";
 
 import type {
@@ -34,6 +35,10 @@ function BookingPage() {
 
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const role = getRole();
+    const isStaffBooking =
+        role === "BARBER" ||
+        role === "OWNER";
 
     const [barbers, setBarbers] = useState<BarberResponse[]>([]);
     const [selectedBarberId, setSelectedBarberId] = useState<number | null>(
@@ -50,6 +55,8 @@ function BookingPage() {
     const [availableSlots, setAvailableSlots] = useState<string[]>([]);
     const [selectedTime, setSelectedTime] = useState("");
     const [notes, setNotes] = useState("");
+    const [guestName, setGuestName] = useState("");
+    const [guestPhone, setGuestPhone] = useState("");
 
     const [loadingBarbers, setLoadingBarbers] = useState(true);
     const [loadingServices, setLoadingServices] = useState(true);
@@ -288,6 +295,19 @@ function BookingPage() {
             return;
         }
 
+        if (
+            isStaffBooking &&
+            (
+                guestName.trim() === "" ||
+                guestPhone.trim() === ""
+            )
+        ) {
+            setError(
+                "Introdu numele și telefonul clientului înainte de confirmare."
+            );
+            return;
+        }
+
         setCreatingAppointment(true);
         setError("");
 
@@ -300,6 +320,12 @@ function BookingPage() {
                     date: selectedDate,
                     startTime: selectedTime,
                     notes: notes.trim() === "" ? null : notes,
+                    guestName: isStaffBooking
+                        ? guestName.trim()
+                        : null,
+                    guestPhone: isStaffBooking
+                        ? guestPhone.trim()
+                        : null,
                 }
             );
 
@@ -359,49 +385,73 @@ function BookingPage() {
                             <span>Status</span>
                             <strong>{success.status}</strong>
                         </div>
+
+                        {isStaffBooking && (
+                            <>
+                                <div>
+                                    <span>Client</span>
+                                    <strong>{success.clientName}</strong>
+                                </div>
+
+                                <div>
+                                    <span>Telefon</span>
+                                    <strong>{success.clientPhone}</strong>
+                                </div>
+                            </>
+                        )}
                     </div>
 
-                    <div className="booking-success__notifications">
-                        <p className="section-eyebrow">
-                            NOTIFICĂRI
-                        </p>
+                    {!isStaffBooking && (
+                        <div className="booking-success__notifications">
+                            <p className="section-eyebrow">
+                                NOTIFICĂRI
+                            </p>
 
-                        <h2>
-                            Vrei notificări direct pe telefon?
-                        </h2>
+                            <h2>
+                                Vrei notificări direct pe telefon?
+                            </h2>
 
-                        <p>
-                            Primește confirmări, remindere și actualizări despre programările tale.
-                        </p>
+                            <p>
+                                Primește confirmări, remindere și actualizări despre programările tale.
+                            </p>
 
-                        <div className="booking-success__notification-guide">
-                            <div>
-                                <strong>Android</strong>
+                            <div className="booking-success__notification-guide">
+                                <div>
+                                    <strong>Android</strong>
 
-                                <p>
-                                    Deschide meniul browserului și alege „Adaugă pe ecranul principal”.
-                                    Deschide apoi MIHAIFADE, intră în Cont → Notificări și apasă
-                                    „Activează notificările”.
-                                </p>
-                            </div>
+                                    <p>
+                                        Deschide meniul browserului și alege „Adaugă pe ecranul principal”.
+                                        Deschide apoi MIHAIFADE, intră în Cont → Notificări și apasă
+                                        „Activează notificările”.
+                                    </p>
+                                </div>
 
-                            <div>
-                                <strong>iPhone / iOS</strong>
+                                <div>
+                                    <strong>iPhone / iOS</strong>
 
-                                <p>
-                                    Deschide site-ul în Safari, apasă Distribuire și alege
-                                    „Adăugați la ecranul principal”. Deschide apoi MIHAIFADE,
-                                    intră în Cont → Notificări și apasă „Activează notificările”.
-                                </p>
+                                    <p>
+                                        Deschide site-ul în Safari, apasă Distribuire și alege
+                                        „Adăugați la ecranul principal”. Deschide apoi MIHAIFADE,
+                                        intră în Cont → Notificări și apasă „Activează notificările”.
+                                    </p>
+                                </div>
                             </div>
                         </div>
-
-                       
-                    </div>
+                    )}
 
                     <div className="booking-success__actions">
-                        <Link to="/cont">
-                            Vezi programările mele
+                        <Link
+                            to={
+                                role === "OWNER"
+                                    ? "/admin"
+                                    : role === "BARBER"
+                                        ? "/barber"
+                                        : "/cont"
+                            }
+                        >
+                            {isStaffBooking
+                                ? "Înapoi la dashboard"
+                                : "Vezi programările mele"}
                         </Link>
 
                         <Link to="/">
@@ -465,8 +515,9 @@ function BookingPage() {
                     </h1>
 
                     <p>
-                        Alege barberul, serviciul, data și ora disponibilă.
-                        Programarea va fi asociată automat contului tău.
+                        {isStaffBooking
+                            ? "Alege barberul, serviciul, data și ora disponibilă. Introdu apoi numele și telefonul clientului."
+                            : "Alege barberul, serviciul, data și ora disponibilă. Programarea va fi asociată automat contului tău."}
                     </p>
                 </div>
 
@@ -769,6 +820,38 @@ function BookingPage() {
                             </div>
                         </div>
 
+                        {isStaffBooking && (
+                            <>
+                                <label className="booking-notes">
+                                    Nume client
+
+                                    <input
+                                        type="text"
+                                        value={guestName}
+                                        onChange={(event) =>
+                                            setGuestName(event.target.value)
+                                        }
+                                        placeholder="Numele clientului"
+                                        autoComplete="name"
+                                    />
+                                </label>
+
+                                <label className="booking-notes">
+                                    Telefon client
+
+                                    <input
+                                        type="tel"
+                                        value={guestPhone}
+                                        onChange={(event) =>
+                                            setGuestPhone(event.target.value)
+                                        }
+                                        placeholder="Numărul de telefon"
+                                        autoComplete="tel"
+                                    />
+                                </label>
+                            </>
+                        )}
+
                         <label className="booking-notes">
                             Observații
 
@@ -790,6 +873,13 @@ function BookingPage() {
                                 !selectedServiceId ||
                                 !selectedDate ||
                                 !selectedTime ||
+                                (
+                                    isStaffBooking &&
+                                    (
+                                        guestName.trim() === "" ||
+                                        guestPhone.trim() === ""
+                                    )
+                                ) ||
                                 creatingAppointment
                             }
                             onClick={handleCreateAppointment}

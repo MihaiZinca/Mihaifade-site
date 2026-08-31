@@ -10,6 +10,8 @@ public record AppointmentRequest(
         @NotNull Long serviceId,
         @NotNull LocalDate date,
         @NotNull LocalTime startTime,
-        String notes
+        String notes,
+        String guestName,
+        String guestPhone
 ) {
 }
