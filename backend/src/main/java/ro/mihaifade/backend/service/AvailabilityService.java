@@ -8,15 +8,10 @@ import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @org.springframework.stereotype.Service
 public class AvailabilityService {
-
-    private static final int SLOT_INTERVAL_MINUTES = 30;
 
     private static final LocalTime COLORING_SLOT_TIME =
             LocalTime.of(
@@ -248,63 +243,13 @@ public class AvailabilityService {
         }
 
         List<LocalTime> availableSlots =
-                new ArrayList<>();
-
-        LocalTime current =
-                workingHours.getStartTime();
-
-        while (
-                !current
-                        .plusMinutes(
-                                durationMinutes
-                        )
-                        .isAfter(
-                                workingHours.getEndTime()
-                        )
-        ) {
-            LocalTime slotStart =
-                    current;
-
-            LocalTime slotEnd =
-                    slotStart.plusMinutes(
-                            durationMinutes
-                    );
-
-            boolean overlapsAppointment =
-                    overlapsAppointment(
-                            slotStart,
-                            slotEnd,
-                            appointments
-                    );
-
-            boolean overlapsTimeOff =
-                    overlapsTimeOff(
-                            slotStart,
-                            slotEnd,
-                            timeOffOptional
-                    );
-
-            boolean slotInPast =
-                    isSlotInPast(
-                            date,
-                            slotStart
-                    );
-
-            if (
-                    !slotInPast
-                            && !overlapsAppointment
-                            && !overlapsTimeOff
-            ) {
-                availableSlots.add(
-                        slotStart
+                generateDynamicSlots(
+                        date,
+                        durationMinutes,
+                        workingHours,
+                        timeOffOptional,
+                        appointments
                 );
-            }
-
-            current =
-                    current.plusMinutes(
-                            SLOT_INTERVAL_MINUTES
-                    );
-        }
 
         return new AvailabilityResponse(
                 date,
@@ -313,6 +258,220 @@ public class AvailabilityService {
                 durationMinutes,
                 availableSlots
         );
+    }
+
+    private List<LocalTime> generateDynamicSlots(
+            LocalDate date,
+            Integer durationMinutes,
+            WorkingHours workingHours,
+            Optional<TimeOff> timeOffOptional,
+            List<Appointment> appointments
+    ) {
+        List<TimeInterval> blockedIntervals =
+                new ArrayList<>();
+
+        for (Appointment appointment : appointments) {
+            blockedIntervals.add(
+                    new TimeInterval(
+                            appointment.getStartTime(),
+                            appointment.getEndTime()
+                    )
+            );
+        }
+
+        if (timeOffOptional.isPresent()) {
+            TimeOff timeOff =
+                    timeOffOptional.get();
+
+            if (
+                    timeOff.getStartTime() != null
+                            && timeOff.getEndTime() != null
+            ) {
+                blockedIntervals.add(
+                        new TimeInterval(
+                                timeOff.getStartTime(),
+                                timeOff.getEndTime()
+                        )
+                );
+            }
+        }
+
+        List<TimeInterval> mergedBlockedIntervals =
+                mergeBlockedIntervals(
+                        blockedIntervals,
+                        workingHours.getStartTime(),
+                        workingHours.getEndTime()
+                );
+
+        List<LocalTime> availableSlots =
+                new ArrayList<>();
+
+        LocalTime freeIntervalStart =
+                workingHours.getStartTime();
+
+        for (TimeInterval blockedInterval : mergedBlockedIntervals) {
+            if (
+                    freeIntervalStart.isBefore(
+                            blockedInterval.start()
+                    )
+            ) {
+                addSlotsFromFreeInterval(
+                        availableSlots,
+                        date,
+                        freeIntervalStart,
+                        blockedInterval.start(),
+                        durationMinutes
+                );
+            }
+
+            if (
+                    blockedInterval.end().isAfter(
+                            freeIntervalStart
+                    )
+            ) {
+                freeIntervalStart =
+                        blockedInterval.end();
+            }
+        }
+
+        if (
+                freeIntervalStart.isBefore(
+                        workingHours.getEndTime()
+                )
+        ) {
+            addSlotsFromFreeInterval(
+                    availableSlots,
+                    date,
+                    freeIntervalStart,
+                    workingHours.getEndTime(),
+                    durationMinutes
+            );
+        }
+
+        return availableSlots;
+    }
+
+    private List<TimeInterval> mergeBlockedIntervals(
+            List<TimeInterval> blockedIntervals,
+            LocalTime workingStart,
+            LocalTime workingEnd
+    ) {
+        List<TimeInterval> normalizedIntervals =
+                blockedIntervals
+                        .stream()
+                        .filter(interval ->
+                                interval.start() != null
+                                        && interval.end() != null
+                        )
+                        .filter(interval ->
+                                interval.start().isBefore(
+                                        workingEnd
+                                )
+                                        && interval.end().isAfter(
+                                        workingStart
+                                )
+                        )
+                        .map(interval ->
+                                new TimeInterval(
+                                        interval.start().isBefore(
+                                                workingStart
+                                        )
+                                                ? workingStart
+                                                : interval.start(),
+                                        interval.end().isAfter(
+                                                workingEnd
+                                        )
+                                                ? workingEnd
+                                                : interval.end()
+                                )
+                        )
+                        .sorted(
+                                Comparator.comparing(
+                                        TimeInterval::start
+                                )
+                        )
+                        .toList();
+
+        List<TimeInterval> mergedIntervals =
+                new ArrayList<>();
+
+        for (TimeInterval interval : normalizedIntervals) {
+            if (mergedIntervals.isEmpty()) {
+                mergedIntervals.add(
+                        interval
+                );
+                continue;
+            }
+
+            TimeInterval lastInterval =
+                    mergedIntervals.get(
+                            mergedIntervals.size() - 1
+                    );
+
+            if (
+                    !interval.start().isAfter(
+                            lastInterval.end()
+                    )
+            ) {
+                LocalTime mergedEnd =
+                        interval.end().isAfter(
+                                lastInterval.end()
+                        )
+                                ? interval.end()
+                                : lastInterval.end();
+
+                mergedIntervals.set(
+                        mergedIntervals.size() - 1,
+                        new TimeInterval(
+                                lastInterval.start(),
+                                mergedEnd
+                        )
+                );
+            } else {
+                mergedIntervals.add(
+                        interval
+                );
+            }
+        }
+
+        return mergedIntervals;
+    }
+
+    private void addSlotsFromFreeInterval(
+            List<LocalTime> availableSlots,
+            LocalDate date,
+            LocalTime freeStart,
+            LocalTime freeEnd,
+            Integer durationMinutes
+    ) {
+        LocalTime current =
+                freeStart;
+
+        while (
+                !current
+                        .plusMinutes(
+                                durationMinutes
+                        )
+                        .isAfter(
+                                freeEnd
+                        )
+        ) {
+            if (
+                    !isSlotInPast(
+                            date,
+                            current
+                    )
+            ) {
+                availableSlots.add(
+                        current
+                );
+            }
+
+            current =
+                    current.plusMinutes(
+                            durationMinutes
+                    );
+        }
     }
 
     private AvailabilityResponse getColoringAvailability(
@@ -528,5 +687,11 @@ public class AvailabilityService {
                 durationMinutes,
                 List.of()
         );
+    }
+
+    private record TimeInterval(
+            LocalTime start,
+            LocalTime end
+    ) {
     }
 }

@@ -3,13 +3,7 @@ package ro.mihaifade.backend.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ro.mihaifade.backend.dto.AuthResponse;
-import ro.mihaifade.backend.dto.ForgotPasswordRequest;
-import ro.mihaifade.backend.dto.GoogleLoginRequest;
-import ro.mihaifade.backend.dto.LoginRequest;
-import ro.mihaifade.backend.dto.MessageResponse;
-import ro.mihaifade.backend.dto.RegisterRequest;
-import ro.mihaifade.backend.dto.ResetPasswordRequest;
+import ro.mihaifade.backend.dto.*;
 import ro.mihaifade.backend.service.AuthService;
 import ro.mihaifade.backend.service.PasswordResetService;
 

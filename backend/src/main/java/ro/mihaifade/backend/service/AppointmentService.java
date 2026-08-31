@@ -52,6 +52,7 @@ public class AppointmentService {
     private final WorkingHoursRepository workingHoursRepository;
     private final TimeOffRepository timeOffRepository;
     private final PushNotificationService pushNotificationService;
+    private final AvailabilityService availabilityService;
 
     public AppointmentService(
             AppointmentRepository appointmentRepository,
@@ -61,7 +62,8 @@ public class AppointmentService {
             BarberServiceOfferingRepository barberServiceOfferingRepository,
             WorkingHoursRepository workingHoursRepository,
             TimeOffRepository timeOffRepository,
-            PushNotificationService pushNotificationService
+            PushNotificationService pushNotificationService,
+            AvailabilityService availabilityService
     ) {
         this.appointmentRepository =
                 appointmentRepository;
@@ -86,6 +88,9 @@ public class AppointmentService {
 
         this.pushNotificationService =
                 pushNotificationService;
+
+        this.availabilityService =
+                availabilityService;
     }
 
     public List<AppointmentResponse> getAllAppointments() {
@@ -299,6 +304,25 @@ public class AppointmentService {
         ) {
             throw new RuntimeException(
                     "Cannot create an appointment in the past"
+            );
+        }
+
+        boolean availableSlot =
+                availabilityService
+                        .getAvailability(
+                                barber.getId(),
+                                service.getId(),
+                                request.date(),
+                                null
+                        )
+                        .availableSlots()
+                        .contains(
+                                request.startTime()
+                        );
+
+        if (!availableSlot) {
+            throw new RuntimeException(
+                    "Selected time is not available"
             );
         }
 
@@ -528,6 +552,25 @@ public class AppointmentService {
         ) {
             throw new RuntimeException(
                     "Coloring services can only be booked at 08:00"
+            );
+        }
+
+        boolean availableSlot =
+                availabilityService
+                        .getAvailability(
+                                barber.getId(),
+                                service.getId(),
+                                request.date(),
+                                appointment.getId()
+                        )
+                        .availableSlots()
+                        .contains(
+                                request.startTime()
+                        );
+
+        if (!availableSlot) {
+            throw new RuntimeException(
+                    "Selected time is not available"
             );
         }
 
