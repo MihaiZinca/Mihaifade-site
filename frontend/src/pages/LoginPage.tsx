@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import GoogleLoginButton from "../components/GoogleLoginButton";
 import api from "../services/api";
 import { saveAuth } from "../services/auth";
+import "./password-reset.css";
 
 interface LoginResponse {
     token: string;
@@ -10,7 +11,7 @@ interface LoginResponse {
     firstName: string;
     lastName: string;
     email: string;
-    role: "CLIENT" | "OWNER";
+    role: "CLIENT" | "BARBER" | "OWNER";
 }
 
 function LoginPage() {
@@ -38,10 +39,18 @@ function LoginPage() {
                 }
             );
 
-            saveAuth(response.data.token,response.data.role);
+            saveAuth(
+                response.data.token,
+                response.data.role
+            );
 
             if (response.data.role === "OWNER") {
                 navigate("/admin");
+                return;
+            }
+
+            if (response.data.role === "BARBER") {
+                navigate("/barber");
                 return;
             }
 
@@ -113,6 +122,12 @@ function LoginPage() {
                             required
                         />
                     </label>
+
+                    <div className="auth-card__forgot-password">
+                        <Link to="/forgot-password">
+                            Ai uitat parola?
+                        </Link>
+                    </div>
 
                     {error && (
                         <p className="auth-form__error">

@@ -13,9 +13,11 @@ import BarberPage from "./pages/BarberPage";
 import BookingPage from "./pages/BookingPage";
 import CompleteProfilePage from "./pages/CompleteProfilePage";
 import ContactPage from "./pages/ContactPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import WelcomeRewardPage from "./pages/WelcomeRewardPage";
 import {
     listenForForegroundNotifications,
@@ -89,6 +91,16 @@ function App() {
                 <Route
                     path="/register"
                     element={<RegisterPage />}
+                />
+
+                <Route
+                    path="/forgot-password"
+                    element={<ForgotPasswordPage />}
+                />
+
+                <Route
+                    path="/reset-password"
+                    element={<ResetPasswordPage />}
                 />
 
                 <Route element={<ProtectedRoute />}>
