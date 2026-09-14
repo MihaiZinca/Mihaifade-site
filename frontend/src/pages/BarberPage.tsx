@@ -1366,7 +1366,13 @@ function BarberPage() {
                         to="/"
                         className="barber-header__brand"
                     >
-                        MIHAIFADE
+                        <span className="barber-header__brand-main">
+                            GLOBAL
+                        </span>
+
+                        <span className="barber-header__brand-sub">
+                            BARBER SOCIETY
+                        </span>
                     </Link>
 
                     <span>

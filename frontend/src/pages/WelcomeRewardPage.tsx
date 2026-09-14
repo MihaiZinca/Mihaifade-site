@@ -179,7 +179,7 @@ function WelcomeRewardPage() {
             <section className="reward-card">
                 <div className="reward-card__intro">
                     <p className="section-eyebrow">
-                        BUN VENIT LA MIHAI FADE
+                        BUN VENIT LA GLOBAL BARBER SOCIETY
                     </p>
 
                     <h1>
@@ -234,7 +234,7 @@ function WelcomeRewardPage() {
                         )}
 
                         <div className="reward-wheel__center">
-                            MF
+                            GBS
                         </div>
                     </div>
                 </div>

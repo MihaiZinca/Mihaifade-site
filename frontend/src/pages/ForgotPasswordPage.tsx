@@ -47,7 +47,13 @@ function ForgotPasswordPage() {
                     to="/"
                     className="auth-card__brand"
                 >
-                    MIHAIFADE
+                    <span className="auth-card__brand-main">
+                        GLOBAL
+                    </span>
+
+                    <span className="auth-card__brand-sub">
+                        BARBER SOCIETY
+                    </span>
                 </Link>
 
                 <p className="section-eyebrow">

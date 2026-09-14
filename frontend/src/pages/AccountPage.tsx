@@ -41,12 +41,7 @@ function AccountPage() {
 
     const [deletingAccount, setDeletingAccount] =
         useState(false);
-
-    /*
-     * RESCHEDULE
-     */
-
-    const [reschedulingAppointment, setReschedulingAppointment] =
+const [reschedulingAppointment, setReschedulingAppointment] =
         useState<AppointmentResponse | null>(null);
 
     const [rescheduleDate, setRescheduleDate] =
@@ -69,12 +64,7 @@ function AccountPage() {
 
     const [rescheduleSuccess, setRescheduleSuccess] =
         useState("");
-
-    /*
-     * PUSH NOTIFICATIONS
-     */
-
-    const [notificationsEnabled, setNotificationsEnabled] =
+const [notificationsEnabled, setNotificationsEnabled] =
         useState(
             role === "CLIENT" &&
             arePushNotificationsEnabled()
@@ -88,12 +78,7 @@ function AccountPage() {
 
     const [notificationSuccess, setNotificationSuccess] =
         useState("");
-
-    /*
-     * REVIEW
-     */
-
-    const [review, setReview] =
+const [review, setReview] =
         useState<ReviewResponse | null>(null);
 
     const [reviewRating, setReviewRating] =
@@ -488,12 +473,7 @@ function AccountPage() {
             setCancellingId(null);
         }
     };
-
-    /*
-     * REVIEW - SAVE
-     */
-
-    const handleSaveReview = async () => {
+const handleSaveReview = async () => {
         if (role !== "CLIENT") {
             return;
         }
@@ -577,12 +557,7 @@ function AccountPage() {
             setReviewSaving(false);
         }
     };
-
-    /*
-     * REVIEW - DELETE
-     */
-
-    const handleDeleteReview = async () => {
+const handleDeleteReview = async () => {
         if (
             role !== "CLIENT" ||
             !review
@@ -623,12 +598,7 @@ function AccountPage() {
             setReviewDeleting(false);
         }
     };
-
-    /*
-     * PUSH NOTIFICATIONS
-     */
-
-    const handleEnableNotifications = async () => {
+const handleEnableNotifications = async () => {
         if (role !== "CLIENT") {
             return;
         }
@@ -753,7 +723,13 @@ function AccountPage() {
                     to="/"
                     className="account-header__brand"
                 >
-                    MIHAIFADE
+                    <span className="account-header__brand-main">
+                        GLOBAL
+                    </span>
+
+                    <span className="account-header__brand-sub">
+                        BARBER SOCIETY
+                    </span>
                 </Link>
 
                 <div className="account-header__actions">
@@ -1343,7 +1319,7 @@ function AccountPage() {
                                                 de stele și
                                                 spune-ne cum a
                                                 fost vizita ta
-                                                la MIHAIFADE.
+                                                la Global Barber Society.
                                             </p>
 
                                             {review && (

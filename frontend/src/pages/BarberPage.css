@@ -29,11 +29,26 @@
 }
 
 .barber-header__brand {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
     color: #f3d18c;
     text-decoration: none;
+}
+
+.barber-header__brand-main {
     font-size: 20px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 3px;
+}
+
+.barber-header__brand-sub {
+    margin-top: 4px;
+    font-size: 6px;
     font-weight: 800;
-    letter-spacing: 0.08em;
+    line-height: 1;
+    letter-spacing: 2.2px;
 }
 
 .barber-header__identity > span {
@@ -517,6 +532,16 @@
         align-items: flex-start;
         flex-direction: column;
         gap: 7px;
+    }
+
+    .barber-header__brand-main {
+        font-size: 17px;
+        letter-spacing: 2.4px;
+    }
+
+    .barber-header__brand-sub {
+        font-size: 5px;
+        letter-spacing: 1.7px;
     }
 
     .barber-header__identity > span {

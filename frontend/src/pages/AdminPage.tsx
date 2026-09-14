@@ -2409,7 +2409,13 @@ function AdminPage() {
                         to="/"
                         className="admin-header__brand"
                     >
-                        MIHAIFADE
+                        <span className="admin-header__brand-main">
+                            GLOBAL
+                        </span>
+
+                        <span className="admin-header__brand-sub">
+                            BARBER SOCIETY
+                        </span>
                     </Link>
 
                     <span>

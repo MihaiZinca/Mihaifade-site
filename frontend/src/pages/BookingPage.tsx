@@ -421,7 +421,7 @@ function BookingPage() {
 
                                     <p>
                                         Deschide meniul browserului și alege „Adaugă pe ecranul principal”.
-                                        Deschide apoi MIHAIFADE, intră în Cont → Notificări și apasă
+                                        Deschide apoi Global Barber Society, intră în Cont → Notificări și apasă
                                         „Activează notificările”.
                                     </p>
                                 </div>
@@ -431,7 +431,7 @@ function BookingPage() {
 
                                     <p>
                                         Deschide site-ul în Safari, apasă Distribuire și alege
-                                        „Adăugați la ecranul principal”. Deschide apoi MIHAIFADE,
+                                        „Adăugați la ecranul principal”. Deschide apoi Global Barber Society,
                                         intră în Cont → Notificări și apasă „Activează notificările”.
                                     </p>
                                 </div>
@@ -475,9 +475,15 @@ function BookingPage() {
                         Înapoi
                     </button>
 
-                <Link to="/" className="booking-header__brand">
-                MIHAIFADE
-                </Link>
+                    <Link to="/" className="booking-header__brand">
+                        <span className="booking-header__brand-main">
+                            GLOBAL
+                        </span>
+
+                        <span className="booking-header__brand-sub">
+                            BARBER SOCIETY
+                        </span>
+                    </Link>
                 </div>
 
                 <div className="booking-header__steps">

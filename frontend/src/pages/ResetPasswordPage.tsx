@@ -79,7 +79,13 @@ function ResetPasswordPage() {
                     to="/"
                     className="auth-card__brand"
                 >
-                    MIHAIFADE
+                    <span className="auth-card__brand-main">
+                        GLOBAL
+                    </span>
+
+                    <span className="auth-card__brand-sub">
+                        BARBER SOCIETY
+                    </span>
                 </Link>
 
                 <p className="section-eyebrow">
@@ -92,7 +98,7 @@ function ResetPasswordPage() {
 
                 <p className="auth-card__description">
                     Alege o parolă nouă de cel puțin 8 caractere
-                    pentru contul tău MihaiFade.
+                    pentru contul tău Global Barber Society.
                 </p>
 
                 {!success && (
