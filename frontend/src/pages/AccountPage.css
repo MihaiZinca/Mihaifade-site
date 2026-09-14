@@ -1,0 +1,2278 @@
+.account-page {
+    min-height: 100vh;
+
+    background:
+        radial-gradient(
+            circle at 80% 10%,
+            rgba(255, 255, 255, 0.05),
+            transparent 28%
+        ),
+        #0b0b0b;
+
+    color: #f5f5f5;
+}
+
+.account-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 28px 7vw;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.account-header__brand {
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: 3px;
+}
+
+.account-header__booking {
+    padding: 12px 18px;
+
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.account-header__booking:hover {
+    border-color: #ffffff;
+
+    background: #ffffff;
+    color: #111111;
+}
+
+.account-content {
+    width: min(1100px, calc(100% - 48px));
+
+    margin: 0 auto;
+    padding: 90px 0 120px;
+}
+
+.account-intro {
+    max-width: 780px;
+
+    margin-bottom: 80px;
+}
+
+.account-intro h1 {
+    margin: 0;
+
+    font-size: clamp(52px, 7vw, 88px);
+    line-height: 0.95;
+    letter-spacing: -4px;
+}
+
+.account-intro > p:last-child {
+    max-width: 620px;
+
+    margin: 26px 0 0;
+
+    color: rgba(255, 255, 255, 0.5);
+
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.account-error {
+    margin-bottom: 30px;
+    padding: 16px 18px;
+
+    border: 1px solid rgba(226, 122, 122, 0.28);
+
+    background: rgba(226, 122, 122, 0.08);
+    color: #e79b9b;
+}
+
+.account-message {
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.45);
+
+    line-height: 1.6;
+}
+
+.account-section {
+    padding: 50px 0;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.account-section__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 30px;
+
+    margin-bottom: 32px;
+}
+
+.account-section__header h2 {
+    margin: 0;
+
+    font-size: 32px;
+    letter-spacing: -1px;
+}
+
+.account-section__header > span {
+    min-width: 40px;
+    height: 40px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+
+    color: rgba(255, 255, 255, 0.65);
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.account-empty {
+    padding: 30px;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.account-empty p {
+    margin: 0 0 18px;
+
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.account-empty a {
+    display: inline-block;
+
+    padding: 12px 18px;
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.account-empty a:hover {
+    background: #ffffff;
+    color: #111111;
+}
+
+.account-appointments {
+    display: grid;
+    gap: 16px;
+}
+
+.account-appointment {
+    padding: 26px;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.04),
+            rgba(255, 255, 255, 0.015)
+        );
+
+    transition:
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.account-appointment:hover {
+    border-color: rgba(255, 255, 255, 0.25);
+
+    transform: translateY(-1px);
+}
+
+.account-appointment__main {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 40px;
+}
+
+.account-appointment__status {
+    display: inline-flex;
+
+    margin-bottom: 12px;
+    padding: 6px 10px;
+
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+
+    color: rgba(255, 255, 255, 0.65);
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.account-appointment h3 {
+    margin: 0 0 8px;
+
+    font-size: 26px;
+}
+
+.account-appointment__main p {
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.45);
+
+    font-size: 13px;
+}
+
+.account-appointment__date {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+
+    text-align: right;
+}
+
+.account-appointment__date strong {
+    font-size: 18px;
+}
+
+.account-appointment__date span {
+    color: rgba(255, 255, 255, 0.55);
+
+    font-size: 13px;
+}
+
+.account-appointment__notes {
+    margin: 24px 0 0;
+    padding-top: 20px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
+
+    color: rgba(255, 255, 255, 0.5);
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.account-appointment__actions {
+    display: flex;
+    justify-content: flex-end;
+
+    margin-top: 24px;
+    padding-top: 20px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.account-appointment__actions button {
+    padding: 11px 16px;
+
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    background: transparent;
+    color: rgba(255, 255, 255, 0.72);
+
+    font-size: 12px;
+    font-weight: 700;
+
+    transition:
+        border-color 0.2s ease,
+        color 0.2s ease,
+        background 0.2s ease;
+}
+
+.account-appointment__actions button:hover:not(:disabled) {
+    border-color: rgba(226, 122, 122, 0.75);
+
+    background: rgba(226, 122, 122, 0.08);
+    color: #e79b9b;
+}
+
+.account-appointment__actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.account-history {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.account-history__item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 30px;
+    align-items: center;
+
+    padding: 20px 0;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.account-history__item > div {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.account-history__item > div:last-child {
+    justify-content: flex-end;
+}
+
+.account-history__item span {
+    color: rgba(255, 255, 255, 0.38);
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+}
+
+.account-history__item strong {
+    font-size: 15px;
+}
+
+@media (max-width: 800px) {
+.account-header {
+        padding: 22px 24px;
+    }
+
+.account-content {
+        width: min(100% - 32px, 1100px);
+
+        padding-top: 65px;
+    }
+
+.account-appointment__main {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+.account-appointment__date {
+        align-items: flex-start;
+
+        text-align: left;
+    }
+
+.account-history__item {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+.account-history__item > div:last-child {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 600px) {
+.account-header {
+        gap: 20px;
+    }
+
+.account-header__booking {
+        padding: 10px 14px;
+
+        font-size: 12px;
+    }
+
+.account-intro h1 {
+        letter-spacing: -2px;
+    }
+
+.account-section__header h2 {
+        font-size: 26px;
+    }
+
+.account-appointment {
+        padding: 20px;
+    }
+
+.account-appointment__actions {
+        justify-content: stretch;
+    }
+
+.account-appointment__actions button {
+        width: 100%;
+    }
+}
+
+.account-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.account-header__back,
+.account-header__logout {
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.72);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        border-color 0.2s ease,
+        color 0.2s ease,
+        background 0.2s ease;
+}
+
+.account-header__back:hover {
+    border-color: rgba(255, 255, 255, 0.45);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.account-header__logout {
+    border-color: rgba(220, 80, 80, 0.35);
+    color: rgba(255, 150, 150, 0.9);
+}
+
+.account-header__logout:hover {
+    border-color: rgba(220, 80, 80, 0.7);
+    background: rgba(220, 80, 80, 0.08);
+    color: #ffaaaa;
+}
+
+@media (max-width: 700px) {
+.account-header {
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+.account-header__actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+.account-header__back,
+    .account-header__logout,
+    .account-header__booking {
+        flex: 1;
+        min-width: 130px;
+        text-align: center;
+    }
+}
+
+
+
+
+
+
+
+
+
+.account-danger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    margin-top: 70px;
+    padding: 32px;
+    border: 1px solid rgba(220, 80, 80, 0.2);
+    background: rgba(120, 20, 20, 0.04);
+}
+
+.account-danger h2 {
+    margin: 6px 0 10px;
+    color: #ffffff;
+    font-size: 24px;
+}
+
+.account-danger > div > p:last-child {
+    max-width: 560px;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.account-danger button {
+    flex-shrink: 0;
+    padding: 13px 20px;
+    border: 1px solid rgba(220, 80, 80, 0.5);
+    background: transparent;
+    color: #e58b8b;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.account-danger button:hover:not(:disabled) {
+    border-color: rgba(220, 80, 80, 0.9);
+    background: rgba(220, 80, 80, 0.1);
+    color: #ffaaaa;
+}
+
+.account-danger button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+@media (max-width: 700px) {
+.account-danger {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 24px;
+        padding: 24px;
+    }
+
+.account-danger button {
+        width: 100%;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.account-review {
+    position: relative;
+}
+
+.account-review__content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+
+    padding: 32px;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.04),
+            rgba(255, 255, 255, 0.015)
+        );
+}
+
+.account-review__intro {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 30px;
+}
+
+.account-review__intro p {
+    max-width: 650px;
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.5);
+
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.account-review__published {
+    flex-shrink: 0;
+
+    display: inline-flex;
+    align-items: center;
+
+    padding: 7px 11px;
+
+    border: 1px solid rgba(130, 200, 150, 0.25);
+    border-radius: 999px;
+
+    background: rgba(80, 160, 100, 0.06);
+    color: rgba(170, 225, 180, 0.85);
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.account-review__rating {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    padding: 24px 0;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.account-review__label {
+    min-width: 70px;
+
+    color: rgba(255, 255, 255, 0.45);
+
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.account-review__stars {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.account-review__star {
+    padding: 0;
+
+    border: 0;
+
+    cursor: pointer;
+
+    background: transparent;
+    color: rgba(255, 255, 255, 0.18);
+
+    font-size: 32px;
+    line-height: 1;
+
+    transition:
+        color 0.18s ease,
+        transform 0.18s ease,
+        opacity 0.18s ease;
+}
+
+.account-review__star:hover {
+    color: rgba(255, 255, 255, 0.75);
+
+    transform: translateY(-2px);
+}
+
+.account-review__star--active {
+    color: #ffffff;
+}
+
+.account-review__stars:hover
+.account-review__star--active {
+    opacity: 0.8;
+}
+
+.account-review__rating > strong {
+    margin-left: auto;
+
+    color: rgba(255, 255, 255, 0.55);
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.account-review__field {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.account-review__field > span {
+    color: rgba(255, 255, 255, 0.58);
+
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.account-review__field textarea {
+    width: 100%;
+    min-height: 150px;
+
+    padding: 18px;
+
+    resize: vertical;
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    outline: none;
+
+    background: rgba(255, 255, 255, 0.025);
+    color: #ffffff;
+
+    font-size: 14px;
+    line-height: 1.7;
+
+    caret-color: #ffffff;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.account-review__field textarea::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.account-review__field textarea:hover {
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.account-review__field textarea:focus {
+    border-color: rgba(255, 255, 255, 0.55);
+
+    background: rgba(255, 255, 255, 0.04);
+
+    box-shadow:
+        0 0 0 3px rgba(255, 255, 255, 0.025);
+}
+
+.account-review__field small {
+    align-self: flex-end;
+
+    color: rgba(255, 255, 255, 0.3);
+
+    font-size: 11px;
+}
+
+.account-review__error {
+    margin: 0;
+    padding: 13px 15px;
+
+    border: 1px solid rgba(226, 122, 122, 0.25);
+
+    background: rgba(226, 122, 122, 0.06);
+    color: #e79b9b;
+
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.account-review__success {
+    margin: 0;
+    padding: 13px 15px;
+
+    border: 1px solid rgba(120, 200, 140, 0.22);
+
+    background: rgba(80, 160, 100, 0.06);
+    color: rgba(175, 225, 185, 0.9);
+
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.account-review__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.account-review__save,
+.account-review__delete {
+    min-height: 46px;
+
+    padding: 0 20px;
+
+    cursor: pointer;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.account-review__save {
+    border: 1px solid #ffffff;
+
+    background: #ffffff;
+    color: #111111;
+}
+
+.account-review__save:hover:not(:disabled) {
+    background: transparent;
+    color: #ffffff;
+
+    transform: translateY(-1px);
+}
+
+.account-review__delete {
+    border: 1px solid rgba(220, 80, 80, 0.35);
+
+    background: transparent;
+    color: rgba(255, 150, 150, 0.9);
+}
+
+.account-review__delete:hover:not(:disabled) {
+    border-color: rgba(220, 80, 80, 0.75);
+
+    background: rgba(220, 80, 80, 0.08);
+    color: #ffaaaa;
+}
+
+.account-review__save:disabled,
+.account-review__delete:disabled {
+    cursor: not-allowed;
+
+    opacity: 0.45;
+
+    transform: none;
+}
+
+.account-review__date {
+    margin: -8px 0 0;
+
+    color: rgba(255, 255, 255, 0.3);
+
+    font-size: 11px;
+}
+
+@media (max-width: 700px) {
+.account-review__content {
+        gap: 24px;
+
+        padding: 24px;
+    }
+
+.account-review__intro {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+.account-review__rating {
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+.account-review__label {
+        width: 100%;
+        min-width: 0;
+    }
+
+.account-review__star {
+        font-size: 30px;
+    }
+
+.account-review__rating > strong {
+        margin-left: auto;
+    }
+
+.account-review__actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+.account-review__save,
+    .account-review__delete {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+.account-review__content {
+        padding: 20px;
+    }
+
+.account-review__stars {
+        gap: 3px;
+    }
+
+.account-review__star {
+        font-size: 27px;
+    }
+
+.account-review__field textarea {
+        min-height: 135px;
+
+        padding: 15px;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.account-notifications {
+    overflow: hidden;
+}
+
+.account-notifications__content {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.account-notifications__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.account-notifications__copy p {
+    margin: 0;
+    max-width: 720px;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.account-notifications__copy small {
+    color: rgba(255, 255, 255, 0.38);
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.account-notifications__error,
+.account-notifications__success {
+    margin: 0;
+    padding: 13px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.account-notifications__error {
+    color: #f2a6a6;
+    background: rgba(180, 45, 45, 0.08);
+    border-color: rgba(242, 166, 166, 0.18);
+}
+
+.account-notifications__success {
+    color: #e4cc98;
+    background: rgba(228, 204, 152, 0.06);
+    border-color: rgba(228, 204, 152, 0.18);
+}
+
+.account-notifications__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.account-notifications__enable,
+.account-notifications__disable {
+    min-height: 46px;
+    padding: 0 22px;
+
+    border: 1px solid transparent;
+    cursor: pointer;
+
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.account-notifications__enable {
+    background: #e4cc98;
+    border-color: #e4cc98;
+    color: #111;
+}
+
+.account-notifications__enable:hover:not(:disabled) {
+    background: #f0e0bb;
+    border-color: #f0e0bb;
+}
+
+.account-notifications__disable {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.16);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.account-notifications__disable:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.32);
+    color: #fff;
+}
+
+.account-notifications__enable:disabled,
+.account-notifications__disable:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+@media (max-width: 700px) {
+.account-notifications__actions {
+        align-items: stretch;
+    }
+
+.account-notifications__enable,
+    .account-notifications__disable {
+        width: 100%;
+    }
+}
+
+.account-appointment__actions {
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.account-appointment__actions
+.account-appointment__reschedule {
+    border-color: rgba(228, 204, 152, 0.42);
+
+    color: #e4cc98;
+}
+
+.account-appointment__actions
+.account-appointment__reschedule:hover:not(:disabled) {
+    border-color: #e4cc98;
+
+    background: rgba(228, 204, 152, 0.1);
+    color: #f0e0bb;
+}
+
+.account-reschedule {
+    margin-top: 22px;
+    padding: 24px;
+
+    border: 1px solid rgba(228, 204, 152, 0.22);
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(228, 204, 152, 0.055),
+            rgba(255, 255, 255, 0.018)
+        );
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.account-reschedule__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+
+    padding-bottom: 20px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.account-reschedule__header > div {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.account-reschedule__header span {
+    margin-bottom: 8px;
+
+    color: #e4cc98;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.account-reschedule__header strong {
+    color: #ffffff;
+
+    font-size: 21px;
+    line-height: 1.25;
+}
+
+.account-reschedule__header p {
+    margin: 7px 0 0;
+
+    color: rgba(255, 255, 255, 0.45);
+
+    font-size: 12px;
+}
+
+.account-reschedule__close {
+    flex-shrink: 0;
+
+    padding: 9px 13px;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    background: transparent;
+    color: rgba(255, 255, 255, 0.55);
+
+    font-size: 11px;
+    font-weight: 700;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.account-reschedule__close:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.32);
+
+    background: rgba(255, 255, 255, 0.04);
+    color: #ffffff;
+}
+
+.account-reschedule__close:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.account-reschedule__current {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+
+    margin: 20px 0;
+    padding: 14px 16px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.account-reschedule__current span {
+    color: rgba(255, 255, 255, 0.42);
+
+    font-size: 12px;
+}
+
+.account-reschedule__current strong {
+    color: rgba(255, 255, 255, 0.86);
+
+    font-size: 13px;
+}
+
+.account-reschedule__field {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+
+    margin-top: 20px;
+}
+
+.account-reschedule__field > span,
+.account-reschedule__label {
+    color: rgba(255, 255, 255, 0.58);
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.account-reschedule__field input {
+    width: min(340px, 100%);
+
+    padding: 13px 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 7px;
+    outline: none;
+
+    background: rgba(5, 5, 5, 0.7);
+    color: #ffffff;
+
+    color-scheme: dark;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.account-reschedule__field input:hover:not(:disabled) {
+    border-color: rgba(228, 204, 152, 0.35);
+}
+
+.account-reschedule__field input:focus {
+    border-color: #e4cc98;
+
+    background: rgba(5, 5, 5, 0.9);
+
+    box-shadow:
+        0 0 0 3px rgba(228, 204, 152, 0.06);
+}
+
+.account-reschedule__field input:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.account-reschedule__times {
+    margin-top: 24px;
+}
+
+.account-reschedule__times
+.account-message {
+    margin-top: 12px;
+
+    font-size: 13px;
+}
+
+.account-reschedule__slots {
+    display: grid;
+    grid-template-columns: repeat(
+        6,
+        minmax(0, 1fr)
+    );
+    gap: 9px;
+
+    margin-top: 12px;
+}
+
+.account-reschedule__slot {
+    min-height: 42px;
+    padding: 10px;
+
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 7px;
+
+    cursor: pointer;
+
+    background: rgba(255, 255, 255, 0.018);
+    color: rgba(255, 255, 255, 0.72);
+
+    font-size: 12px;
+    font-weight: 700;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.account-reschedule__slot:hover:not(:disabled) {
+    border-color: rgba(228, 204, 152, 0.58);
+
+    background: rgba(228, 204, 152, 0.07);
+    color: #f0e0bb;
+
+    transform: translateY(-1px);
+}
+
+.account-reschedule__slot--selected {
+    border-color: #e4cc98;
+
+    background: #e4cc98;
+    color: #111111;
+}
+
+.account-reschedule__slot--selected:hover:not(:disabled) {
+    border-color: #f0e0bb;
+
+    background: #f0e0bb;
+    color: #111111;
+}
+
+.account-reschedule__slot:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.account-reschedule__error,
+.account-reschedule__success {
+    margin: 20px 0 0;
+    padding: 12px 14px;
+
+    border-radius: 7px;
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.account-reschedule__error {
+    border: 1px solid rgba(226, 122, 122, 0.25);
+
+    background: rgba(226, 122, 122, 0.07);
+    color: #e79b9b;
+}
+
+.account-reschedule__success {
+    border: 1px solid rgba(228, 204, 152, 0.25);
+
+    background: rgba(228, 204, 152, 0.07);
+    color: #f0e0bb;
+}
+
+.account-reschedule__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+
+    margin-top: 24px;
+    padding-top: 20px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.account-reschedule__actions button {
+    min-height: 42px;
+    padding: 0 17px;
+
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.account-reschedule__save {
+    border: 1px solid #e4cc98;
+
+    background: #e4cc98;
+    color: #111111;
+}
+
+.account-reschedule__save:hover:not(:disabled) {
+    border-color: #f0e0bb;
+
+    background: #f0e0bb;
+
+    transform: translateY(-1px);
+}
+
+.account-reschedule__cancel {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+
+    background: transparent;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.account-reschedule__cancel:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.35);
+
+    background: rgba(255, 255, 255, 0.04);
+    color: #ffffff;
+}
+
+.account-reschedule__actions button:disabled {
+    cursor: not-allowed;
+
+    opacity: 0.38;
+
+    transform: none;
+}
+
+@media (max-width: 800px) {
+.account-reschedule__slots {
+        grid-template-columns: repeat(
+            4,
+            minmax(0, 1fr)
+        );
+    }
+}
+
+@media (max-width: 600px) {
+.account-appointment__actions {
+        flex-direction: column;
+        gap: 9px;
+    }
+
+.account-appointment__actions button {
+        width: 100%;
+    }
+
+.account-reschedule {
+        margin-top: 18px;
+        padding: 18px;
+    }
+
+.account-reschedule__header {
+        gap: 16px;
+    }
+
+.account-reschedule__header strong {
+        font-size: 18px;
+    }
+
+.account-reschedule__current {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+.account-reschedule__field input {
+        width: 100%;
+    }
+
+.account-reschedule__slots {
+        grid-template-columns: repeat(
+            3,
+            minmax(0, 1fr)
+        );
+    }
+
+.account-reschedule__actions {
+        flex-direction: column;
+    }
+
+.account-reschedule__actions button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 400px) {
+.account-reschedule__slots {
+        grid-template-columns: repeat(
+            2,
+            minmax(0, 1fr)
+        );
+    }
+}
+
+@media (max-width: 900px) {
+.account-header {
+        gap: 18px;
+        padding: 22px 28px;
+    }
+
+.account-header__brand {
+        flex-shrink: 0;
+
+        font-size: 19px;
+        letter-spacing: 3px;
+    }
+
+.account-header__actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+
+        gap: 10px;
+    }
+
+.account-header__back,
+    .account-header__booking,
+    .account-header__logout {
+        width: auto;
+        min-width: 0;
+
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 700px) {
+.account-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 14px;
+
+        padding: 18px 16px;
+    }
+
+.account-header__brand {
+        flex-shrink: 0;
+
+        font-size: 17px;
+        letter-spacing: 2.5px;
+    }
+
+.account-header__actions {
+        flex: 0 1 auto;
+
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+
+        gap: 14px;
+    }
+
+.account-header__back {
+        width: auto;
+        min-width: 0;
+        min-height: 0;
+
+        padding: 8px 0;
+
+        border: 0;
+        border-radius: 0;
+
+        background: transparent;
+        color: rgba(255, 255, 255, 0.7);
+
+        font-size: 11px;
+        font-weight: 600;
+
+        white-space: nowrap;
+
+        box-shadow: none;
+    }
+
+.account-header__back::before {
+        content: "←";
+
+        margin-right: 5px;
+
+        color: #e4cc98;
+    }
+
+.account-header__back:hover {
+        border: 0;
+
+        background: transparent;
+        color: #e4cc98;
+
+        transform: none;
+    }
+
+.account-header__booking {
+        width: auto;
+        min-width: 0;
+        min-height: 40px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 10px 15px;
+
+        border:
+            1px solid rgba(228, 204, 152, 0.38);
+        border-radius: 999px;
+
+        background:
+            rgba(228, 204, 152, 0.035);
+
+        color: #f0e0bb;
+
+        font-size: 10px;
+        font-weight: 700;
+
+        white-space: nowrap;
+
+        text-decoration: none;
+    }
+
+.account-header__booking:hover {
+        border-color:
+            rgba(228, 204, 152, 0.7);
+
+        background:
+            rgba(228, 204, 152, 0.08);
+
+        color: #f0e0bb;
+    }
+
+.account-header__logout {
+        width: auto;
+        min-width: 0;
+        min-height: 0;
+
+        padding: 8px 0;
+
+        border: 0;
+        border-radius: 0;
+
+        background: transparent;
+
+        color: #ef8585;
+
+        font-size: 10px;
+        font-weight: 700;
+
+        white-space: nowrap;
+
+        box-shadow: none;
+    }
+
+.account-header__logout:hover {
+        border: 0;
+
+        background: transparent;
+
+        color: #ff9b9b;
+
+        transform: none;
+    }
+}
+
+@media (max-width: 520px) {
+.account-header {
+        gap: 10px;
+
+        padding: 16px 12px;
+    }
+
+.account-header__brand {
+        font-size: 15px;
+        letter-spacing: 2px;
+    }
+
+.account-header__actions {
+        flex: 1 1 auto;
+
+        gap: 9px;
+    }
+
+.account-header__back {
+        padding: 7px 0;
+
+        font-size: 9px;
+    }
+
+.account-header__back::before {
+        margin-right: 3px;
+    }
+
+.account-header__booking {
+        min-height: 36px;
+
+        padding: 8px 10px;
+
+        font-size: 9px;
+    }
+
+.account-header__logout {
+        padding: 7px 0;
+
+        font-size: 9px;
+    }
+}
+
+@media (max-width: 420px) {
+.account-header {
+        gap: 7px;
+
+        padding: 14px 9px;
+    }
+
+.account-header__brand {
+        font-size: 13px;
+        letter-spacing: 1.5px;
+    }
+
+.account-header__actions {
+        gap: 7px;
+    }
+
+.account-header__back {
+        font-size: 8px;
+    }
+
+.account-header__booking {
+        min-height: 34px;
+
+        padding: 7px 8px;
+
+        font-size: 8px;
+    }
+
+.account-header__logout {
+        font-size: 8px;
+    }
+}
+
+@media (max-width: 360px) {
+.account-header {
+        gap: 5px;
+
+        padding-left: 7px;
+        padding-right: 7px;
+    }
+
+.account-header__brand {
+        font-size: 12px;
+        letter-spacing: 1px;
+    }
+
+.account-header__actions {
+        gap: 5px;
+    }
+
+.account-header__back {
+        font-size: 7.5px;
+    }
+
+.account-header__booking {
+        min-height: 32px;
+
+        padding: 6px 7px;
+
+        font-size: 7.5px;
+    }
+
+.account-header__logout {
+        font-size: 7.5px;
+    }
+}
