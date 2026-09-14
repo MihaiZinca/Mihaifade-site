@@ -96,6 +96,7 @@ interface BarberResponse {
     displayName: string;
     bio: string | null;
     imageUrl: string | null;
+    phoneNumber: string | null;
     instagramUrl: string | null;
     facebookUrl: string | null;
     youtubeUrl: string | null;
@@ -276,6 +277,7 @@ function AdminPage() {
         useState<number | null>(null);
     const [barberDisplayName, setBarberDisplayName] = useState("");
     const [barberBio, setBarberBio] = useState("");
+    const [barberPhoneNumber, setBarberPhoneNumber] = useState("");
     const [barberInstagramUrl, setBarberInstagramUrl] = useState("");
     const [barberFacebookUrl, setBarberFacebookUrl] = useState("");
     const [barberYoutubeUrl, setBarberYoutubeUrl] = useState("");
@@ -541,6 +543,7 @@ function AdminPage() {
 
         setBarberDisplayName(barber.displayName);
         setBarberBio(barber.bio ?? "");
+        setBarberPhoneNumber(barber.phoneNumber ?? "");
         setBarberInstagramUrl(barber.instagramUrl ?? "");
         setBarberFacebookUrl(barber.facebookUrl ?? "");
         setBarberYoutubeUrl(barber.youtubeUrl ?? "");
@@ -1572,6 +1575,10 @@ function AdminPage() {
                             ? null
                             : barberBio.trim(),
                     imageUrl: barber.imageUrl,
+                    phoneNumber:
+                        barberPhoneNumber.trim() === ""
+                            ? null
+                            : barberPhoneNumber.trim(),
                     instagramUrl:
                         barberInstagramUrl.trim() === ""
                             ? null
@@ -4860,14 +4867,31 @@ function AdminPage() {
                                                     </p>
 
                                                     <h2>
-                                                        Rețele sociale
+                                                        Contact și rețele sociale
                                                     </h2>
 
                                                     <p>
-                                                        Completează doar platformele pe care barberul le folosește. Linkurile vor fi afișate pe pagina de contact.
+                                                        Completează numărul de telefon și platformele pe care barberul le folosește. Datele vor fi afișate pe pagina de contact.
                                                     </p>
                                                 </div>
                                             </div>
+
+                                            <label>
+                                                Telefon
+
+                                                <input
+                                                    type="tel"
+                                                    value={
+                                                        barberPhoneNumber
+                                                    }
+                                                    onChange={(event) =>
+                                                        setBarberPhoneNumber(
+                                                            event.target.value
+                                                        )
+                                                    }
+                                                    placeholder="07xx xxx xxx"
+                                                />
+                                            </label>
 
                                             <label>
                                                 Instagram

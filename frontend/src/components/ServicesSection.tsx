@@ -48,8 +48,11 @@ function ServicesSection() {
 
                     <h2>
                         Alegi stilul.
+                        <span className="services__brand-word">
+                            GLOBAL 
+                        </span>
                         <span>
-                            Mihai se ocupă de restul.
+                            se ocupă de restul.
                         </span>
                     </h2>
                 </div>

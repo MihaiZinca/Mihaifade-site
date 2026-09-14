@@ -29,6 +29,8 @@ public class Barber {
 
     private String imageUrl;
 
+    private String phoneNumber;
+
     @Column(length = 1000)
     private String instagramUrl;
 

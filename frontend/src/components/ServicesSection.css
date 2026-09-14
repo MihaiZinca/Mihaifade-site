@@ -24,7 +24,14 @@
 }
 
 .services__header h2 span {
-    color: #9a9690;
+    color: #7f7b74;
+}
+
+.services__brand-word {
+    display: inline-block;
+    margin-right: 0.18em;
+    font-weight: 700;
+    letter-spacing: -2px;
 }
 
 .services__intro {

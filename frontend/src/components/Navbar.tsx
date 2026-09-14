@@ -41,7 +41,13 @@ function Navbar() {
                 className="navbar__brand"
                 onClick={closeMobileMenu}
             >
-                MIHAIFADE
+                <span className="navbar__brand-main">
+                    GLOBAL
+                </span>
+
+                <span className="navbar__brand-sub">
+                    BARBER SOCIETY
+                </span>
             </Link>
 
             <nav className="navbar__links">

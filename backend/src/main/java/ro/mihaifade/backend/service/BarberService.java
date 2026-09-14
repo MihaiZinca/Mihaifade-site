@@ -162,6 +162,12 @@ public class BarberService {
                 request.bio()
         );
 
+        barber.setPhoneNumber(
+                normalizeOptionalText(
+                        request.phone()
+                )
+        );
+
         barber.setImageUrl(
                 null
         );
@@ -209,6 +215,12 @@ public class BarberService {
 
         existingBarber.setBio(
                 updatedBarber.getBio()
+        );
+
+        existingBarber.setPhoneNumber(
+                normalizeOptionalText(
+                        updatedBarber.getPhoneNumber()
+                )
         );
 
         existingBarber.setInstagramUrl(
@@ -260,6 +272,12 @@ public class BarberService {
 
         existingBarber.setBio(
                 updatedBarber.getBio()
+        );
+
+        existingBarber.setPhoneNumber(
+                normalizeOptionalText(
+                        updatedBarber.getPhoneNumber()
+                )
         );
 
         existingBarber.setInstagramUrl(
@@ -696,6 +714,19 @@ public class BarberService {
     }
 
     private String normalizeOptionalUrl(
+            String value
+    ) {
+        if (
+                value == null ||
+                        value.isBlank()
+        ) {
+            return null;
+        }
+
+        return value.trim();
+    }
+
+    private String normalizeOptionalText(
             String value
     ) {
         if (

@@ -3,7 +3,7 @@ function FinalStatement() {
         <section className="final-statement">
             <div className="final-statement__meta">
                 <span>
-                    EST. 2023 · PITEȘTI, ROMÂNIA
+                    EST. 2026 · PITEȘTI, ROMÂNIA
                 </span>
 
                 <p>

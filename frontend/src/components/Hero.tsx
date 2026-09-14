@@ -27,9 +27,6 @@ function Hero() {
             }}
         >
             <div className="hero__content">
-                <p className="hero__eyebrow">
-                    MIHAI FADE
-                </p>
 
                 <h1 className="hero__title">
                     Nu e doar un fade,
