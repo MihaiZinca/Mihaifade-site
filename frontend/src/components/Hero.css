@@ -1,107 +1,125 @@
 .hero {
-    min-height: 100vh;
-
+    min-height: 88vh;
     display: flex;
     align-items: center;
-
-    padding: 120px 8vw 70px;
-
+    padding: 120px 8vw 80px;
     background-size: cover;
     background-position: center;
 }
 
 .hero__content {
-    max-width: 760px;
+    max-width: 680px;
 }
 
 .hero__eyebrow {
-    margin: 0 0 20px;
-
-    color: rgba(255, 255, 255, 0.58);
-
-    font-size: 13px;
+    margin: 0 0 22px;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 4px;
 }
 
 .hero__title {
-    max-width: 720px;
+    max-width: 650px;
     margin: 0;
-
-    font-size: clamp(52px, 7vw, 104px);
+    font-size: clamp(48px, 5.7vw, 86px);
     font-weight: 800;
-    line-height: 0.95;
-    letter-spacing: -4px;
+    line-height: 0.96;
+    letter-spacing: -3.5px;
 }
 
 .hero__title span {
     display: block;
-
-    color: rgba(255, 255, 255, 0.52);
+    margin-top: 4px;
+    color: rgba(255, 255, 255, 0.42);
 }
 
 .hero__description {
-    max-width: 540px;
-    margin: 30px 0 0;
-
-    color: rgba(255, 255, 255, 0.67);
-
-    font-size: 18px;
+    max-width: 500px;
+    margin: 26px 0 0;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 17px;
     line-height: 1.7;
 }
 
 .hero__actions {
     display: flex;
-    gap: 18px;
-
-    margin-top: 38px;
+    gap: 14px;
+    margin-top: 32px;
 }
 
 .hero__primary,
 .hero__secondary {
-    padding: 15px 24px;
-
+    padding: 14px 23px;
     border-radius: 999px;
-
     cursor: pointer;
-
     font-size: 14px;
     font-weight: 700;
-
     transition:
         background 0.2s ease,
         color 0.2s ease,
+        border-color 0.2s ease,
         transform 0.2s ease;
 }
 
 .hero__primary {
-    background: #ffffff;
-    color: #111111;
+    background: #f2f2f2;
+    color: #0a0a0a;
 }
 
 .hero__primary:hover {
+    background: #ffffff;
     transform: translateY(-2px);
 }
 
 .hero__secondary {
-    border: 1px solid rgba(255, 255, 255, 0.32);
-
-    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.02);
     color: #ffffff;
 }
 
 .hero__secondary:hover {
-    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.48);
+    background: rgba(255, 255, 255, 0.07);
+    transform: translateY(-2px);
 }
 
 @media (max-width: 900px) {
-.hero {
-        padding: 120px 24px 50px;
-
+    .hero {
+        min-height: 86vh;
+        padding: 120px 24px 60px;
         background-position: 62% center;
     }
 
-.hero__title {
+    .hero__title {
+        font-size: clamp(46px, 10vw, 72px);
         letter-spacing: -2px;
+    }
+}
+
+@media (max-width: 600px) {
+    .hero {
+        min-height: 82vh;
+        padding: 110px 20px 50px;
+    }
+
+    .hero__title {
+        font-size: clamp(42px, 13vw, 60px);
+        line-height: 0.98;
+        letter-spacing: -1.5px;
+    }
+
+    .hero__eyebrow {
+        font-size: 10px;
+        letter-spacing: 3px;
+    }
+
+    .hero__description {
+        font-size: 16px;
+    }
+
+    .hero__actions {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
