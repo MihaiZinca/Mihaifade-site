@@ -13,11 +13,15 @@ import BarberPage from "./pages/BarberPage";
 import BookingPage from "./pages/BookingPage";
 import CompleteProfilePage from "./pages/CompleteProfilePage";
 import ContactPage from "./pages/ContactPage";
+import CookiesPage from "./pages/CookiesPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
+import PrivacyPage from "./pages/PrivacyPage";
 import RegisterPage from "./pages/RegisterPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import TermsPage from "./pages/TermsPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 import WelcomeRewardPage from "./pages/WelcomeRewardPage";
 import {
     listenForForegroundNotifications,
@@ -84,6 +88,21 @@ function App() {
                 />
 
                 <Route
+                    path="/confidentialitate"
+                    element={<PrivacyPage />}
+                />
+
+                <Route
+                    path="/termeni-si-conditii"
+                    element={<TermsPage />}
+                />
+
+                <Route
+                    path="/cookies"
+                    element={<CookiesPage />}
+                />
+
+                <Route
                     path="/login"
                     element={<LoginPage />}
                 />
@@ -91,6 +110,11 @@ function App() {
                 <Route
                     path="/register"
                     element={<RegisterPage />}
+                />
+
+                <Route
+                    path="/verify-email"
+                    element={<VerifyEmailPage />}
                 />
 
                 <Route

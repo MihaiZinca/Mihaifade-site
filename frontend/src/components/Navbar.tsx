@@ -51,19 +51,19 @@ function Navbar() {
             </Link>
 
             <nav className="navbar__links">
-                <a href="#servicii">
+                <a href="/#servicii">
                     Servicii
                 </a>
 
-                <a href="#galerie">
+                <a href="/#galerie">
                     Galerie
                 </a>
 
-                <a href="#recenzii">
+                <a href="/#recenzii">
                     Recenzii
                 </a>
 
-                <a href="#contact">
+                <a href="/#contact">
                     Contact
                 </a>
             </nav>
@@ -121,28 +121,28 @@ function Navbar() {
             >
                 <nav className="navbar__mobile-links">
                     <a
-                        href="#servicii"
+                        href="/#servicii"
                         onClick={closeMobileMenu}
                     >
                         Servicii
                     </a>
 
                     <a
-                        href="#galerie"
+                        href="/#galerie"
                         onClick={closeMobileMenu}
                     >
                         Galerie
                     </a>
 
                     <a
-                        href="#recenzii"
+                        href="/#recenzii"
                         onClick={closeMobileMenu}
                     >
                         Recenzii
                     </a>
 
                     <a
-                        href="#contact"
+                        href="/#contact"
                         onClick={closeMobileMenu}
                     >
                         Contact
