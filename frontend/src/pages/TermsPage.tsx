@@ -309,10 +309,15 @@ function TermsPage() {
                             Comunicările comerciale privind
                             reducerile, ofertele sau campaniile
                             promoționale sunt gestionate separat de
-                            comunicările necesare furnizării
-                            serviciului și sunt transmise în
-                            condițiile permise de legislația
-                            aplicabilă.
+                            comunicările necesare administrării
+                            contului și programărilor. Aceste
+                            comunicări promoționale sunt transmise
+                            utilizatorilor care și-au exprimat
+                            consimțământul pentru primirea lor.
+                            Consimțământul poate fi activat sau
+                            dezactivat în orice moment din contul
+                            de utilizator și produce efecte pentru
+                            comunicările viitoare.
                         </p>
                     </section>
 
@@ -360,11 +365,16 @@ function TermsPage() {
 
                         <p>
                             Publicarea materialelor în care un client
-                            poate fi identificat va fi gestionată
-                            separat și, atunci când este necesar,
-                            va avea loc pe baza acordului persoanei
-                            respective sau al reprezentantului său
-                            legal.
+                            poate fi identificat este gestionată separat
+                            de furnizarea serviciilor de frizerie.
+                            Simplul fapt că o persoană este client nu
+                            reprezintă automat acordul pentru utilizarea
+                            imaginii sale în scop de prezentare,
+                            portofoliu sau promovare. Atunci când
+                            publicarea se bazează pe consimțământ,
+                            acesta este solicitat separat persoanei
+                            respective sau, după caz, reprezentantului
+                            său legal.  
                         </p>
                     </section>
 

@@ -1,32 +1,26 @@
 import Navbar from "../components/Navbar";
 import "./legal.css";
-
 function PrivacyPage() {
     return (
         <>
             <Navbar />
-
             <main className="legal-page">
                 <div className="legal-page__container">
                     <header className="legal-page__header">
                         <span className="legal-page__eyebrow">
                             GLOBAL BARBER SOCIETY
                         </span>
-
                         <h1>
                             Politica de confidențialitate
                         </h1>
-
                         <p>
                             Ultima actualizare: 3 octombrie 2026
                         </p>
                     </header>
-
                     <section className="legal-page__section">
                         <h2>
                             1. Cine prelucrează datele tale
                         </h2>
-
                         <p>
                             Operatorul datelor cu caracter personal
                             prelucrate prin intermediul website-ului
@@ -34,7 +28,6 @@ function PrivacyPage() {
                             Barber Society este GLOBAL BARBERFADE
                             S.R.L.
                         </p>
-
                         <div className="legal-page__details">
                             <p>
                                 <strong>
@@ -42,28 +35,24 @@ function PrivacyPage() {
                                 </strong>{" "}
                                 GLOBAL BARBERFADE S.R.L.
                             </p>
-
                             <p>
                                 <strong>
                                     Denumire comercială:
                                 </strong>{" "}
                                 Global Barber Society
                             </p>
-
                             <p>
                                 <strong>
                                     CUI:
                                 </strong>{" "}
                                 55628461
                             </p>
-
                             <p>
                                 <strong>
                                     Registrul Comerțului:
                                 </strong>{" "}
                                 J2026055638001
                             </p>
-
                             <p>
                                 <strong>
                                     Sediu social:
@@ -72,7 +61,6 @@ function PrivacyPage() {
                                 bl. B6, sc. B, ap. 21,
                                 Pitești, jud. Argeș
                             </p>
-
                             <p>
                                 <strong>
                                     Punct de lucru:
@@ -81,16 +69,14 @@ function PrivacyPage() {
                                 sc. B, parter, Pitești,
                                 jud. Argeș
                             </p>
-
                             <p>
                                 <strong>
                                     Email:
                                 </strong>{" "}
-                                <a href="mailto:globalbarbersociety@yahoo.com">
-                                    globalbarbersociety@yahoo.com
+                                <a href="mailto:globalbarbersociety\@yahoo.com">
+                                    globalbarbersociety\@yahoo.com
                                 </a>
                             </p>
-
                             <p>
                                 <strong>
                                     Telefon:
@@ -101,18 +87,15 @@ function PrivacyPage() {
                             </p>
                         </div>
                     </section>
-
                     <section className="legal-page__section">
                         <h2>
                             2. Ce date putem prelucra
                         </h2>
-
                         <p>
                             În funcție de modul în care folosești
                             website-ul și serviciile noastre, putem
                             prelucra următoarele categorii de date:
                         </p>
-
                         <ul>
                             <li>
                                 numele și prenumele;
@@ -158,17 +141,14 @@ function PrivacyPage() {
                             </li>
                         </ul>
                     </section>
-
                     <section className="legal-page__section">
                         <h2>
                             3. De ce folosim datele
                         </h2>
-
                         <p>
                             Datele pot fi prelucrate pentru
                             următoarele scopuri:
                         </p>
-
                         <ul>
                             <li>
                                 crearea și administrarea contului;
@@ -219,12 +199,10 @@ function PrivacyPage() {
                             </li>
                         </ul>
                     </section>
-
                     <section className="legal-page__section">
                         <h2>
                             4. Temeiurile prelucrării
                         </h2>
-
                         <p>
                             În funcție de situație, prelucrarea
                             datelor se poate baza pe executarea
@@ -235,7 +213,6 @@ function PrivacyPage() {
                             operatorului sau consimțământul
                             persoanei vizate.
                         </p>
-
                         <p>
                             Atunci când prelucrarea se bazează pe
                             consimțământ, acesta poate fi retras
@@ -244,12 +221,10 @@ function PrivacyPage() {
                             efectuate anterior retragerii.
                         </p>
                     </section>
-
                     <section className="legal-page__section">
                         <h2>
                             5. Contul și autentificarea
                         </h2>
-
                         <p>
                             Pentru utilizarea anumitor funcții ale
                             platformei poate fi necesară crearea unui
@@ -258,7 +233,6 @@ function PrivacyPage() {
                             administrarea contului și furnizarea
                             serviciilor solicitate.
                         </p>
-
                         <p>
                             Dacă alegi autentificarea prin Google,
                             anumite informații necesare autentificării
@@ -267,19 +241,16 @@ function PrivacyPage() {
                             în cadrul procesului de autentificare.
                         </p>
                     </section>
-
                     <section className="legal-page__section">
                         <h2>
                             6. Programările
                         </h2>
-
                         <p>
                             Pentru realizarea și administrarea unei
                             programări prelucrăm informațiile
                             necesare identificării clientului și
                             detaliile programării.
                         </p>
-
                         <p>
                             Istoricul programărilor poate fi păstrat
                             pentru administrarea relației cu
@@ -289,12 +260,10 @@ function PrivacyPage() {
                             legale aplicabile.
                         </p>
                     </section>
-
                     <section className="legal-page__section">
                         <h2>
                             7. Notificările
                         </h2>
-
                         <p>
                             Putem transmite notificări necesare
                             funcționării serviciului, cum ar fi
@@ -302,54 +271,64 @@ function PrivacyPage() {
                             informații legate direct de serviciile
                             solicitate.
                         </p>
-
                         <p>
                             Comunicările promoționale privind
                             reduceri, campanii sau oferte sunt
                             tratate separat de notificările
-                            operaționale și sunt transmise numai
-                            atunci când există un temei legal
-                            corespunzător.
+                            operaționale și sunt transmise
+                            utilizatorilor care și-au exprimat
+                            consimțământul pentru comunicări de
+                            marketing.
                         </p>
-
                         <p>
-                            Atunci când comunicările promoționale
-                            sunt bazate pe consimțământ, acesta poate
-                            fi retras în orice moment pentru
-                            comunicările viitoare.
+                            Consimțământul pentru comunicările de
+                            marketing poate fi activat sau dezactivat
+                            din cont în orice moment. Retragerea
+                            consimțământului produce efecte pentru
+                            comunicările viitoare și nu afectează
+                            legalitatea prelucrării efectuate înainte
+                            de retragere.
                         </p>
                     </section>
-
                     <section className="legal-page__section">
                         <h2>
                             8. Fotografii și galerie
                         </h2>
-
                         <p>
-                            Global Barber Society poate publica
-                            fotografii cu lucrări realizate în
-                            frizerie. Atunci când o persoană este
-                            identificabilă în materialele publicate,
-                            utilizarea imaginii sale va fi gestionată
-                            separat și, atunci când este necesar,
-                            pe baza acordului persoanei respective
-                            sau al reprezentantului legal.
+                            Global Barber Society poate realiza și
+                            publica fotografii sau materiale vizuale
+                            cu lucrări realizate în frizerie, inclusiv
+                            în scop de portofoliu sau promovare.
+                            Faptul că o persoană este client nu
+                            reprezintă, prin el însuși, acord pentru
+                            publicarea imaginii sale.
                         </p>
-
+                        <p>
+                            Atunci când o persoană este identificabilă
+                            și utilizarea imaginii se bazează pe
+                            consimțământ, acordul este gestionat
+                            separat și este solicitat persoanei
+                            respective sau, atunci când este cazul,
+                            reprezentantului legal. Consimțământul
+                            poate fi retras pentru utilizările
+                            viitoare.
+                        </p>
                         <p>
                             O persoană poate solicita informații
-                            despre utilizarea imaginii sale sau
+                            despre utilizarea imaginii sale sau poate
+                            solicita încetarea utilizării ori
                             eliminarea unei fotografii prin
                             contactarea noastră la adresa de email
-                            indicată în această politică.
+                            indicată în această politică. Solicitarea
+                            va fi analizată în raport cu temeiul
+                            aplicabil și cu eventualele obligații
+                            legale existente.
                         </p>
                     </section>
-
                     <section className="legal-page__section">
                         <h2>
                             9. Furnizori și destinatari
                         </h2>
-
                         <p>
                             Pentru funcționarea platformei putem
                             utiliza furnizori externi care
@@ -357,7 +336,6 @@ function PrivacyPage() {
                             serviciile pe care ni le furnizează.
                             Aceștia pot include, după caz:
                         </p>
-
                         <ul>
                             <li>
                                 Google, pentru autentificarea prin
@@ -380,7 +358,6 @@ function PrivacyPage() {
                                 funcționarea platformei.
                             </li>
                         </ul>
-
                         <p>
                             Lista și informațiile privind furnizorii
                             de infrastructură vor fi actualizate
@@ -388,12 +365,10 @@ function PrivacyPage() {
                             producție este stabilită.
                         </p>
                     </section>
-
                     <section className="legal-page__section">
                         <h2>
                             10. Transferuri internaționale
                         </h2>
-
                         <p>
                             Unii furnizori de servicii utilizați de
                             platformă pot prelucra date prin
@@ -401,7 +376,6 @@ function PrivacyPage() {
                             României sau a Spațiului Economic
                             European.
                         </p>
-
                         <p>
                             Atunci când un astfel de transfer are
                             loc, acesta trebuie realizat în
@@ -411,12 +385,10 @@ function PrivacyPage() {
                             legislația privind protecția datelor.
                         </p>
                     </section>
-
                     <section className="legal-page__section">
                         <h2>
                             11. Cât timp păstrăm datele
                         </h2>
-
                         <p>
                             Datele sunt păstrate numai atât timp cât
                             este necesar pentru scopurile pentru care
@@ -425,7 +397,6 @@ function PrivacyPage() {
                             respectarea obligațiilor legale
                             aplicabile.
                         </p>
-
                         <p>
                             Perioada exactă poate varia în funcție de
                             categoria de date, scopul prelucrării,
@@ -433,7 +404,6 @@ function PrivacyPage() {
                             programărilor și obligațiile legale de
                             păstrare.
                         </p>
-
                         <p>
                             Conturile locale care nu își confirmă
                             adresa de email pot fi eliminate automat
@@ -441,19 +411,16 @@ function PrivacyPage() {
                             stabilite pentru activarea contului.
                         </p>
                     </section>
-
                     <section className="legal-page__section">
                         <h2>
                             12. Securitatea datelor
                         </h2>
-
                         <p>
                             Aplicăm măsuri tehnice și organizatorice
                             destinate protejării datelor împotriva
                             accesului neautorizat, pierderii,
                             modificării sau divulgării nepermise.
                         </p>
-
                         <p>
                             Nicio metodă de transmitere sau stocare
                             electronică nu poate garanta eliminarea
@@ -462,18 +429,15 @@ function PrivacyPage() {
                             naturii datelor și serviciilor oferite.
                         </p>
                     </section>
-
                     <section className="legal-page__section">
                         <h2>
                             13. Drepturile tale
                         </h2>
-
                         <p>
                             În condițiile prevăzute de legislația
                             aplicabilă privind protecția datelor,
                             poți beneficia de următoarele drepturi:
                         </p>
-
                         <ul>
                             <li>
                                 dreptul de acces la date;
@@ -503,36 +467,44 @@ function PrivacyPage() {
                             </li>
                             <li>
                                 dreptul de a depune o plângere la
-                                autoritatea competentă pentru
-                                protecția datelor.
+                                Autoritatea Națională de Supraveghere
+                                a Prelucrării Datelor cu Caracter
+                                Personal (ANSPDCP).
                             </li>
                         </ul>
-
                         <p>
                             Exercitarea anumitor drepturi poate fi
                             supusă condițiilor și excepțiilor
                             prevăzute de lege.
                         </p>
+                        <p>
+                            Mai multe informații despre autoritatea
+                            de supraveghere sunt disponibile pe{" "}
+                            <a
+                                href="https://www.dataprotection.ro/"
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                site-ul oficial ANSPDCP
+                            </a>
+                            .
+                        </p>
                     </section>
-
                     <section className="legal-page__section">
                         <h2>
                             14. Cum ne contactezi
                         </h2>
-
                         <p>
                             Pentru întrebări privind această politică
                             sau pentru exercitarea drepturilor privind
                             datele cu caracter personal ne poți
                             contacta la:
                         </p>
-
                         <p>
-                            <a href="mailto:globalbarbersociety@yahoo.com">
-                                globalbarbersociety@yahoo.com
+                            <a href="mailto:globalbarbersociety\@yahoo.com">
+                                globalbarbersociety\@yahoo.com
                             </a>
                         </p>
-
                         <p>
                             Putem solicita informații suplimentare
                             atunci când acestea sunt necesare pentru
@@ -540,19 +512,16 @@ function PrivacyPage() {
                             formulează cererea.
                         </p>
                     </section>
-
                     <section className="legal-page__section">
                         <h2>
                             15. Modificarea politicii
                         </h2>
-
                         <p>
                             Prezenta politică poate fi actualizată
                             atunci când se modifică serviciile,
                             tehnologiile utilizate, furnizorii sau
                             cerințele legale aplicabile.
                         </p>
-
                         <p>
                             Versiunea actualizată va fi publicată pe
                             această pagină, împreună cu data ultimei
@@ -564,5 +533,4 @@ function PrivacyPage() {
         </>
     );
 }
-
 export default PrivacyPage;
