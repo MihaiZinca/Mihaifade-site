@@ -1,0 +1,122 @@
+.legal-footer {
+    width: 100%;
+    padding: 52px 24px 28px;
+    background: #050505;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+.legal-footer__inner {
+    width: min(1180px, 100%);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1fr 1fr;
+    gap: 36px;
+    align-items: start;
+}
+
+.legal-footer__brand {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1;
+}
+
+.legal-footer__brand-main {
+    font-size: 1.35rem;
+    font-weight: 900;
+    letter-spacing: 0.22em;
+}
+
+.legal-footer__brand-sub {
+    margin-top: 7px;
+    font-size: 0.52rem;
+    font-weight: 700;
+    letter-spacing: 0.28em;
+    color: rgba(255, 255, 255, 0.58);
+}
+
+.legal-footer__company {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.legal-footer__company p {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.legal-footer__company p:first-child {
+    color: rgba(255, 255, 255, 0.82);
+    font-weight: 700;
+}
+
+.legal-footer__links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.legal-footer__links a,
+.legal-footer__contact a {
+    color: rgba(255, 255, 255, 0.64);
+    text-decoration: none;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    transition:
+        color 160ms ease,
+        opacity 160ms ease;
+}
+
+.legal-footer__links a:hover,
+.legal-footer__contact a:hover {
+    color: #ffffff;
+}
+
+.legal-footer__contact {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.legal-footer__bottom {
+    grid-column: 1 / -1;
+    padding-top: 26px;
+    margin-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.legal-footer__bottom p {
+    margin: 0;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+@media (max-width: 900px) {
+    .legal-footer__inner {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .legal-footer {
+        padding: 42px 18px 24px;
+    }
+
+    .legal-footer__inner {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    .legal-footer__bottom {
+        grid-column: 1;
+        padding-top: 22px;
+        margin-top: 0;
+    }
+}
