@@ -44,27 +44,36 @@ function LegalFooter() {
                     <Link to="/cookies">
                         Cookies
                     </Link>
-
-                    <a
-                        href="https://reclamatiisal.anpc.ro"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        SAL - ANPC
-                    </a>
                 </nav>
 
                 <div className="legal-footer__contact">
                     <a href="mailto:globalbarbersociety@yahoo.com">
+                        <span>Email</span>
                         globalbarbersociety@yahoo.com
                     </a>
 
                     <a href="tel:+40774483769">
-                        0774 483 769
+                        <span>Telefon</span>
+                         0774 483 769
                     </a>
                 </div>
 
+                
+
                 <div className="legal-footer__bottom">
+                    <div className="legal-footer__sal">
+                    <a
+                        href="https://reclamatiisal.anpc.ro"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Soluționarea alternativă a litigiilor - ANPC"
+                    >
+                        <img
+                            src="/anpc-sal.png"
+                            alt="Soluționarea alternativă a litigiilor - ANPC"
+                        />
+                    </a>
+                    </div>
                     <p>
                         © 2026 Global Barber Society.
                         Toate drepturile rezervate.
