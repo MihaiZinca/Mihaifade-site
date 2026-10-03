@@ -114,7 +114,10 @@ public class OwnerAssistantService {
                             client.getEmail(),
                             client.getPhone(),
                             lastVisitDate,
-                            clientAppointments.size()
+                            clientAppointments.size(),
+                            Boolean.TRUE.equals(
+                                    client.getMarketingConsent()
+                            )
                     )
             );
         }
@@ -196,7 +199,10 @@ public class OwnerAssistantService {
                             client.getEmail(),
                             client.getPhone(),
                             latestAppointment.getDate(),
-                            clientAppointments.size()
+                            clientAppointments.size(),
+                            Boolean.TRUE.equals(
+                                    client.getMarketingConsent()
+                            )
                     )
             );
         }
@@ -224,7 +230,7 @@ public class OwnerAssistantService {
                         uniqueUserIds
                 );
 
-        List<User> clients =
+        List<User> activeClients =
                 users.stream()
                         .filter(user ->
                                 user.getRole() == Role.CLIENT
@@ -232,6 +238,24 @@ public class OwnerAssistantService {
                         .filter(user ->
                                 Boolean.TRUE.equals(
                                         user.getActive()
+                                )
+                        )
+                        .toList();
+
+        int clientsWithoutMarketingConsent =
+                (int) activeClients.stream()
+                        .filter(user ->
+                                !Boolean.TRUE.equals(
+                                        user.getMarketingConsent()
+                                )
+                        )
+                        .count();
+
+        List<User> clients =
+                activeClients.stream()
+                        .filter(user ->
+                                Boolean.TRUE.equals(
+                                        user.getMarketingConsent()
                                 )
                         )
                         .toList();
@@ -259,21 +283,27 @@ public class OwnerAssistantService {
         campaign.setType(
                 AssistantCampaignType.NOTIFICATION
         );
+
         campaign.setTitle(
                 request.title().trim()
         );
+
         campaign.setMessage(
                 request.message().trim()
         );
+
         campaign.setSelectedClients(
                 uniqueUserIds.size()
         );
+
         campaign.setNotifiedClients(
                 notifiedClients
         );
+
         campaign.setSentNotifications(
                 sentNotifications
         );
+
         campaign.setCreatedOffers(null);
         campaign.setDiscountPercent(null);
         campaign.setValidDays(null);
@@ -283,6 +313,7 @@ public class OwnerAssistantService {
         return new AssistantNotificationResponse(
                 uniqueUserIds.size(),
                 notifiedClients,
+                clientsWithoutMarketingConsent,
                 clients.size() - notifiedClients,
                 sentNotifications
         );
@@ -310,6 +341,11 @@ public class OwnerAssistantService {
                                         user.getActive()
                                 )
                         )
+                        .filter(user ->
+                                Boolean.TRUE.equals(
+                                        user.getMarketingConsent()
+                                )
+                        )
                         .toList();
 
         LocalDateTime expiresAt =
@@ -326,12 +362,15 @@ public class OwnerAssistantService {
                     new ClientOffer();
 
             offer.setUser(client);
+
             offer.setDiscountPercent(
                     request.discountPercent()
             );
+
             offer.setExpiresAt(
                     expiresAt
             );
+
             offer.setUsed(false);
 
             offers.add(offer);
@@ -345,19 +384,25 @@ public class OwnerAssistantService {
         campaign.setType(
                 AssistantCampaignType.DISCOUNT
         );
+
         campaign.setTitle(null);
         campaign.setMessage(null);
+
         campaign.setSelectedClients(
                 uniqueUserIds.size()
         );
+
         campaign.setNotifiedClients(null);
         campaign.setSentNotifications(null);
+
         campaign.setCreatedOffers(
                 offers.size()
         );
+
         campaign.setDiscountPercent(
                 request.discountPercent()
         );
+
         campaign.setValidDays(
                 request.validDays()
         );

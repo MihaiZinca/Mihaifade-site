@@ -9,6 +9,7 @@ public record AssistantClientResponse(
         String email,
         String phone,
         LocalDate lastVisitDate,
-        long completedAppointments
+        long completedAppointments,
+        Boolean marketingConsent
 ) {
 }

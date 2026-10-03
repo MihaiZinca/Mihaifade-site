@@ -55,6 +55,7 @@ interface AssistantClientResponse {
 interface AssistantNotificationResponse {
     selectedClients: number;
     notifiedClients: number;
+    clientsWithoutMarketingConsent: number;
     clientsWithoutNotifications: number;
     sentNotifications: number;
 }
@@ -2295,7 +2296,7 @@ function AdminPage() {
             );
 
             setAssistantSuccess(
-                `Notificare trimisă: ${response.data.notifiedClients} clienți notificați, ${response.data.clientsWithoutNotifications} fără notificări active.`
+                `Notificare trimisă: ${response.data.notifiedClients} clienți notificați, ${response.data.clientsWithoutMarketingConsent} fără consimțământ marketing, ${response.data.clientsWithoutNotifications} fără notificări active.`
             );
             await loadAssistantHistory();
         } catch {

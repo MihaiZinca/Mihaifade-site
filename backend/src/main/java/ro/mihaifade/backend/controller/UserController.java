@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ro.mihaifade.backend.dto.CompleteProfileRequest;
+import ro.mihaifade.backend.dto.MarketingConsentRequest;
 import ro.mihaifade.backend.dto.UserRequest;
 import ro.mihaifade.backend.dto.UserResponse;
 import ro.mihaifade.backend.entity.Role;
@@ -27,6 +28,15 @@ public class UserController {
     @GetMapping
     public List<UserResponse> getAllUsers() {
         return userService.getAllUsers();
+    }
+
+    @GetMapping("/me")
+    public UserResponse getMyProfile(
+            Authentication authentication
+    ) {
+        return userService.getMyProfile(
+                authentication.getName()
+        );
     }
 
     @GetMapping("/{id}")
@@ -63,6 +73,18 @@ public class UserController {
             Authentication authentication
     ) {
         return userService.completeMyProfile(
+                authentication.getName(),
+                request
+        );
+    }
+
+    @PutMapping("/me/marketing-consent")
+    public UserResponse updateMarketingConsent(
+            @Valid
+            @RequestBody MarketingConsentRequest request,
+            Authentication authentication
+    ) {
+        return userService.updateMarketingConsent(
                 authentication.getName(),
                 request
         );

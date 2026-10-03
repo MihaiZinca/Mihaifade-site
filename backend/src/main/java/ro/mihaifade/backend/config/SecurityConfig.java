@@ -360,8 +360,20 @@ public class SecurityConfig {
                         .hasRole("OWNER")
 
                         .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/users/me"
+                        )
+                        .hasRole("CLIENT")
+
+                        .requestMatchers(
                                 HttpMethod.PUT,
                                 "/api/users/me/profile"
+                        )
+                        .hasRole("CLIENT")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/users/me/marketing-consent"
                         )
                         .hasRole("CLIENT")
 

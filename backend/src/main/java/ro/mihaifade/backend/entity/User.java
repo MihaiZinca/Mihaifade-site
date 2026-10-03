@@ -51,6 +51,13 @@ public class User {
     @Column(nullable = false)
     private Boolean active = true;
 
+    private Boolean emailVerified = true;
+
+    @Column(nullable = false)
+    private Boolean marketingConsent = false;
+
+    private LocalDateTime marketingConsentUpdatedAt;
+
     @Column(nullable = false)
     private Boolean welcomeSpinUsed = false;
 

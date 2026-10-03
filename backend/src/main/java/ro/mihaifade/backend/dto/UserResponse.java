@@ -13,6 +13,8 @@ public record UserResponse(
         String phone,
         Role role,
         Boolean active,
+        Boolean marketingConsent,
+        LocalDateTime marketingConsentUpdatedAt,
         Boolean welcomeSpinUsed,
         WelcomeRewardType welcomeReward,
         Boolean welcomeRewardUsed,

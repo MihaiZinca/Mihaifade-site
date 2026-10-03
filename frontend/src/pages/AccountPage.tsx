@@ -23,6 +23,22 @@ interface ReviewResponse {
     updatedAt: string;
 }
 
+interface UserResponse {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string | null;
+    role: string;
+    active: boolean;
+    marketingConsent: boolean;
+    marketingConsentUpdatedAt: string | null;
+    welcomeSpinUsed: boolean;
+    welcomeReward: string | null;
+    welcomeRewardUsed: boolean;
+    createdAt: string;
+}
+
 function AccountPage() {
     const navigate = useNavigate();
     const role = getRole();
@@ -77,6 +93,21 @@ const [notificationsEnabled, setNotificationsEnabled] =
         useState("");
 
     const [notificationSuccess, setNotificationSuccess] =
+        useState("");
+
+    const [marketingConsent, setMarketingConsent] =
+        useState(false);
+
+    const [marketingConsentLoading, setMarketingConsentLoading] =
+        useState(false);
+
+    const [marketingConsentSaving, setMarketingConsentSaving] =
+        useState(false);
+
+    const [marketingConsentError, setMarketingConsentError] =
+        useState("");
+
+    const [marketingConsentSuccess, setMarketingConsentSuccess] =
         useState("");
 const [review, setReview] =
         useState<ReviewResponse | null>(null);
@@ -146,6 +177,32 @@ const [review, setReview] =
         }
     };
 
+    const loadMarketingConsent = async () => {
+        if (role !== "CLIENT") {
+            return;
+        }
+
+        setMarketingConsentLoading(true);
+        setMarketingConsentError("");
+
+        try {
+            const response =
+                await api.get<UserResponse>(
+                    "/users/me"
+                );
+
+            setMarketingConsent(
+                response.data.marketingConsent
+            );
+        } catch {
+            setMarketingConsentError(
+                "Preferințele pentru oferte și promoții nu au putut fi încărcate."
+            );
+        } finally {
+            setMarketingConsentLoading(false);
+        }
+    };
+
     const loadMyReview = async () => {
         if (role !== "CLIENT") {
             return;
@@ -198,6 +255,7 @@ const [review, setReview] =
 
         if (role === "CLIENT") {
             loadMyReview();
+            loadMarketingConsent();
         }
     }, [role]);
 
@@ -665,6 +723,44 @@ const handleEnableNotifications = async () => {
             );
         } finally {
             setNotificationLoading(false);
+        }
+    };
+
+    const handleMarketingConsentChange = async (
+        enabled: boolean
+    ) => {
+        if (role !== "CLIENT") {
+            return;
+        }
+
+        setMarketingConsentSaving(true);
+        setMarketingConsentError("");
+        setMarketingConsentSuccess("");
+
+        try {
+            const response =
+                await api.put<UserResponse>(
+                    "/users/me/marketing-consent",
+                    {
+                        marketingConsent: enabled,
+                    }
+                );
+
+            setMarketingConsent(
+                response.data.marketingConsent
+            );
+
+            setMarketingConsentSuccess(
+                response.data.marketingConsent
+                    ? "Ai activat ofertele și promoțiile."
+                    : "Ai dezactivat ofertele și promoțiile."
+            );
+        } catch {
+            setMarketingConsentError(
+                "Preferința nu a putut fi salvată. Încearcă din nou."
+            );
+        } finally {
+            setMarketingConsentSaving(false);
         }
     };
 
@@ -1200,6 +1296,99 @@ const handleEnableNotifications = async () => {
                                                 {notificationLoading
                                                     ? "Se activează..."
                                                     : "Activează notificările"}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+
+                        {role === "CLIENT" && (
+                            <section className="account-section account-marketing">
+                                <div className="account-section__header">
+                                    <div>
+                                        <p className="section-eyebrow">
+                                            OFERTE ȘI PROMOȚII
+                                        </p>
+
+                                        <h2>
+                                            Comunicări comerciale
+                                        </h2>
+                                    </div>
+
+                                    <span>
+                                        {marketingConsent
+                                            ? "ACTIVE"
+                                            : "OFF"}
+                                    </span>
+                                </div>
+
+                                <div className="account-marketing__content">
+                                    <div className="account-marketing__copy">
+                                        <p>
+                                            Alege dacă vrei să primești oferte,
+                                            reduceri și alte comunicări
+                                            promoționale de la Global Barber Society.
+                                        </p>
+
+                                        <small>
+                                            Această preferință este separată de
+                                            reminderele și actualizările despre
+                                            programările tale. O poți modifica
+                                            oricând.
+                                        </small>
+                                    </div>
+
+                                    {marketingConsentError && (
+                                        <p className="account-marketing__error">
+                                            {marketingConsentError}
+                                        </p>
+                                    )}
+
+                                    {marketingConsentSuccess && (
+                                        <p className="account-marketing__success">
+                                            {marketingConsentSuccess}
+                                        </p>
+                                    )}
+
+                                    <div className="account-marketing__actions">
+                                        {marketingConsentLoading ? (
+                                            <p className="account-message">
+                                                Se încarcă preferința...
+                                            </p>
+                                        ) : marketingConsent ? (
+                                            <button
+                                                type="button"
+                                                className="account-marketing__disable"
+                                                onClick={() =>
+                                                    handleMarketingConsentChange(
+                                                        false
+                                                    )
+                                                }
+                                                disabled={
+                                                    marketingConsentSaving
+                                                }
+                                            >
+                                                {marketingConsentSaving
+                                                    ? "Se salvează..."
+                                                    : "Dezactivează ofertele și promoțiile"}
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                className="account-marketing__enable"
+                                                onClick={() =>
+                                                    handleMarketingConsentChange(
+                                                        true
+                                                    )
+                                                }
+                                                disabled={
+                                                    marketingConsentSaving
+                                                }
+                                            >
+                                                {marketingConsentSaving
+                                                    ? "Se salvează..."
+                                                    : "Activează ofertele și promoțiile"}
                                             </button>
                                         )}
                                     </div>
