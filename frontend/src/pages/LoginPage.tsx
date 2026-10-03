@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import GoogleLoginButton from "../components/GoogleLoginButton";
@@ -12,6 +13,11 @@ interface LoginResponse {
     lastName: string;
     email: string;
     role: "CLIENT" | "BARBER" | "OWNER";
+    requiresProfileCompletion: boolean;
+}
+
+interface MessageResponse {
+    message: string;
 }
 
 function LoginPage() {
@@ -21,6 +27,9 @@ function LoginPage() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [emailNotVerified, setEmailNotVerified] = useState(false);
+    const [resending, setResending] = useState(false);
+    const [resendMessage, setResendMessage] = useState("");
 
     const handleSubmit = async (
         event: React.FormEvent<HTMLFormElement>
@@ -28,13 +37,15 @@ function LoginPage() {
         event.preventDefault();
 
         setError("");
+        setEmailNotVerified(false);
+        setResendMessage("");
         setLoading(true);
 
         try {
             const response = await api.post<LoginResponse>(
                 "/auth/login",
                 {
-                    email,
+                    email: email.trim().toLowerCase(),
                     password,
                 }
             );
@@ -45,20 +56,82 @@ function LoginPage() {
             );
 
             if (response.data.role === "OWNER") {
-                navigate("/admin");
+                navigate("/admin", {
+                    replace: true,
+                });
                 return;
             }
 
             if (response.data.role === "BARBER") {
-                navigate("/barber");
+                navigate("/barber", {
+                    replace: true,
+                });
                 return;
             }
 
-            navigate("/programare");
-        } catch {
-            setError("Email sau parolă incorectă.");
+            navigate("/programare", {
+                replace: true,
+            });
+        } catch (requestError) {
+            if (axios.isAxiosError(requestError)) {
+                const responseData = requestError.response?.data;
+
+                const responseText =
+                    typeof responseData === "string"
+                        ? responseData
+                        : JSON.stringify(responseData ?? {});
+
+                if (
+                    responseText.includes(
+                        "EMAIL_NOT_VERIFIED"
+                    )
+                ) {
+                    setEmailNotVerified(true);
+                    setError(
+                        "Adresa de email nu a fost confirmată. Verifică inboxul sau solicită un nou email de confirmare."
+                    );
+                    return;
+                }
+            }
+
+            setError(
+                "Email sau parolă incorectă."
+            );
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleResendVerification = async () => {
+        const normalizedEmail =
+            email.trim().toLowerCase();
+
+        if (!normalizedEmail || resending) {
+            return;
+        }
+
+        setResending(true);
+        setError("");
+        setResendMessage("");
+
+        try {
+            const response =
+                await api.post<MessageResponse>(
+                    "/auth/resend-verification",
+                    {
+                        email: normalizedEmail,
+                    }
+                );
+
+            setResendMessage(
+                response.data.message
+            );
+        } catch {
+            setError(
+                "Emailul de confirmare nu a putut fi retrimis momentan. Încearcă din nou peste puțin timp."
+            );
+        } finally {
+            setResending(false);
         }
     };
 
@@ -79,7 +152,7 @@ function LoginPage() {
                 </Link>
 
                 <p className="section-eyebrow">
-                    CONT CLIENT
+                    AUTENTIFICARE
                 </p>
 
                 <h1>
@@ -87,14 +160,16 @@ function LoginPage() {
                 </h1>
 
                 <p className="auth-card__description">
-                    Autentifică-te pentru a putea face și administra
-                    programările tale.
+                    Autentifică-te pentru a gestiona
+                    programările și contul tău.
                 </p>
 
                 <GoogleLoginButton />
 
                 <div className="auth-divider">
-                    <span>sau</span>
+                    <span>
+                        sau
+                    </span>
                 </div>
 
                 <form
@@ -107,9 +182,13 @@ function LoginPage() {
                         <input
                             type="email"
                             value={email}
-                            onChange={(event) =>
-                                setEmail(event.target.value)
-                            }
+                            onChange={(event) => {
+                                setEmail(
+                                    event.target.value
+                                );
+                                setEmailNotVerified(false);
+                                setResendMessage("");
+                            }}
                             autoComplete="email"
                             required
                         />
@@ -122,14 +201,16 @@ function LoginPage() {
                             type="password"
                             value={password}
                             onChange={(event) =>
-                                setPassword(event.target.value)
+                                setPassword(
+                                    event.target.value
+                                )
                             }
                             autoComplete="current-password"
                             required
                         />
                     </label>
 
-                    <div className="auth-card__forgot-password">
+                    <div className="password-reset-link">
                         <Link to="/forgot-password">
                             Ai uitat parola?
                         </Link>
@@ -141,12 +222,32 @@ function LoginPage() {
                         </p>
                     )}
 
+                    {resendMessage && (
+                        <p className="auth-form__success">
+                            {resendMessage}
+                        </p>
+                    )}
+
+                    {emailNotVerified && (
+                        <button
+                            type="button"
+                            onClick={
+                                handleResendVerification
+                            }
+                            disabled={resending}
+                        >
+                            {resending
+                                ? "Se retrimite..."
+                                : "Retrimite emailul de confirmare"}
+                        </button>
+                    )}
+
                     <button
                         type="submit"
                         disabled={loading}
                     >
                         {loading
-                            ? "Se conectează..."
+                            ? "Se autentifică..."
                             : "Intră în cont"}
                     </button>
                 </form>

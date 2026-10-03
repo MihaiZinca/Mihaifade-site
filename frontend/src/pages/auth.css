@@ -144,7 +144,9 @@
     transition: background-color 9999s ease-out 0s;
 }
 
-.auth-form button {
+.auth-form button,
+.auth-card > button {
+    width: 100%;
     margin-top: 8px;
     padding: 16px 20px;
     border: 1px solid #f5f5f5;
@@ -159,21 +161,37 @@
         opacity 0.2s ease;
 }
 
-.auth-form button:hover:not(:disabled) {
+.auth-form button:hover:not(:disabled),
+.auth-card > button:hover:not(:disabled) {
     transform: translateY(-1px);
     background: transparent;
     color: #ffffff;
 }
 
-.auth-form button:disabled {
+.auth-form button:disabled,
+.auth-card > button:disabled {
     cursor: not-allowed;
     opacity: 0.65;
 }
 
 .auth-form__error {
     margin: 0;
+    padding: 12px 14px;
+    border: 1px solid rgba(226, 122, 122, 0.25);
+    background: rgba(226, 122, 122, 0.07);
     color: #e27a7a;
     font-size: 13px;
+    line-height: 1.5;
+}
+
+.auth-form__success {
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 13px;
+    line-height: 1.5;
 }
 
 .auth-card__register {

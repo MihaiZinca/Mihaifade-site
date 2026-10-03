@@ -214,6 +214,7 @@ public class DataSeeder implements CommandLineRunner {
         owner.setAuthProvider(AuthProvider.LOCAL);
         owner.setRole(Role.OWNER);
         owner.setActive(true);
+        owner.setEmailVerified(true);
 
         userRepository.save(owner);
     }

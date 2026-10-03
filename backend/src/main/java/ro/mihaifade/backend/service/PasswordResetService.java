@@ -52,8 +52,9 @@ public class PasswordResetService {
     @Transactional
     public void requestPasswordReset(String email) {
         userRepository.findByEmailIgnoreCase(email)
-                .filter(User::getActive)
+                .filter(user -> Boolean.TRUE.equals(user.getActive()))
                 .filter(user -> user.getAuthProvider() == AuthProvider.LOCAL)
+                .filter(this::isEmailVerified)
                 .ifPresent(this::createAndSendResetToken);
     }
 
@@ -92,6 +93,12 @@ public class PasswordResetService {
         if (user.getAuthProvider() != AuthProvider.LOCAL) {
             throw new RuntimeException(
                     "Acest cont nu folosește autentificarea cu parolă."
+            );
+        }
+
+        if (!isEmailVerified(user)) {
+            throw new RuntimeException(
+                    "Adresa de email nu a fost confirmată."
             );
         }
 
@@ -142,12 +149,14 @@ public class PasswordResetService {
 
         message.setFrom(mailUsername);
         message.setTo(user.getEmail());
-        message.setSubject("Resetare parolă MihaiFade");
+        message.setSubject(
+                "Resetare parolă - Global Barber Society"
+        );
         message.setText(
                 "Salut, "
                         + user.getFirstName()
                         + "!\n\n"
-                        + "Ai solicitat resetarea parolei contului tău MihaiFade.\n\n"
+                        + "Ai solicitat resetarea parolei contului tău Global Barber Society.\n\n"
                         + "Accesează linkul de mai jos pentru a seta o parolă nouă:\n\n"
                         + resetLink
                         + "\n\n"
@@ -155,10 +164,15 @@ public class PasswordResetService {
                         + TOKEN_EXPIRATION_MINUTES
                         + " de minute.\n\n"
                         + "Dacă nu ai solicitat resetarea parolei, poți ignora acest email.\n\n"
-                        + "MihaiFade"
+                        + "Global Barber Society"
         );
 
         mailSender.send(message);
+    }
+
+    private boolean isEmailVerified(User user) {
+        return user.getEmailVerified() == null
+                || Boolean.TRUE.equals(user.getEmailVerified());
     }
 
     private String generateToken() {

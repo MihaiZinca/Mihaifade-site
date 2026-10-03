@@ -24,22 +24,25 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final GoogleTokenVerifier googleTokenVerifier;
+    private final EmailVerificationService emailVerificationService;
 
     public AuthService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             AuthenticationManager authenticationManager,
-            GoogleTokenVerifier googleTokenVerifier
+            GoogleTokenVerifier googleTokenVerifier,
+            EmailVerificationService emailVerificationService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
         this.googleTokenVerifier = googleTokenVerifier;
+        this.emailVerificationService = emailVerificationService;
     }
 
-    public AuthResponse register(RegisterRequest request) {
+    public void register(RegisterRequest request) {
         if (userRepository.existsByEmailIgnoreCase(request.email())) {
             throw new RuntimeException("Email already exists");
         }
@@ -52,36 +55,43 @@ public class AuthService {
 
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
-        user.setEmail(request.email());
+        user.setEmail(request.email().trim().toLowerCase());
         user.setPhone(request.phone());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
         user.setAuthProvider(AuthProvider.LOCAL);
         user.setRole(Role.CLIENT);
         user.setActive(true);
+        user.setEmailVerified(false);
 
         User saved = userRepository.save(user);
 
-        String token = jwtService.generateToken(saved.getEmail());
-
-        return toResponse(saved, token);
+        emailVerificationService.sendVerificationEmail(saved);
     }
 
     public AuthResponse login(LoginRequest request) {
+        User user = userRepository
+                .findByEmailIgnoreCase(request.email())
+                .orElseThrow(() ->
+                        new RuntimeException("Email sau parolă incorectă.")
+                );
+
+        if (!Boolean.TRUE.equals(user.getActive())) {
+            throw new RuntimeException("User account is disabled");
+        }
+
+        if (
+                user.getAuthProvider() == AuthProvider.LOCAL
+                        && !emailVerificationService.isVerified(user)
+        ) {
+            throw new IllegalStateException("EMAIL_NOT_VERIFIED");
+        }
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.email(),
                         request.password()
                 )
         );
-
-        User user = userRepository.findByEmailIgnoreCase(request.email())
-                .orElseThrow(() ->
-                        new RuntimeException("User not found")
-                );
-
-        if (!user.getActive()) {
-            throw new RuntimeException("User account is disabled");
-        }
 
         String token = jwtService.generateToken(user.getEmail());
 
@@ -102,12 +112,31 @@ public class AuthService {
             );
         }
 
-        User user = userRepository.findByEmailIgnoreCase(email)
+        Boolean googleEmailVerified = payload.getEmailVerified();
+
+        if (!Boolean.TRUE.equals(googleEmailVerified)) {
+            throw new RuntimeException(
+                    "Google email is not verified"
+            );
+        }
+
+        String normalizedEmail = email.trim().toLowerCase();
+
+        User user = userRepository
+                .findByEmailIgnoreCase(normalizedEmail)
                 .map(existingUser -> {
-                    if (!existingUser.getActive()) {
+                    if (!Boolean.TRUE.equals(existingUser.getActive())) {
                         throw new RuntimeException(
                                 "User account is disabled"
                         );
+                    }
+
+                    if (
+                            existingUser.getAuthProvider() == AuthProvider.LOCAL
+                                    && !emailVerificationService.isVerified(existingUser)
+                    ) {
+                        existingUser.setEmailVerified(true);
+                        return userRepository.save(existingUser);
                     }
 
                     return existingUser;
@@ -127,16 +156,23 @@ public class AuthService {
                                     : ""
                     );
 
-                    newUser.setEmail(email);
+                    newUser.setEmail(normalizedEmail);
                     newUser.setPhone(null);
                     newUser.setPasswordHash(null);
                     newUser.setAuthProvider(AuthProvider.GOOGLE);
                     newUser.setRole(Role.CLIENT);
                     newUser.setActive(true);
+                    newUser.setEmailVerified(true);
 
                     return userRepository.save(newUser);
                 });
 
+        String token = jwtService.generateToken(user.getEmail());
+
+        return toResponse(user, token);
+    }
+
+    public AuthResponse createAuthResponse(User user) {
         String token = jwtService.generateToken(user.getEmail());
 
         return toResponse(user, token);
